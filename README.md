@@ -16,3 +16,14 @@ Mayalu is a modern dating application built with a robust tech stack designed to
 - **UI**: [Tailwind CSS](https://tailwindcss.com/) for styling
 - **State Management**: [TanStack Query](https://tanstack.com/query/latest) for global state
 - **Deployment**: [Vercel](https://vercel.com/)
+
+## 🚧 Roadmap
+
+- [ ] Audio and Video chat integration (Gamify)
+- [ ] AI-powered compatibility suggestions
+- [ ] Event matchmaking
+- [ ] Premium subscription features
+
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

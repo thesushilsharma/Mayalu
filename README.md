@@ -24,6 +24,10 @@ Mayalu is a modern dating application built with a robust tech stack designed to
 - [ ] Event matchmaking
 - [ ] Premium subscription features
 
+## Deployment
+ 
+ Vercel
+
 ## Known Issues
 
 - None

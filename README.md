@@ -20,9 +20,12 @@ Mayalu is a modern dating application built with a robust tech stack designed to
 ## 🚧 Roadmap
 
 - [ ] Audio and Video chat integration (Gamify)
-- [ ] AI-powered compatibility suggestions
-- [ ] Event matchmaking
-- [ ] Premium subscription features
+- [ ] AI-powered compatibility suggestions 
+- [ ] Dating/Matrimonial mode toggle
+- [ ] User profile creation with gamified completion progress
+- [ ] Event matchmaking - Match discovery interface with card-based swiping
+- [ ] XP system visualization and level progression
+- [ ] Profile customization with unlockable themes
 
 ## Deployment
  

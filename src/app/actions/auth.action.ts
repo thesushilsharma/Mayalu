@@ -1,5 +1,6 @@
 "use server";
 
+import { BASE_URL } from "@/lib/contants";
 import { loginLimiter, signupLimiter } from "@/lib/RateLimiter/limiter";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -84,7 +85,7 @@ export async function signUpAction(
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        emailRedirectTo: `${BASE_URL}/auth/callback`,
         data: {
           signup_timestamp: new Date().toISOString(),
         },

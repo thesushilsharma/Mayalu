@@ -85,7 +85,7 @@ export async function signUpAction(
       email,
       password,
       options: {
-        emailRedirectTo: `${BASE_URL}/auth/callback`,
+        emailRedirectTo: `${BASE_URL}/auth/login?message=Email confirmed successfully`,
         data: {
           signup_timestamp: new Date().toISOString(),
         },

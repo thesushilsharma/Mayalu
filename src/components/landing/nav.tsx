@@ -6,7 +6,7 @@ export default function Nav() {
   return (
     <nav className="flex items-center gap-4">
       <ModeToggle />
-      <Link href="/auth/signup">
+      <Link href="/auth/sign-up">
         <Button variant="default" size="sm">
           Sign up
         </Button>

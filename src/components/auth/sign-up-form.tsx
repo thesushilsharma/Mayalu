@@ -17,7 +17,10 @@ import { useActionState } from "react";
 import { signUpAction } from "@/app/actions/auth.action";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { useDebounce } from "use-debounce";
-import { doPasswordsMatch, validatePasswordStrength } from "@/lib/validations/authHelper";
+import {
+  doPasswordsMatch,
+  validatePasswordStrength,
+} from "@/lib/validations/authHelper";
 
 const initialState: AuthState = { errors: {} };
 
@@ -30,6 +33,8 @@ export function SignUpForm({
     initialState
   );
   const [formValues, setFormValues] = useState({
+    givenName: "",
+    familyName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -74,6 +79,48 @@ export function SignUpForm({
         <CardContent>
           <form action={formAction}>
             <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="givenName">Given Name</Label>
+                <Input
+                  id="givenName"
+                  type="text"
+                  name="givenName"
+                  placeholder="John"
+                  value={formValues.givenName}
+                  onChange={handleChange}
+                  required
+                  aria-invalid={!!state.errors?.givenName}
+                  aria-describedby={
+                    state.errors?.givenName ? "givenName-error" : undefined
+                  }
+                />
+                {state.errors?.givenName && (
+                  <p id="givenName-error" className="text-sm text-red-500">
+                    {state.errors.givenName[0]}
+                  </p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="familyName">Family Name</Label>
+                <Input
+                  id="familyName"
+                  type="text"
+                  name="familyName"
+                  placeholder="Doe"
+                  value={formValues.familyName}
+                  onChange={handleChange}
+                  required
+                  aria-invalid={!!state.errors?.familyName}
+                  aria-describedby={
+                    state.errors?.familyName ? "familyName-error" : undefined
+                  }
+                />
+                {state.errors?.familyName && (
+                  <p id="familyName-error" className="text-sm text-red-500">
+                    {state.errors.familyName[0]}
+                  </p>
+                )}
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input

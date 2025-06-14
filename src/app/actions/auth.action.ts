@@ -78,16 +78,17 @@ export async function signUpAction(
       return { errors: validatedFields.error.flatten().fieldErrors };
     }
 
-    const { email, password } = validatedFields.data;
+    const { givenName,familyName, email, password } = validatedFields.data;
     const supabase = await createClient();
 
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${BASE_URL}/auth/login?message=Email confirmed successfully`,
         data: {
           signup_timestamp: new Date().toISOString(),
+          givenName,
+          familyName,
         },
       },
     });

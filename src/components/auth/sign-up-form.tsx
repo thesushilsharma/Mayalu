@@ -21,6 +21,8 @@ import {
   doPasswordsMatch,
   validatePasswordStrength,
 } from "@/lib/validations/authHelper";
+import InputErrorMessage from "../error/InputErrorMessage";
+import Alert from "../error/Alert";
 
 const initialState: AuthState = { errors: {} };
 
@@ -95,9 +97,7 @@ export function SignUpForm({
                   }
                 />
                 {state.errors?.givenName && (
-                  <p id="givenName-error" className="text-sm text-red-500">
-                    {state.errors.givenName[0]}
-                  </p>
+                  <InputErrorMessage id="givenName-error">{state.errors.givenName}</InputErrorMessage>
                 )}
               </div>
               <div className="grid gap-2">
@@ -116,9 +116,7 @@ export function SignUpForm({
                   }
                 />
                 {state.errors?.familyName && (
-                  <p id="familyName-error" className="text-sm text-red-500">
-                    {state.errors.familyName[0]}
-                  </p>
+                  <InputErrorMessage id="familyName-error">{state.errors.familyName}</InputErrorMessage>
                 )}
               </div>
               <div className="grid gap-2">
@@ -136,11 +134,9 @@ export function SignUpForm({
                     state.errors?.email ? "email-error" : undefined
                   }
                 />
-                {state.errors?.email && (
-                  <p id="email-error" className="text-sm text-red-500">
-                    {state.errors.email[0]}
-                  </p>
-                )}
+                {!state.success && state.errors?.email ? (
+                  <InputErrorMessage id="email-error">{state.errors.email}</InputErrorMessage>
+                ) : null}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
@@ -152,9 +148,9 @@ export function SignUpForm({
                   onChange={handleChange}
                   className={cn(
                     formValues.password &&
-                      (passwordValidation.isValid
-                        ? "border-green-500 focus-visible:ring-green-500"
-                        : "border-red-500 focus-visible:ring-red-500")
+                    (passwordValidation.isValid
+                      ? "border-green-500 focus-visible:ring-green-500"
+                      : "border-red-500 focus-visible:ring-red-500")
                   )}
                   required
                   aria-invalid={!!state.errors?.password}
@@ -162,11 +158,10 @@ export function SignUpForm({
                     state.errors?.password ? "password-error" : undefined
                   }
                 />
-                {state.errors?.password && (
-                  <p id="password-error" className="text-sm text-red-500">
-                    {state.errors.password[0]}
-                  </p>
-                )}
+                {!state.success && state.errors?.password ? (
+                  <InputErrorMessage id="password-error">{state.errors.password}</InputErrorMessage>
+
+                ) : null}
                 {formValues.password && (
                   <div className="mt-2 space-y-2 text-sm">
                     <p className="font-medium">Password must:</p>
@@ -227,9 +222,9 @@ export function SignUpForm({
                     onChange={handleChange}
                     className={cn(
                       formValues.confirmPassword &&
-                        (passwordsMatch
-                          ? "border-green-500 focus-visible:ring-green-500"
-                          : "border-red-500 focus-visible:ring-red-500")
+                      (passwordsMatch
+                        ? "border-green-500 focus-visible:ring-green-500"
+                        : "border-red-500 focus-visible:ring-red-500")
                     )}
                     required
                     aria-invalid={!!state.errors?.confirmPassword}
@@ -249,19 +244,20 @@ export function SignUpForm({
                     </div>
                   )}
                 </div>
-                {((formValues.confirmPassword && !passwordsMatch) ||
-                  state.errors?.confirmPassword) && (
-                  <p
-                    id="confirm-password-error"
-                    className="text-sm text-red-500"
-                  >
-                    {state.errors?.confirmPassword?.[0] ||
-                      "Passwords need to match"}
-                  </p>
+                {((formValues.confirmPassword && !passwordsMatch) || state.errors?.confirmPassword) && (
+                  <InputErrorMessage id="confirm-password-error">
+                    {state.errors?.confirmPassword || "Passwords need to match"}
+                  </InputErrorMessage>
                 )}
               </div>
-              {state.errors?.form && (
-                <p className="text-sm text-red-500">{state.errors.form}</p>
+              {(state.message || state.errors?.form) && (
+                <Alert
+                  className={
+                    state.success ? "alert-info" : "alert-error"
+                  }
+                >
+                  {state.errors?.form || state.message}
+                </Alert>
               )}
               <Button
                 type="submit"

@@ -1,6 +1,6 @@
 "use server";
 
-import { BASE_URL } from "@/lib/contants";
+import { APP_URL } from "@/lib/contants";
 import { loginLimiter, signupLimiter } from "@/lib/RateLimiter/limiter";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -24,8 +24,14 @@ export async function loginAction(
     const validatedFields = loginSchema.safeParse(Object.fromEntries(formData));
     
     if (!validatedFields.success) {
-      return { errors: validatedFields.error.flatten().fieldErrors };
-    }
+      const flatErrors = validatedFields.error.flatten().fieldErrors;
+    
+      const simplifiedErrors: AuthState["errors"] = Object.fromEntries(
+        Object.entries(flatErrors).map(([key, value]) => [key, value?.[0]])
+      );
+    
+      return { errors: simplifiedErrors };
+    }   
 
     const { email, password } = validatedFields.data;
     const supabase = await createClient();
@@ -75,8 +81,15 @@ export async function signUpAction(
     const validatedFields = signUpSchema.safeParse(Object.fromEntries(formData));
 
     if (!validatedFields.success) {
-      return { errors: validatedFields.error.flatten().fieldErrors };
+      const flatErrors = validatedFields.error.flatten().fieldErrors;
+    
+      const simplifiedErrors: AuthState["errors"] = Object.fromEntries(
+        Object.entries(flatErrors).map(([key, value]) => [key, value?.[0]])
+      );
+    
+      return { errors: simplifiedErrors };
     }
+    
 
     const { givenName,familyName, email, password } = validatedFields.data;
     const supabase = await createClient();
@@ -85,24 +98,19 @@ export async function signUpAction(
       email,
       password,
       options: {
+         //emailRedirectTo: `${APP_URL}/api/callback`,
         data: {
-          signup_timestamp: new Date().toISOString(),
           givenName,
           familyName,
         },
       },
     });
 
-    if (error) {
-      const errorMessages: Record<string, string> = {
-        'User already registered': 'Email already exists. Please sign in.',
-        'Password should be at least 6 characters': 'Password too short.',
-        'Invalid email': 'Please enter a valid email address.',
-        'Signup is disabled': 'New registrations are currently disabled.',
-      };
+    console.log({ data, error })
 
+    if (data.user?.identities?.length === 0) {
       return {
-        errors: { form: errorMessages[error.message] || 'Registration failed.' },
+        errors: { form: 'Email already exists. Please sign in or check your email for confirmation.' },
       };
     }
 

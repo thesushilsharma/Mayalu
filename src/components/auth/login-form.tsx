@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useActionState } from "react";
 import { loginAction } from "@/app/actions/auth.action";
+import InputErrorMessage from "../error/InputErrorMessage";
 
 const initialState: AuthState = { errors: {} };
 
@@ -53,9 +54,7 @@ export function LoginForm({
                   }
                 />
                 {state.errors?.email && (
-                  <p id="email-error" className="text-sm text-red-500">
-                    {state.errors.email[0]}
-                  </p>
+                  <InputErrorMessage id="email-error">{state.errors.email}</InputErrorMessage>
                 )}
               </div>
               <div className="grid gap-2">
@@ -79,9 +78,7 @@ export function LoginForm({
                   }
                 />
                 {state.errors?.password && (
-                  <p id="password-error" className="text-sm text-red-500">
-                    {state.errors.password[0]}
-                  </p>
+                  <InputErrorMessage id="password-error">{state.errors.password}</InputErrorMessage>
                 )}
               </div>
               {state.errors?.form && (

@@ -47,6 +47,8 @@ export function LoginForm({
                   name="email"
                   type="email"
                   placeholder="m@example.com"
+                  autoComplete="email"
+                  inputMode="email"
                   required
                   aria-invalid={!!state.errors?.email}
                   aria-describedby={
@@ -71,6 +73,9 @@ export function LoginForm({
                   id="password"
                   name="password"
                   type="password"
+                  placeholder="Password"
+                  autoComplete="current-password"
+                  inputMode="text"
                   required
                   aria-invalid={!!state.errors?.password}
                   aria-describedby={

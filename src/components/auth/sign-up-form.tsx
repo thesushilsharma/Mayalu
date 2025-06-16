@@ -89,6 +89,8 @@ export function SignUpForm({
                   name="givenName"
                   placeholder="John"
                   value={formValues.givenName}
+                  autoComplete="given-name"
+                  inputMode="text"
                   onChange={handleChange}
                   required
                   aria-invalid={!!state.errors?.givenName}
@@ -107,6 +109,8 @@ export function SignUpForm({
                   type="text"
                   name="familyName"
                   placeholder="Doe"
+                  autoComplete="family-name"
+                  inputMode="text"
                   value={formValues.familyName}
                   onChange={handleChange}
                   required
@@ -126,6 +130,8 @@ export function SignUpForm({
                   type="email"
                   name="email"
                   placeholder="m@example.com"
+                  autoComplete="email"
+                  inputMode="email"
                   value={formValues.email}
                   onChange={handleChange}
                   required
@@ -144,6 +150,8 @@ export function SignUpForm({
                   id="password"
                   type="password"
                   name="password"
+                  autoComplete="new-password"
+                  inputMode="text"
                   value={formValues.password}
                   onChange={handleChange}
                   className={cn(
@@ -218,6 +226,8 @@ export function SignUpForm({
                     id="confirmPassword"
                     type="password"
                     name="confirmPassword"
+                    autoComplete="new-password"
+                    inputMode="text"
                     value={formValues.confirmPassword}
                     onChange={handleChange}
                     className={cn(

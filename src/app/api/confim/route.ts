@@ -3,6 +3,7 @@ import { type NextRequest } from "next/server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+// Creating a handler to a GET request to route /auth/confirm
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
@@ -19,9 +20,12 @@ export async function GET(request: NextRequest) {
     if (!error) {
       // redirect user to specified redirect URL or root of app
       redirect(next);
+    } else {
+      // redirect the user to an error page with some instructions
+      redirect(`/auth/error?error=${error?.message}`);
     }
   }
 
   // redirect the user to an error page with some instructions
-  redirect("/error");
+  redirect(`/auth/error?error=No token hash or type`);
 }

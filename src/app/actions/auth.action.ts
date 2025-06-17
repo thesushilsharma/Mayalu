@@ -98,7 +98,6 @@ export async function signUpAction(
       email,
       password,
       options: {
-         //emailRedirectTo: `${APP_URL}/api/callback`,
         data: {
           givenName,
           familyName,
@@ -106,7 +105,11 @@ export async function signUpAction(
       },
     });
 
-    console.log({ data, error })
+    if (error) {
+      return {
+        errors: { form: error.message },
+      };
+    }
 
     if (data.user?.identities?.length === 0) {
       return {

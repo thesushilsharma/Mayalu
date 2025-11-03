@@ -1,0 +1,40 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { createContext, useEffect, useState } from "react";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import { Toaster } from "@/components/ui/sonner";
+import { auth } from "@/lib/firebase/firebase";
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+}
+
+export const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+});
+
+export function Providers({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const value = { user, loading };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      <Toaster />
+    </AuthContext.Provider>
+  );
+}

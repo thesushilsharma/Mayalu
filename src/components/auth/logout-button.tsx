@@ -1,17 +1,33 @@
 "use client"
 
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { logout } from "@/lib/firebase/auth-client"
+import { useState } from "react"
 
 export function LogoutButton() {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
 
-  const logout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/auth/login")
+  const handleLogout = async () => {
+    setIsLoading(true)
+    try {
+      const result = await logout()
+      if (result.success) {
+        router.push("/auth/login")
+      } else {
+        console.error("Logout failed:", result.error)
+      }
+    } catch (error) {
+      console.error("Logout error:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  return <Button onClick={logout}>Logout</Button>
+  return (
+    <Button onClick={handleLogout} disabled={isLoading}>
+      {isLoading ? "Logging out..." : "Logout"}
+    </Button>
+  )
 }

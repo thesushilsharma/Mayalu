@@ -9,12 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Field, FieldContent, FieldLabel, FieldError, FieldDescription } from "@/components/ui/field"
 import { CheckCircle2, XCircle } from "lucide-react"
-import Link from "next/link"
 import { validatePasswordStrength } from "@/lib/validations/authHelper"
-import { signUpAction } from "@/lib/firebase/auth-actions"
+import { updatePasswordAction } from "@/lib/firebase/auth-actions"
 
-export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
-  const [state, formAction, isPending] = useActionState(signUpAction, null)
+export function UpdatePasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
+  const [state, formAction, isPending] = useActionState(updatePasswordAction, null)
   const [optimisticState, addOptimistic] = useOptimistic(
     { isSubmitting: false, success: false },
     (state, newState: { isSubmitting?: boolean; success?: boolean }) => ({
@@ -52,9 +51,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    if (name === "password" || name === "confirmPassword") {
-      setFormData(prev => ({ ...prev, [name]: value }))
-    }
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (formData: FormData) => {
@@ -63,30 +60,23 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
     addOptimistic({ isSubmitting: false, success: true })
   }
 
-  const givenNameErrors = state?.error?.givenName
-  const familyNameErrors = state?.error?.familyName
-  const emailErrors = state?.error?.email
   const passwordErrors = state?.error?.password
   const confirmPasswordErrors = state?.error?.confirmPassword
   const formError = state?.error?.form
+  const isFormValid = passwordValidation.isValid && passwordsMatch
 
   if (state?.success || optimisticState.success) {
     return (
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Account Created</CardTitle>
-            <CardDescription>Your account has been successfully created.</CardDescription>
+            <CardTitle className="text-2xl">Password Updated</CardTitle>
+            <CardDescription>Your password has been successfully updated.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2 text-green-600">
               <CheckCircle2 className="h-5 w-5" />
-              <p>Account created successfully!</p>
-            </div>
-            <div className="mt-4 text-center">
-              <Link href="/auth/login" className="underline underline-offset-4">
-                Go to login
-              </Link>
+              <p>Password updated successfully!</p>
             </div>
           </CardContent>
         </Card>
@@ -98,64 +88,20 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Sign Up</CardTitle>
-          <CardDescription>Create your account below</CardDescription>
+          <CardTitle className="text-2xl">Reset Your Password</CardTitle>
+          <CardDescription>Please enter your new password below.</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={handleSubmit}>
             <div className="flex flex-col gap-6">
-              <div className="grid grid-cols-2 gap-4">
-                <Field>
-                  <FieldContent>
-                    <FieldLabel htmlFor="givenName">First name</FieldLabel>
-                    <Input
-                      id="givenName"
-                      name="givenName"
-                      placeholder="John"
-                      required
-                      aria-invalid={!!givenNameErrors}
-                    />
-                    <FieldError errors={givenNameErrors?.map(error => ({ message: error }))} />
-                  </FieldContent>
-                </Field>
-
-                <Field>
-                  <FieldContent>
-                    <FieldLabel htmlFor="familyName">Last name</FieldLabel>
-                    <Input
-                      id="familyName"
-                      name="familyName"
-                      placeholder="Doe"
-                      required
-                      aria-invalid={!!familyNameErrors}
-                    />
-                    <FieldError errors={familyNameErrors?.map(error => ({ message: error }))} />
-                  </FieldContent>
-                </Field>
-              </div>
-
               <Field>
                 <FieldContent>
-                  <FieldLabel htmlFor="email">Email</FieldLabel>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                    aria-invalid={!!emailErrors}
-                  />
-                  <FieldError errors={emailErrors?.map(error => ({ message: error }))} />
-                </FieldContent>
-              </Field>
-
-              <Field>
-                <FieldContent>
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <FieldLabel htmlFor="password">New password</FieldLabel>
                   <Input
                     id="password"
                     name="password"
                     type="password"
+                    placeholder="New password"
                     required
                     value={formData.password}
                     onChange={handleInputChange}
@@ -262,12 +208,13 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
 
               <Field>
                 <FieldContent>
-                  <FieldLabel htmlFor="confirmPassword">Confirm password</FieldLabel>
+                  <FieldLabel htmlFor="confirmPassword">Confirm new password</FieldLabel>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
                       name="confirmPassword"
                       type="password"
+                      placeholder="Confirm new password"
                       required
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
@@ -309,17 +256,10 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isPending || optimisticState.isSubmitting || !passwordValidation.isValid || !passwordsMatch}
+                disabled={isPending || optimisticState.isSubmitting || !isFormValid}
               >
-                {isPending || optimisticState.isSubmitting ? "Creating account..." : "Create account"}
+                {isPending || optimisticState.isSubmitting ? "Saving..." : "Save new password"}
               </Button>
-            </div>
-            
-            <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
-              <Link href="/auth/login" className="underline underline-offset-4">
-                Login
-              </Link>
             </div>
           </form>
         </CardContent>

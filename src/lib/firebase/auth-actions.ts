@@ -1,41 +1,67 @@
 "use server"
 
 import { 
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  confirmPasswordReset,
-  updatePassword,
-  reauthenticateWithCredential,
   EmailAuthProvider,
-  type User
+  createUserWithEmailAndPassword,
+  reauthenticateWithCredential,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  updatePassword,
+  updateProfile
 } from "firebase/auth"
 import { auth } from "./firebase"
 import { 
+  changePasswordSchema,
+  forgotPasswordSchema, 
   loginSchema, 
   signUpSchema, 
-  forgotPasswordSchema, 
-  updatePasswordSchema,
-  changePasswordSchema,
-  type LoginFormValues,
-  type SignUpFormValues,
-  type ForgotPasswordFormValues,
-  type UpdatePasswordFormValues,
-  type ChangePasswordFormValues
+  updatePasswordSchema
 } from "@/lib/validations/auth"
-import { redirect } from "next/navigation"
+import { ZodError } from "zod"
 
 export type ActionState = {
   error?: {
     [key: string]: string[]
-    form?: string
+  } & {
+    form?: string[]
   }
   success?: boolean
   message?: string
 }
 
+type FirebaseAuthError = {
+  code: string
+  message: string
+}
+
+function getAuthErrorMessage(error: FirebaseAuthError): string {
+  switch (error.code) {
+    case "auth/user-not-found":
+    case "auth/wrong-password":
+    case "auth/invalid-credential":
+      return "Invalid email or password"
+    case "auth/email-already-in-use":
+      return "An account with this email already exists"
+    case "auth/weak-password":
+      return "Password is too weak. Please choose a stronger password"
+    case "auth/too-many-requests":
+      return "Too many failed attempts. Please try again later"
+    case "auth/user-disabled":
+      return "This account has been disabled"
+    case "auth/invalid-email":
+      return "Invalid email address"
+    case "auth/requires-recent-login":
+      return "Please log in again to perform this action"
+    case "auth/network-request-failed":
+      return "Network error. Please check your connection"
+    default:
+      return error.message || "An unexpected error occurred"
+  }
+}
+
 export async function loginAction(
-  prevState: ActionState | null,
+  _prevState: ActionState | null,
   formData: FormData
 ): Promise<ActionState> {
   try {
@@ -46,34 +72,36 @@ export async function loginAction(
 
     const validatedData = loginSchema.parse(rawData)
     
-    await signInWithEmailAndPassword(auth, validatedData.email, validatedData.password)
+    const userCredential = await signInWithEmailAndPassword(auth, validatedData.email, validatedData.password)
+    
+    // Check if email is verified - allow login but show verification status
+    if (!userCredential.user.emailVerified) {
+      // Keep user signed in but indicate they need to verify
+      return {
+        success: true,
+        message: "Please verify your email address to access all features. Check your inbox for a verification link."
+      }
+    }
     
     return { success: true, message: "Login successful" }
-  } catch (error: any) {
-    if (error.name === "ZodError") {
+  } catch (error: unknown) {
+    if (error instanceof ZodError) {
       return {
         error: error.flatten().fieldErrors,
       }
     }
 
-    // Firebase auth errors
-    let errorMessage = "Login failed"
-    if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
-      errorMessage = "Invalid email or password"
-    } else if (error.code === "auth/too-many-requests") {
-      errorMessage = "Too many failed attempts. Please try again later."
-    }
-
+    const authError = error as FirebaseAuthError
     return {
       error: {
-        form: errorMessage,
+        form: [getAuthErrorMessage(authError)],
       },
     }
   }
 }
 
 export async function signUpAction(
-  prevState: ActionState | null,
+  _prevState: ActionState | null,
   formData: FormData
 ): Promise<ActionState> {
   try {
@@ -87,34 +115,46 @@ export async function signUpAction(
 
     const validatedData = signUpSchema.parse(rawData)
     
-    await createUserWithEmailAndPassword(auth, validatedData.email, validatedData.password)
+    const userCredential = await createUserWithEmailAndPassword(
+      auth, 
+      validatedData.email, 
+      validatedData.password
+    )
     
-    return { success: true, message: "Account created successfully" }
-  } catch (error: any) {
-    if (error.name === "ZodError") {
+    // Update user profile with display name
+    if (userCredential.user) {
+      await updateProfile(userCredential.user, {
+        displayName: `${validatedData.givenName} ${validatedData.familyName}`,
+      })
+      
+      // Send email verification but keep user signed in
+      // Use the Firebase action handler URL for better compatibility
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      await sendEmailVerification(userCredential.user, {
+        url: `${baseUrl}/auth/action`,
+        handleCodeInApp: false,
+      })
+    }
+    
+    return { success: true, message: "Account created successfully. Please check your email to verify your account." }
+  } catch (error: unknown) {
+    if (error instanceof ZodError) {
       return {
         error: error.flatten().fieldErrors,
       }
     }
 
-    // Firebase auth errors
-    let errorMessage = "Sign up failed"
-    if (error.code === "auth/email-already-in-use") {
-      errorMessage = "An account with this email already exists"
-    } else if (error.code === "auth/weak-password") {
-      errorMessage = "Password is too weak"
-    }
-
+    const authError = error as FirebaseAuthError
     return {
       error: {
-        form: errorMessage,
+        form: [getAuthErrorMessage(authError)],
       },
     }
   }
 }
 
 export async function forgotPasswordAction(
-  prevState: ActionState | null,
+  _prevState: ActionState | null,
   formData: FormData
 ): Promise<ActionState> {
   try {
@@ -129,29 +169,24 @@ export async function forgotPasswordAction(
     })
     
     return { success: true, message: "Password reset email sent" }
-  } catch (error: any) {
-    if (error.name === "ZodError") {
+  } catch (error: unknown) {
+    if (error instanceof ZodError) {
       return {
         error: error.flatten().fieldErrors,
       }
     }
 
-    // Firebase auth errors
-    let errorMessage = "Failed to send reset email"
-    if (error.code === "auth/user-not-found") {
-      errorMessage = "No account found with this email address"
-    }
-
+    const authError = error as FirebaseAuthError
     return {
       error: {
-        form: errorMessage,
+        form: [getAuthErrorMessage(authError)],
       },
     }
   }
 }
 
 export async function updatePasswordAction(
-  prevState: ActionState | null,
+  _prevState: ActionState | null,
   formData: FormData
 ): Promise<ActionState> {
   try {
@@ -168,7 +203,7 @@ export async function updatePasswordAction(
     if (!user) {
       return {
         error: {
-          form: "User not authenticated",
+          form: ["User not authenticated"],
         },
       }
     }
@@ -176,28 +211,24 @@ export async function updatePasswordAction(
     await updatePassword(user, validatedData.password)
     
     return { success: true, message: "Password updated successfully" }
-  } catch (error: any) {
-    if (error.name === "ZodError") {
+  } catch (error: unknown) {
+    if (error instanceof ZodError) {
       return {
         error: error.flatten().fieldErrors,
       }
     }
 
-    let errorMessage = "Failed to update password"
-    if (error.code === "auth/requires-recent-login") {
-      errorMessage = "Please log in again to update your password"
-    }
-
+    const authError = error as FirebaseAuthError
     return {
       error: {
-        form: errorMessage,
+        form: [getAuthErrorMessage(authError)],
       },
     }
   }
 }
 
 export async function changePasswordAction(
-  prevState: ActionState | null,
+  _prevState: ActionState | null,
   formData: FormData
 ): Promise<ActionState> {
   try {
@@ -213,7 +244,7 @@ export async function changePasswordAction(
     if (!user || !user.email) {
       return {
         error: {
-          form: "User not authenticated",
+          form: ["User not authenticated"],
         },
       }
     }
@@ -226,23 +257,83 @@ export async function changePasswordAction(
     await updatePassword(user, validatedData.newPassword)
     
     return { success: true, message: "Password changed successfully" }
-  } catch (error: any) {
-    if (error.name === "ZodError") {
+  } catch (error: unknown) {
+    if (error instanceof ZodError) {
       return {
         error: error.flatten().fieldErrors,
       }
     }
 
-    let errorMessage = "Failed to change password"
-    if (error.code === "auth/wrong-password") {
-      errorMessage = "Current password is incorrect"
-    } else if (error.code === "auth/requires-recent-login") {
-      errorMessage = "Please log in again to change your password"
-    }
-
+    const authError = error as FirebaseAuthError
     return {
       error: {
-        form: errorMessage,
+        form: [getAuthErrorMessage(authError)],
+      },
+    }
+  }
+}
+
+export async function resendEmailVerificationAction(): Promise<ActionState> {
+  try {
+    const user = auth.currentUser
+    if (!user) {
+      return {
+        error: {
+          form: ["User not authenticated"],
+        },
+      }
+    }
+
+    if (user.emailVerified) {
+      return {
+        error: {
+          form: ["Email is already verified"],
+        },
+      }
+    }
+
+    await sendEmailVerification(user, {
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/auth/login`,
+      handleCodeInApp: false,
+    })
+    
+    return { success: true, message: "Verification email sent successfully" }
+  } catch (error: unknown) {
+    const authError = error as FirebaseAuthError
+    return {
+      error: {
+        form: [getAuthErrorMessage(authError)],
+      },
+    }
+  }
+}
+
+export async function resendEmailVerificationByEmailAction(
+  _prevState: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    const email = formData.get("email") as string
+    
+    if (!email) {
+      return {
+        error: {
+          form: ["Email address is required"],
+        },
+      }
+    }
+
+    // For non-authenticated users, we can't directly resend verification
+    // But we can provide helpful guidance and suggest they try signing in
+    return { 
+      success: true, 
+      message: "If an account with this email exists and needs verification, please try signing in. You'll be prompted to verify your email and can resend from there." 
+    }
+  } catch (error: unknown) {
+    const authError = error as FirebaseAuthError
+    return {
+      error: {
+        form: [getAuthErrorMessage(authError)],
       },
     }
   }

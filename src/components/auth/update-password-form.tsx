@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Field, FieldContent, FieldLabel, FieldError, FieldDescription } from "@/components/ui/field"
+import { Field, FieldContent, FieldLabel, FieldError } from "@/components/ui/field"
 import { CheckCircle2, XCircle } from "lucide-react"
 import { validatePasswordStrength } from "@/lib/validations/authHelper"
 import { updatePasswordAction } from "@/lib/firebase/auth-actions"
@@ -115,91 +115,89 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
                   />
                   
                   {formData.password && (
-                    <FieldDescription>
-                      <div className="space-y-2">
-                        <p className="font-medium">Password must:</p>
-                        <ul className="space-y-1 pl-2">
-                          <li
-                            className={cn(
-                              "flex items-center gap-2",
-                              passwordValidation.results.minLength ? "text-green-500" : "text-red-500",
-                            )}
-                          >
-                            {passwordValidation.results.minLength ? (
-                              <CheckCircle2 className="h-4 w-4" />
-                            ) : (
-                              <XCircle className="h-4 w-4" />
-                            )}
-                            Be at least 12 characters
-                          </li>
-                          <li
-                            className={cn(
-                              "flex items-center gap-2",
-                              passwordValidation.results.maxLength ? "text-green-500" : "text-red-500",
-                            )}
-                          >
-                            {passwordValidation.results.maxLength ? (
-                              <CheckCircle2 className="h-4 w-4" />
-                            ) : (
-                              <XCircle className="h-4 w-4" />
-                            )}
-                            Be at most 64 characters
-                          </li>
-                          <li
-                            className={cn(
-                              "flex items-center gap-2",
-                              passwordValidation.results.hasUppercase ? "text-green-500" : "text-red-500",
-                            )}
-                          >
-                            {passwordValidation.results.hasUppercase ? (
-                              <CheckCircle2 className="h-4 w-4" />
-                            ) : (
-                              <XCircle className="h-4 w-4" />
-                            )}
-                            Include at least one uppercase letter
-                          </li>
-                          <li
-                            className={cn(
-                              "flex items-center gap-2",
-                              passwordValidation.results.hasLowercase ? "text-green-500" : "text-red-500",
-                            )}
-                          >
-                            {passwordValidation.results.hasLowercase ? (
-                              <CheckCircle2 className="h-4 w-4" />
-                            ) : (
-                              <XCircle className="h-4 w-4" />
-                            )}
-                            Include at least one lowercase letter
-                          </li>
-                          <li
-                            className={cn(
-                              "flex items-center gap-2",
-                              passwordValidation.results.hasNumber ? "text-green-500" : "text-red-500",
-                            )}
-                          >
-                            {passwordValidation.results.hasNumber ? (
-                              <CheckCircle2 className="h-4 w-4" />
-                            ) : (
-                              <XCircle className="h-4 w-4" />
-                            )}
-                            Include at least one number
-                          </li>
-                          <li
-                            className={cn(
-                              "flex items-center gap-2",
-                              passwordValidation.results.hasSpecialChar ? "text-green-500" : "text-red-500",
-                            )}
-                          >
-                            {passwordValidation.results.hasSpecialChar ? (
-                              <CheckCircle2 className="h-4 w-4" />
-                            ) : (
-                              <XCircle className="h-4 w-4" />
-                            )}
-                            Include at least one special character (!@#$%^&*())
-                          </li>
-                        </ul>
-                      </div>
-                    </FieldDescription>
+                    <div className="mt-2 space-y-2">
+                      <div className="text-sm font-medium text-muted-foreground">Password must:</div>
+                      <ul className="space-y-1 text-sm">
+                        <li
+                          className={cn(
+                            "flex items-center gap-2",
+                            passwordValidation.results.minLength ? "text-green-500" : "text-red-500",
+                          )}
+                        >
+                          {passwordValidation.results.minLength ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )}
+                          Be at least 12 characters
+                        </li>
+                        <li
+                          className={cn(
+                            "flex items-center gap-2",
+                            passwordValidation.results.maxLength ? "text-green-500" : "text-red-500",
+                          )}
+                        >
+                          {passwordValidation.results.maxLength ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )}
+                          Be at most 64 characters
+                        </li>
+                        <li
+                          className={cn(
+                            "flex items-center gap-2",
+                            passwordValidation.results.hasUppercase ? "text-green-500" : "text-red-500",
+                          )}
+                        >
+                          {passwordValidation.results.hasUppercase ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )}
+                          Include at least one uppercase letter
+                        </li>
+                        <li
+                          className={cn(
+                            "flex items-center gap-2",
+                            passwordValidation.results.hasLowercase ? "text-green-500" : "text-red-500",
+                          )}
+                        >
+                          {passwordValidation.results.hasLowercase ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )}
+                          Include at least one lowercase letter
+                        </li>
+                        <li
+                          className={cn(
+                            "flex items-center gap-2",
+                            passwordValidation.results.hasNumber ? "text-green-500" : "text-red-500",
+                          )}
+                        >
+                          {passwordValidation.results.hasNumber ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )}
+                          Include at least one number
+                        </li>
+                        <li
+                          className={cn(
+                            "flex items-center gap-2",
+                            passwordValidation.results.hasSpecialChar ? "text-green-500" : "text-red-500",
+                          )}
+                        >
+                          {passwordValidation.results.hasSpecialChar ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )}
+                          Include at least one special character (!@#$%^&*())
+                        </li>
+                      </ul>
+                    </div>
                   )}
                   
                   <FieldError errors={passwordErrors?.map(error => ({ message: error }))} />
@@ -238,9 +236,9 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
                   </div>
                   
                   {formData.confirmPassword && !passwordsMatch && (
-                    <FieldDescription className="text-red-500">
+                    <div className="mt-2 text-sm text-red-500">
                       Passwords need to match
-                    </FieldDescription>
+                    </div>
                   )}
                   
                   <FieldError errors={confirmPasswordErrors?.map(error => ({ message: error }))} />
@@ -248,9 +246,7 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
               </Field>
 
               {formError && (
-                <FieldError>
-                  {formError}
-                </FieldError>
+                <FieldError errors={formError.map(error => ({ message: error }))} />
               )}
               
               <Button 

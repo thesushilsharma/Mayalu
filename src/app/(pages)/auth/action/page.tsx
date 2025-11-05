@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { applyActionCode, checkActionCode, confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth"
 import { auth } from "@/lib/firebase/firebase"
@@ -13,7 +13,8 @@ import { toast } from "sonner"
 
 type ActionState = "loading" | "success" | "error" | "invalid"
 
-export default function AuthActionPage() {
+// Separate component that uses useSearchParams
+function AuthActionContent() {
   const [state, setState] = useState<ActionState>("loading")
   const [errorMessage, setErrorMessage] = useState("")
   const [actionType, setActionType] = useState("")
@@ -234,5 +235,39 @@ export default function AuthActionPage() {
     >
       {renderContent()}
     </AuthLayout>
+  )
+}
+
+// Loading fallback component
+function AuthActionLoading() {
+  return (
+    <AuthLayout 
+      title="Authentication Action"
+      subtitle="Processing your request"
+    >
+      <Card>
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
+            <Loader2 className="h-6 w-6 text-blue-600 dark:text-blue-400 animate-spin" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Loading...</CardTitle>
+          <CardDescription>Please wait while we load your request</CardDescription>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="text-sm text-muted-foreground">
+            This should only take a moment...
+          </p>
+        </CardContent>
+      </Card>
+    </AuthLayout>
+  )
+}
+
+// Main page component with Suspense boundary
+export default function AuthActionPage() {
+  return (
+    <Suspense fallback={<AuthActionLoading />}>
+      <AuthActionContent />
+    </Suspense>
   )
 }

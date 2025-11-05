@@ -10,12 +10,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Field, FieldContent, FieldLabel, FieldError } from "@/components/ui/field"
-import { CheckCircle2, XCircle, Loader2, Eye, EyeOff } from "lucide-react"
+import { CheckCircle2, XCircle, Loader2, Eye, EyeOff, Mail, RefreshCw, User } from "lucide-react"
 import Link from "next/link"
 import { validatePasswordStrength } from "@/lib/validations/authHelper"
 import { signUpAction } from "@/lib/firebase/auth-actions"
+import { sendEmailVerification, onAuthStateChanged } from "firebase/auth"
+import { auth } from "@/lib/firebase/firebase"
 
-export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
+interface SignUpFormProps extends React.ComponentPropsWithoutRef<"div"> {
+  onSuccess?: (userData: { email: string; password: string; givenName: string; familyName: string }) => void
+  onFormData?: (formData: FormData) => { email: string; password: string; givenName: string; familyName: string }
+}
+
+export function SignUpForm({ className, onSuccess, onFormData, ...props }: SignUpFormProps) {
   const [state, formAction, isPending] = useActionState(signUpAction, null)
   const [optimisticState, addOptimistic] = useOptimistic(
     { isSubmitting: false, success: false },
@@ -27,6 +34,9 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
   const router = useRouter()
   
   const [formData, setFormData] = useState({
+    givenName: "",
+    familyName: "",
+    email: "",
     password: "",
     confirmPassword: "",
   })
@@ -51,18 +61,27 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
   // Handle successful signup
   useEffect(() => {
     if (state?.success) {
-      toast.success("Account created successfully!")
-      // Store email for resend functionality
-      const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement
-      if (emailInput?.value) {
-        sessionStorage.setItem('pendingVerificationEmail', emailInput.value)
+      if (onSuccess) {
+        // If callback provided, use it instead of default behavior
+        const userData = {
+          email: formData.email || "",
+          password: formData.password || "",
+          givenName: formData.givenName || "",
+          familyName: formData.familyName || ""
+        }
+        onSuccess(userData)
+      } else {
+        // Default behavior
+        toast.success("Account created successfully!")
+        // Store email for resend functionality
+        const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement
+        if (emailInput?.value) {
+          sessionStorage.setItem('pendingVerificationEmail', emailInput.value)
+        }
+        //show msg to check email or resend email (sendEmailVerification)
       }
-      // Redirect to email verification page
-      setTimeout(() => {
-        router.push("/auth/sign-up-success")
-      }, 1000)
     }
-  }, [state?.success, state?.message, router])
+  }, [state?.success, state?.message, router, onSuccess, formData])
 
   // Handle form errors
   useEffect(() => {
@@ -83,9 +102,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    if (name === "password" || name === "confirmPassword") {
-      setFormData(prev => ({ ...prev, [name]: value }))
-    }
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (formData: FormData) => {
@@ -102,27 +119,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
   const formError = state?.error?.form
 
   if (state?.success || optimisticState.success) {
-    return (
-      <div className={cn("flex flex-col gap-6", className)} {...props}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Account Created</CardTitle>
-            <CardDescription>Your account has been successfully created.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-green-600">
-              <CheckCircle2 className="h-5 w-5" />
-              <p>Account created successfully!</p>
-            </div>
-            <div className="mt-4 text-center">
-              <Link href="/auth/login" className="underline underline-offset-4">
-                Go to login
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <SignUpSuccessState formData={formData} className={className} {...props} />
   }
 
   return (
@@ -145,6 +142,8 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                       placeholder="John"
                       required
                       autoComplete="given-name"
+                      value={formData.givenName}
+                      onChange={handleInputChange}
                       aria-invalid={!!givenNameErrors}
                       className={cn(givenNameErrors && "border-destructive focus-visible:ring-destructive")}
                     />
@@ -161,6 +160,8 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                       placeholder="Doe"
                       required
                       autoComplete="family-name"
+                      value={formData.familyName}
+                      onChange={handleInputChange}
                       aria-invalid={!!familyNameErrors}
                       className={cn(familyNameErrors && "border-destructive focus-visible:ring-destructive")}
                     />
@@ -179,6 +180,8 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                     placeholder="Enter your email"
                     required
                     autoComplete="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     aria-invalid={!!emailErrors}
                     className={cn(emailErrors && "border-destructive focus-visible:ring-destructive")}
                   />
@@ -405,6 +408,209 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
               </Link>
             </div>
           </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Success state component with email verification functionality
+function SignUpSuccessState({ 
+  formData, 
+  className, 
+  ...props 
+}: { 
+  formData: { givenName: string; familyName: string; email: string; password: string; confirmPassword: string }
+  className?: string 
+} & React.ComponentPropsWithoutRef<"div">) {
+  const [isResending, setIsResending] = useState(false)
+  const [authState, setAuthState] = useState<string>("checking")
+
+  useEffect(() => {
+    // Listen to auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setAuthState("authenticated")
+      } else {
+        setAuthState("not-authenticated")
+      }
+    })
+
+    return () => unsubscribe()
+  }, [])
+
+  const handleResendVerification = async () => {
+    setIsResending(true)
+    
+    try {
+      // Method 1: Try with current authenticated user
+      if (auth.currentUser) {
+        await auth.currentUser.reload()
+        const currentUser = auth.currentUser
+        
+        if (currentUser.emailVerified) {
+          toast.success("Your email is already verified!")
+          return
+        }
+
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL
+        
+        await sendEmailVerification(currentUser, {
+          url: `${baseUrl}/auth/action`,
+          handleCodeInApp: false,
+        })
+        
+        toast.success("Verification email sent successfully! Check your inbox.")
+        return
+      }
+
+      // Method 2: If no authenticated user, try to sign in with form data
+      if (formData.email && formData.password) {
+        const { signInWithEmailAndPassword } = await import("firebase/auth")
+        
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password)
+          
+          if (userCredential.user.emailVerified) {
+            toast.success("Your email is already verified!")
+            return
+          }
+
+          const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL
+          
+          await sendEmailVerification(userCredential.user, {
+            url: `${baseUrl}/auth/action`,
+            handleCodeInApp: false,
+          })
+          
+          toast.success("Verification email sent successfully! Check your inbox.")
+          return
+        } catch (signInError: any) {
+          console.error("Sign-in for resend failed:", signInError)
+          toast.error("Failed to resend verification email. Please try signing in manually.")
+        }
+      }
+
+      toast.error("Unable to resend verification email. Please try signing in.")
+      
+    } catch (error: any) {
+      console.error("Resend verification error:", error)
+      
+      if (error.code === "auth/too-many-requests") {
+        toast.error("Too many requests. Please wait a few minutes before trying again.")
+      } else if (error.code === "auth/network-request-failed") {
+        toast.error("Network error. Please check your connection and try again.")
+      } else {
+        toast.error("Failed to resend verification email. Please try again.")
+      }
+    } finally {
+      setIsResending(false)
+    }
+  }
+
+  return (
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <Card>
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+            <Mail className="h-6 w-6 text-green-600 dark:text-green-400" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+          <CardDescription>
+            We&apos;ve sent a verification link to {formData.email}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Success message */}
+          <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                  Account created successfully!
+                </p>
+                <p className="text-sm text-green-700 dark:text-green-200">
+                  Please check your email and click the verification link to activate your account.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Account details */}
+          <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                Account Details
+              </p>
+            </div>
+            <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+              <p><strong>Name:</strong> {formData.givenName} {formData.familyName}</p>
+              <p><strong>Email:</strong> {formData.email}</p>
+              <p><strong>Status:</strong> {authState === "authenticated" ? "Signed in - Verification pending" : "Account created - Please verify email"}</p>
+            </div>
+          </div>
+
+          {/* Instructions */}
+          <div className="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 p-4">
+            <div className="text-sm text-yellow-800 dark:text-yellow-200">
+              <p className="font-medium mb-2">📧 What to do next:</p>
+              <ol className="list-decimal list-inside space-y-1 ml-2">
+                <li>Check your email inbox for a verification message</li>
+                <li>Click the verification link in the email</li>
+                <li>Return here and sign in to your account</li>
+              </ol>
+              <p className="mt-2 text-xs">
+                Don&apos;t see the email? Check your spam folder or click resend below.
+              </p>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="space-y-4">
+            <Button 
+              onClick={handleResendVerification}
+              disabled={isResending}
+              variant="outline"
+              className="w-full"
+            >
+              {isResending ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Sending verification email...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Resend verification email
+                </>
+              )}
+            </Button>
+
+            <div className="flex gap-3">
+              <Button asChild variant="default" className="flex-1">
+                <Link href="/auth/login">
+                  Continue to sign in
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="flex-1">
+                <Link href="/auth/sign-up">
+                  Create another account
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Help text */}
+          <div className="text-center text-xs text-muted-foreground">
+            <p>
+              Having trouble? Contact{" "}
+              <a href="mailto:support@example.com" className="underline hover:text-primary">
+                support
+              </a>{" "}
+              for assistance.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

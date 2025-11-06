@@ -3,7 +3,7 @@
 import type React from "react"
 import { useActionState, useOptimistic } from "react"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -31,7 +31,7 @@ export function SignUpForm({ className, onSuccess, onFormData, ...props }: SignU
       ...newState,
     })
   )
-  const router = useRouter()
+
   
   const [formData, setFormData] = useState({
     givenName: "",
@@ -81,7 +81,7 @@ export function SignUpForm({ className, onSuccess, onFormData, ...props }: SignU
         //show msg to check email or resend email (sendEmailVerification)
       }
     }
-  }, [state?.success, state?.message, router, onSuccess, formData])
+  }, [state?.success, onSuccess, formData])
 
   // Handle form errors
   useEffect(() => {
@@ -456,7 +456,7 @@ function SignUpSuccessState({
         const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL
         
         await sendEmailVerification(currentUser, {
-          url: `${baseUrl}/auth/action`,
+          url: `${baseUrl}/auth/verify-email`,
           handleCodeInApp: false,
         })
         
@@ -479,7 +479,7 @@ function SignUpSuccessState({
           const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL
           
           await sendEmailVerification(userCredential.user, {
-            url: `${baseUrl}/auth/action`,
+            url: `${baseUrl}/auth/verify-email`,
             handleCodeInApp: false,
           })
           

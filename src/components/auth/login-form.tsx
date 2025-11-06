@@ -34,11 +34,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       if (state.message?.includes("verify your email")) {
         // User logged in but needs email verification
         toast.warning(state.message)
-        router.push("/auth/sign-up-success")
       } else {
         // Normal successful login
         toast.success(state.message || "Login successful!")
-        router.push("/dashboard")
+        router.push("/account/dashboard")
       }
     }
   }, [state?.success, state?.message, router])

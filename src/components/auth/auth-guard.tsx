@@ -31,7 +31,7 @@ export function AuthGuard({
         // Check if user needs email verification
         if (!user.emailVerified) {
           setIsRedirecting(true)
-          router.push("/auth/sign-up-success")
+          router.push("/auth/sign-up")
         } else {
           setIsRedirecting(true)
           router.push("/dashboard")

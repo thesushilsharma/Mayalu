@@ -119,7 +119,7 @@ export async function signUpAction(
 
     if (data.user && !data.user.email_confirmed_at) {
       revalidatePath('/', 'layout');
-      redirect('/auth/sign-up-success');
+      redirect('/auth/sign-up');
     }
 
     return { success: true, message: 'Sign-up successful.' };

@@ -19,6 +19,7 @@ import {
   updatePasswordSchema
 } from "@/lib/validations/auth"
 import { ZodError } from "zod"
+import { loginLimiter, signupLimiter, forgotPasswordLimiter, resendVerificationLimiter } from "@/lib/RateLimiter/limiter"
 
 export type ActionState = {
   error?: {
@@ -65,6 +66,15 @@ export async function loginAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
+    // Check rate limit
+    if (!(await loginLimiter.removeTokens(1))) {
+      return { 
+        error: { 
+          form: ['Too many login attempts. Please try again later.'] 
+        } 
+      }
+    }
+
     const rawData = {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
@@ -105,6 +115,15 @@ export async function signUpAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
+    // Check rate limit
+    if (!(await signupLimiter.removeTokens(1))) {
+      return { 
+        error: { 
+          form: ['Too many signup attempts. Please try again later.'] 
+        } 
+      }
+    }
+
     const rawData = {
       givenName: formData.get("givenName") as string,
       familyName: formData.get("familyName") as string,
@@ -131,7 +150,7 @@ export async function signUpAction(
       // Use the Firebase action handler URL for better compatibility
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
       await sendEmailVerification(userCredential.user, {
-        url: `${baseUrl}/auth/action`,
+        url: `${baseUrl}/auth/verify-email`,
         handleCodeInApp: false,
       })
     }
@@ -158,6 +177,15 @@ export async function forgotPasswordAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
+    // Check rate limit
+    if (!(await forgotPasswordLimiter.removeTokens(1))) {
+      return { 
+        error: { 
+          form: ['Too many password reset attempts. Please try again later.'] 
+        } 
+      }
+    }
+
     const rawData = {
       email: formData.get("email") as string,
     }
@@ -275,6 +303,15 @@ export async function changePasswordAction(
 
 export async function resendEmailVerificationAction(): Promise<ActionState> {
   try {
+    // Check rate limit
+    if (!(await resendVerificationLimiter.removeTokens(1))) {
+      return { 
+        error: { 
+          form: ['Too many verification email requests. Please try again later.'] 
+        } 
+      }
+    }
+
     const user = auth.currentUser
     if (!user) {
       return {

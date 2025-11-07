@@ -29,6 +29,10 @@ export type ActionState = {
   }
   success?: boolean
   message?: string
+  data?: {
+    email: string
+    password: string
+  }
 }
 
 type FirebaseAuthError = {
@@ -82,18 +86,15 @@ export async function loginAction(
 
     const validatedData = loginSchema.parse(rawData)
     
-    const userCredential = await signInWithEmailAndPassword(auth, validatedData.email, validatedData.password)
+    // Note: This is a server action but Firebase Auth needs to happen on client
+    // The client will get the ID token and send it to create a session cookie
+    // This action is kept for validation purposes
     
-    // Check if email is verified - allow login but show verification status
-    if (!userCredential.user.emailVerified) {
-      // Keep user signed in but indicate they need to verify
-      return {
-        success: true,
-        message: "Please verify your email address to access all features. Check your inbox for a verification link."
-      }
+    return { 
+      success: true, 
+      message: "Validation successful",
+      data: validatedData 
     }
-    
-    return { success: true, message: "Login successful" }
   } catch (error: unknown) {
     if (error instanceof ZodError) {
       return {

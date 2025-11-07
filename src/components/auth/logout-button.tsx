@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-context"
 import { LogOut, Loader2 } from "lucide-react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { removeSessionCookie } from "@/lib/firebase/auth-server"
 
 interface LogoutButtonProps {
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
@@ -19,12 +21,21 @@ export function LogoutButton({
   children 
 }: LogoutButtonProps) {
   const { logout } = useAuth()
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogout = async () => {
     setIsLoading(true)
     try {
+      // Sign out from Firebase client
       await logout()
+      
+      // Remove server-side session cookie
+      await removeSessionCookie()
+      
+      // Redirect to login
+      router.push("/auth/login")
+      router.refresh()
     } catch (error) {
       console.error("Logout error:", error)
     } finally {

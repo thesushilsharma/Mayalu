@@ -28,14 +28,9 @@ export function AuthGuard({
         setIsRedirecting(true)
         router.push(redirectTo)
       } else if (!requireAuth && user) {
-        // Check if user needs email verification
-        if (!user.emailVerified) {
-          setIsRedirecting(true)
-          router.push("/auth/sign-up")
-        } else {
-          setIsRedirecting(true)
-          router.push("/dashboard")
-        }
+        // User is authenticated and on a public page (like login), redirect to dashboard
+        setIsRedirecting(true)
+        router.push("/account/dashboard")
       }
     }
   }, [user, loading, requireAuth, redirectTo, router])

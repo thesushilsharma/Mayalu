@@ -1,8 +1,10 @@
 "use client"
 
 import type React from "react"
-import { useActionState, useOptimistic, useEffect } from "react"
+import { useActionState, useOptimistic, useTransition, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { auth } from "@/lib/firebase/firebase"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,53 +16,105 @@ import { useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { loginAction } from "@/lib/firebase/auth-actions"
+import { createSessionCookie } from "@/lib/firebase/auth-server"
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
+  // React 19 hooks
   const [state, formAction, isPending] = useActionState(loginAction, null)
-  const [optimisticState, addOptimistic] = useOptimistic(
-    { isSubmitting: false },
-    (state, newState: { isSubmitting?: boolean }) => ({
-      ...state,
+  const [isPendingTransition, startTransition] = useTransition()
+  const [optimisticState, setOptimisticState] = useOptimistic(
+    { isSubmitting: false, message: "" },
+    (currentState, newState: { isSubmitting?: boolean; message?: string }) => ({
+      ...currentState,
       ...newState,
     })
   )
+  
   const [showPassword, setShowPassword] = useState(false)
   const [showEmailVerificationBanner, setShowEmailVerificationBanner] = useState(false)
   const router = useRouter()
 
-  // Handle successful login
+  // Handle successful validation and perform client-side auth
   useEffect(() => {
-    if (state?.success) {
-      if (state.message?.includes("verify your email")) {
-        // User logged in but needs email verification
-        toast.warning(state.message)
-      } else {
-        // Normal successful login
-        toast.success(state.message || "Login successful!")
-        router.push("/account/dashboard")
-      }
+    if (state?.success && state?.data) {
+      // Start optimistic update
+      setOptimisticState({ isSubmitting: true, message: "Signing in..." })
+      
+      // Perform client-side authentication
+      startTransition(async () => {
+        try {
+          if (!state.data) return
+          
+          const { email, password } = state.data
+          
+          // Sign in with Firebase
+          const userCredential = await signInWithEmailAndPassword(auth, email, password)
+          
+          // Get ID token
+          const idToken = await userCredential.user.getIdToken()
+          
+          // Create server-side session cookie
+          const result = await createSessionCookie(idToken)
+          
+          if (!result.success) {
+            throw new Error("Failed to create session")
+          }
+          
+          // Check if email is verified
+          if (!userCredential.user.emailVerified) {
+            toast.warning("Please verify your email address to access all features")
+            setShowEmailVerificationBanner(true)
+          } else {
+            toast.success("Login successful!")
+          }
+          
+          // Update optimistic state
+          setOptimisticState({ isSubmitting: false, message: "Redirecting..." })
+          
+          // Redirect to dashboard
+          router.push("/account/dashboard")
+          router.refresh() // Refresh to update server components with new session
+        } catch (error: any) {
+          console.error("Login error:", error)
+          
+          let errorMessage = "An error occurred during login"
+          
+          switch (error.code) {
+            case "auth/user-not-found":
+            case "auth/wrong-password":
+            case "auth/invalid-credential":
+              errorMessage = "Invalid email or password"
+              break
+            case "auth/too-many-requests":
+              errorMessage = "Too many failed attempts. Please try again later"
+              break
+            case "auth/user-disabled":
+              errorMessage = "This account has been disabled"
+              break
+            case "auth/invalid-email":
+              errorMessage = "Invalid email address"
+              break
+            default:
+              errorMessage = error.message || errorMessage
+          }
+          
+          toast.error(errorMessage)
+          setOptimisticState({ isSubmitting: false, message: "" })
+        }
+      })
     }
-  }, [state?.success, state?.message, router])
+  }, [state?.success, state?.data, router, setOptimisticState])
 
   // Handle form errors
   useEffect(() => {
     if (state?.error?.form) {
       state.error.form.forEach((error) => {
         toast.error(error)
-        // Show email verification banner if the error is about email verification
-        if (error.includes("verify your email")) {
-          setShowEmailVerificationBanner(true)
-        }
       })
     }
   }, [state?.error?.form])
 
-  const handleSubmit = async (formData: FormData) => {
-    addOptimistic({ isSubmitting: true })
-    await formAction(formData)
-    addOptimistic({ isSubmitting: false })
-  }
-
+  const isLoading = isPending || isPendingTransition || optimisticState.isSubmitting
   const emailErrors = state?.error?.email
   const passwordErrors = state?.error?.password
   const formError = state?.error?.form
@@ -78,7 +132,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             onClose={() => setShowEmailVerificationBanner(false)}
           />
           
-          <form action={handleSubmit}>
+          <form action={formAction}>
             <div className="flex flex-col gap-4">
               <Field>
                 <FieldContent>
@@ -140,9 +194,9 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isPending || optimisticState.isSubmitting}
+                disabled={isLoading}
               >
-                {isPending || optimisticState.isSubmitting ? (
+                {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Signing in...

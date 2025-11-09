@@ -687,7 +687,7 @@ export default function OnboardingPage() {
           title: "Profile complete!",
           description: "Your profile has been created successfully. +40 XP earned!",
         });
-        router.push("/dashboard");
+        router.push("/account/dashboard");
       }
     }
   };

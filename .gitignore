@@ -145,3 +145,5 @@ next-env.d.ts
 #ide
 .kiro
 .vscode
+
+*.md

@@ -1,14 +1,7 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { SettingItem } from "@/components/settings/setting-item";
+import { SettingsSection } from "@/components/settings/settings-section";
 
 export default function SettingsPage() {
   return (
@@ -21,97 +14,53 @@ export default function SettingsPage() {
       </div>
       <Separator />
       <div className="grid gap-6 max-w-4xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>Notifications</CardTitle>
-            <CardDescription>
-              Configure how you receive notifications about platform activity
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between space-x-4">
-              <div className="flex-1 space-y-1">
-                <Label htmlFor="new-users" className="text-base font-medium">
-                  New User Notifications
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive alerts when new users register on the platform
-                </p>
-              </div>
-              <Switch id="new-users" />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between space-x-4">
-              <div className="flex-1 space-y-1">
-                <Label htmlFor="reports" className="text-base font-medium">
-                  User Reports
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Get notified when users submit reports or feedback
-                </p>
-              </div>
-              <Switch id="reports" />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between space-x-4">
-              <div className="flex-1 space-y-1">
-                <Label htmlFor="matches" className="text-base font-medium">
-                  Match Notifications
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Stay updated on successful matches between users
-                </p>
-              </div>
-              <Switch id="matches" />
-            </div>
-          </CardContent>
-        </Card>
+        <SettingsSection
+          title="Notifications"
+          description="Configure how you receive notifications about platform activity"
+        >
+          <SettingItem
+            id="new-users"
+            title="New User Notifications"
+            description="Receive alerts when new users register on the platform"
+          />
+          <SettingItem
+            id="reports"
+            title="User Reports"
+            description="Get notified when users submit reports or feedback"
+          />
+          <SettingItem
+            id="matches"
+            title="Match Notifications"
+            description="Stay updated on successful matches between users"
+          />
+        </SettingsSection>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>System</CardTitle>
-            <CardDescription>
-              Advanced system settings and maintenance options
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between space-x-4">
-              <div className="flex-1 space-y-1">
-                <Label htmlFor="maintenance" className="text-base font-medium">
-                  Maintenance Mode
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Temporarily disable access for system maintenance
-                </p>
-              </div>
-              <Switch id="maintenance" />
+        <SettingsSection
+          title="System"
+          description="Advanced system settings and maintenance options"
+        >
+          <SettingItem
+            id="maintenance"
+            title="Maintenance Mode"
+            description="Temporarily disable access for system maintenance"
+          />
+          <SettingItem
+            id="debug"
+            title="Debug Mode"
+            description="Enable detailed logging for troubleshooting"
+          />
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <h4 className="text-base font-medium">Cache Management</h4>
+              <p className="text-sm text-muted-foreground">
+                Clear application cache to resolve performance issues
+              </p>
             </div>
-            <Separator />
-            <div className="flex items-center justify-between space-x-4">
-              <div className="flex-1 space-y-1">
-                <Label htmlFor="debug" className="text-base font-medium">
-                  Debug Mode
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Enable detailed logging for troubleshooting
-                </p>
-              </div>
-              <Switch id="debug" />
-            </div>
-            <Separator />
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <h4 className="text-base font-medium">Cache Management</h4>
-                <p className="text-sm text-muted-foreground">
-                  Clear application cache to resolve performance issues
-                </p>
-              </div>
-              <Button variant="destructive" size="sm">
-                Clear Cache
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            <Button variant="destructive" size="sm">
+              Clear Cache
+            </Button>
+          </div>
+        </SettingsSection>
       </div>
     </div>
   );

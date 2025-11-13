@@ -2,7 +2,7 @@ import { memo } from "react";
 import DashboardUserLayout from "@/components/dashboardLayout";
 import { AuthGuard } from "@/components/auth/auth-guard";
 
-function DashboardLayout({
+async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

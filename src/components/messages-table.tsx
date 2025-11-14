@@ -75,7 +75,11 @@ function getRelativeTime(date: Date): string {
   return date.toLocaleDateString();
 }
 
-export function MessagesTable() {
+interface MessagesTableProps {
+  filter?: "all" | "sent" | "received" | "unread";
+}
+
+export function MessagesTable({ filter = "all" }: MessagesTableProps) {
   const [state, dispatch] = useReducer(messagesReducer, initialState);
 
   useEffect(() => {
@@ -99,7 +103,22 @@ export function MessagesTable() {
   }, []);
 
   const sortedMessages = useMemo(() => {
-    const filtered = state.messages.filter((message) => {
+    let filtered = state.messages;
+
+    // Apply filter based on type
+    if (filter === "sent") {
+      // Filter sent messages (you'd need to add current user context)
+      filtered = filtered.filter((message) => message.status !== "pending");
+    } else if (filter === "received") {
+      // Filter received messages
+      filtered = filtered.filter((message) => message.status === "delivered" || message.status === "read");
+    } else if (filter === "unread") {
+      // Filter unread messages
+      filtered = filtered.filter((message) => message.status === "delivered");
+    }
+
+    // Apply search query
+    filtered = filtered.filter((message) => {
       const query = state.searchQuery.toLowerCase().trim();
       if (!query) return true;
       
@@ -110,12 +129,13 @@ export function MessagesTable() {
       );
     });
 
+    // Sort by timestamp
     return filtered.sort((a, b) => {
       const timeA = a.timestamp.getTime();
       const timeB = b.timestamp.getTime();
       return state.sortOrder === "asc" ? timeA - timeB : timeB - timeA;
     });
-  }, [state.messages, state.searchQuery, state.sortOrder]);
+  }, [state.messages, state.searchQuery, state.sortOrder, filter]);
 
   const getStatusVariant = (status: MessageStatus) => {
     switch (status) {

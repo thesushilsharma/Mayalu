@@ -70,6 +70,31 @@ export async function getSessionUser() {
   }
 }
 
+export async function getUserProfile(uid: string) {
+  try {
+    const userRecord = await admin.auth().getUser(uid)
+    
+    return {
+      uid: userRecord.uid,
+      email: userRecord.email,
+      emailVerified: userRecord.emailVerified,
+      displayName: userRecord.displayName,
+      photoURL: userRecord.photoURL,
+      phoneNumber: userRecord.phoneNumber,
+      disabled: userRecord.disabled,
+      metadata: {
+        creationTime: userRecord.metadata.creationTime,
+        lastSignInTime: userRecord.metadata.lastSignInTime,
+        lastRefreshTime: userRecord.metadata.lastRefreshTime,
+      },
+      providerData: userRecord.providerData,
+    }
+  } catch (error) {
+    console.error("Error fetching user profile:", error)
+    return null
+  }
+}
+
 export async function requireAuth() {
   const user = await getSessionUser()
   

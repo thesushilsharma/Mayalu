@@ -11,7 +11,7 @@ Mayalu is a modern dating application built with a robust tech stack designed to
 - **Frontend & Backend**: [Next.js 15](https://nextjs.org/) with App Router
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Database**: [Neo4j](https://neo4j.com/) for graph-based relationship modeling
-- **Authentication**: [Supabase](https://supabase.com/) for secure user authentication
+- **Authentication**: [Firebase](https://firebase.google.com/) for secure user authentication
 - **Form Validation**: [Zod](https://github.com/colinhacks/zod) for type-safe schema validation
 - **UI**: [Tailwind CSS](https://tailwindcss.com/) for styling
 - **State Management**: [TanStack Query](https://tanstack.com/query/latest) for global state

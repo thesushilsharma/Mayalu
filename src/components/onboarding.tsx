@@ -10,13 +10,13 @@ import {
   UsersIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { initialFormState } from "@tanstack/react-form/nextjs";
 import {
+  initialFormState,
   mergeForm,
   useForm,
   useStore,
   useTransform,
-} from "@tanstack/react-form";
+} from '@tanstack/react-form-nextjs'
 import { submitOnboarding } from "@/app/actions/onboarding";
 import { onboardingFormOpts } from "@/lib/onboarding-form";
 import { useToast } from "@/hooks/use-toast";
@@ -120,7 +120,7 @@ export default function OnboardingPage() {
                       id={field.name}
                       name={field.name}
                       type="date"
-                      value={field.state.value}
+                      value={String(field.state.value ?? "")}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
                     />
@@ -142,7 +142,7 @@ export default function OnboardingPage() {
                   <Field data-invalid={field.state.meta.errors.length > 0}>
                     <FieldLabel>Gender</FieldLabel>
                     <RadioGroup
-                      value={field.state.value}
+                      value={String(field.state.value ?? "")}
                       onValueChange={(value) =>
                         field.handleChange(
                           value as "male" | "female" | "non-binary" | "other"
@@ -187,7 +187,7 @@ export default function OnboardingPage() {
                       id={field.name}
                       name={field.name}
                       placeholder="City, Country"
-                      value={field.state.value}
+                      value={String(field.state.value ?? "")}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
                     />
@@ -217,36 +217,40 @@ export default function OnboardingPage() {
                 name="bio"
                 validators={{
                   onChange: ({ value }) => {
-                    if (!value || value.length < 10) {
+                    const bioValue = String(value ?? "");
+                    if (!bioValue || bioValue.length < 10) {
                       return "Bio must be at least 10 characters";
                     }
-                    if (value.length > 500) {
+                    if (bioValue.length > 500) {
                       return "Bio cannot exceed 500 characters";
                     }
                     return undefined;
                   },
                 }}
               >
-                {(field) => (
-                  <Field data-invalid={field.state.meta.errors.length > 0}>
-                    <FieldLabel htmlFor={field.name}>Bio</FieldLabel>
-                    <Textarea
-                      id={field.name}
-                      name={field.name}
-                      placeholder="Tell us about yourself..."
-                      className="min-h-[120px]"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                    />
-                    <FieldDescription className="text-right">
-                      {field.state.value.length}/500
-                    </FieldDescription>
+                {(field) => {
+                  const bioValue = String(field.state.value ?? "");
+                  return (
+                    <Field data-invalid={field.state.meta.errors.length > 0}>
+                      <FieldLabel htmlFor={field.name}>Bio</FieldLabel>
+                      <Textarea
+                        id={field.name}
+                        name={field.name}
+                        placeholder="Tell us about yourself..."
+                        className="min-h-[120px]"
+                        value={bioValue}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                      />
+                      <FieldDescription className="text-right">
+                        {bioValue.length}/500
+                      </FieldDescription>
                     <FieldError>
                       {field.state.meta.errors[0]}
                     </FieldError>
                   </Field>
-                )}
+                  );
+                }}
               </form.Field>
 
               <form.Field
@@ -263,7 +267,7 @@ export default function OnboardingPage() {
                       id={field.name}
                       name={field.name}
                       placeholder="Height in cm"
-                      value={field.state.value}
+                      value={String(field.state.value ?? "")}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
                     />
@@ -288,7 +292,7 @@ export default function OnboardingPage() {
                       id={field.name}
                       name={field.name}
                       placeholder="Highest education level"
-                      value={field.state.value}
+                      value={String(field.state.value ?? "")}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
                     />
@@ -313,7 +317,7 @@ export default function OnboardingPage() {
                       id={field.name}
                       name={field.name}
                       placeholder="Your profession"
-                      value={field.state.value}
+                      value={String(field.state.value ?? "")}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
                     />
@@ -413,7 +417,7 @@ export default function OnboardingPage() {
                   <Field data-invalid={field.state.meta.errors.length > 0}>
                     <FieldLabel>Interested in</FieldLabel>
                     <RadioGroup
-                      value={field.state.value}
+                      value={String(field.state.value ?? "")}
                       onValueChange={(value) =>
                         field.handleChange(value as "men" | "women" | "everyone")
                       }
@@ -455,7 +459,7 @@ export default function OnboardingPage() {
                         type="number"
                         min="18"
                         max="100"
-                        value={field.state.value}
+                        value={String(field.state.value ?? "")}
                         onChange={(e) => field.handleChange(e.target.value)}
                         onBlur={field.handleBlur}
                       />
@@ -482,7 +486,7 @@ export default function OnboardingPage() {
                         type="number"
                         min="18"
                         max="100"
-                        value={field.state.value}
+                        value={String(field.state.value ?? "")}
                         onChange={(e) => field.handleChange(e.target.value)}
                         onBlur={field.handleBlur}
                       />
@@ -510,7 +514,7 @@ export default function OnboardingPage() {
                       type="number"
                       min="1"
                       max="500"
-                      value={field.state.value}
+                      value={String(field.state.value ?? "")}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
                     />
@@ -539,45 +543,50 @@ export default function OnboardingPage() {
               <form.Field
                 name="interests"
                 validators={{
-                  onChange: ({ value }) =>
-                    value.length < 3 ? "Please select at least 3 interests" : undefined,
+                  onChange: ({ value }) => {
+                    const interestsValue = Array.isArray(value) ? value : [];
+                    return interestsValue.length < 3 ? "Please select at least 3 interests" : undefined;
+                  },
                 }}
               >
-                {(field) => (
-                  <Field data-invalid={field.state.meta.errors.length > 0}>
-                    <FieldLabel className="text-base">
-                      Select your interests (at least 3)
-                    </FieldLabel>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {interests.map((interest) => (
-                        <Button
-                          key={interest}
-                          type="button"
-                          variant={
-                            field.state.value.includes(interest)
-                              ? "default"
-                              : "outline"
-                          }
-                          onClick={() => {
-                            const newInterests = field.state.value.includes(interest)
-                              ? field.state.value.filter((i) => i !== interest)
-                              : [...field.state.value, interest];
-                            field.handleChange(newInterests);
-                          }}
-                          className="justify-start"
-                        >
-                          {interest}
-                        </Button>
-                      ))}
-                    </div>
-                    <FieldDescription>
-                      Selected: {field.state.value.length}/3 minimum
-                    </FieldDescription>
+                {(field) => {
+                  const interestsValue = Array.isArray(field.state.value) ? field.state.value : [];
+                  return (
+                    <Field data-invalid={field.state.meta.errors.length > 0}>
+                      <FieldLabel className="text-base">
+                        Select your interests (at least 3)
+                      </FieldLabel>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {interests.map((interest) => (
+                          <Button
+                            key={interest}
+                            type="button"
+                            variant={
+                              interestsValue.includes(interest)
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() => {
+                              const newInterests = interestsValue.includes(interest)
+                                ? interestsValue.filter((i: string) => i !== interest)
+                                : [...interestsValue, interest];
+                              field.handleChange(newInterests);
+                            }}
+                            className="justify-start"
+                          >
+                            {interest}
+                          </Button>
+                        ))}
+                      </div>
+                      <FieldDescription>
+                        Selected: {interestsValue.length}/3 minimum
+                      </FieldDescription>
                     <FieldError>
                       {field.state.meta.errors[0]}
                     </FieldError>
                   </Field>
-                )}
+                  );
+                }}
               </form.Field>
             </CardContent>
             <CardFooter className="flex justify-between">
@@ -622,29 +631,32 @@ export default function OnboardingPage() {
               </form.Field>
 
               <form.Field name="additionalPhotos">
-                {(field) => (
-                  <div className="space-y-2">
-                    <Label className="text-base">
-                      Additional Photos (Optional)
-                    </Label>
-                    <div className="grid grid-cols-3 gap-4">
-                      {[1, 2, 3].map((i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          className="aspect-square bg-muted rounded-lg flex items-center justify-center hover:bg-muted/80 transition-colors"
-                          onClick={() => {
-                            // Simulate photo upload
-                            const newPhotos = [...field.state.value, `https://source.unsplash.com/random/300x300/?portrait&sig=${i}`];
-                            field.handleChange(newPhotos);
-                          }}
-                        >
-                          <span className="text-2xl text-muted-foreground">+</span>
-                        </button>
-                      ))}
+                {(field) => {
+                  const photosValue = Array.isArray(field.state.value) ? field.state.value : [];
+                  return (
+                    <div className="space-y-2">
+                      <Label className="text-base">
+                        Additional Photos (Optional)
+                      </Label>
+                      <div className="grid grid-cols-3 gap-4">
+                        {[1, 2, 3].map((i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className="aspect-square bg-muted rounded-lg flex items-center justify-center hover:bg-muted/80 transition-colors"
+                            onClick={() => {
+                              // Simulate photo upload
+                              const newPhotos = [...photosValue, `https://source.unsplash.com/random/300x300/?portrait&sig=${i}`];
+                              field.handleChange(newPhotos);
+                            }}
+                          >
+                            <span className="text-2xl text-muted-foreground">+</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                }}
               </form.Field>
             </CardContent>
             <CardFooter className="flex justify-between">

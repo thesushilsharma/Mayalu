@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, MoreVertical, ArrowUpDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import type { User } from "@/lib/firebase/user-actions";
-import { updateUserStatus, deleteUser, setUserClaims } from "@/lib/firebase/user-actions";
+import type { User } from "@/lib/neonDB/user-actions";
+import { updateUserStatus, deleteUser, setUserClaims } from "@/lib/neonDB/user-actions";
 
 interface UsersDataTableProps {
   users: User[];
@@ -48,7 +48,7 @@ export function UsersDataTable({ users }: UsersDataTableProps) {
         ? dateA.getTime() - dateB.getTime()
         : dateB.getTime() - dateA.getTime();
     }
-    
+
     const emailA = a.email || "";
     const emailB = b.email || "";
     return sortOrder === "asc"
@@ -79,7 +79,7 @@ export function UsersDataTable({ users }: UsersDataTableProps) {
 
   const handleDeleteUser = async (uid: string, email: string | undefined) => {
     if (!confirm(`Are you sure you want to delete user ${email}?`)) return;
-    
+
     startTransition(async () => {
       const result = await deleteUser(uid);
       if (result.success) {
@@ -209,14 +209,12 @@ export function UsersDataTable({ users }: UsersDataTableProps) {
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
-                      <DropdownMenuTrigger>
-                        <Button variant="ghost" size="icon" disabled={isPending}>
-                          {isPending ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <MoreVertical className="h-4 w-4" />
-                          )}
-                        </Button>
+                      <DropdownMenuTrigger className={buttonVariants({ variant: "ghost", size: "icon" })} disabled={isPending}>
+                        {isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <MoreVertical className="h-4 w-4" />
+                        )}
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem

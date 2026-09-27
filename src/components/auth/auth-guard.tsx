@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/contexts/auth-context"
+import { authClient } from "@/lib/auth/client"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
@@ -18,7 +18,9 @@ export function AuthGuard({
   redirectTo = "/auth/login",
   fallback
 }: AuthGuardProps) {
-  const { user, loading } = useAuth()
+  const { data, isPending: loading } = authClient.useSession()
+  const user = data?.user
+  
   const router = useRouter()
   const [isRedirecting, setIsRedirecting] = useState(false)
 

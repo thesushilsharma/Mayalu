@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { seedMessages } from "@/lib/firebase/seed-messages";
+import { seedMessages } from "@/lib/neonDB/seed-messages";
 
 export async function POST() {
   try {

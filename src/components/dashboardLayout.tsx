@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
 import { LogoutButton } from "./auth/logout-button";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -213,15 +213,13 @@ function DashboardUserLayout() {
           
           {/* More menu dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs h-auto min-w-0 flex-1 transition-all duration-200 rounded-xl hover:bg-accent hover:scale-105"
-              >
-                <Menu className="h-5 w-5" />
-                <span className="truncate">More</span>
-              </Button>
+            <DropdownMenuTrigger className={buttonVariants({
+              variant: "ghost",
+              size: "sm",
+              className: "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs h-auto min-w-0 flex-1 transition-all duration-200 rounded-xl hover:bg-accent hover:scale-105"
+            })}>
+              <Menu className="h-5 w-5" />
+              <span className="truncate">More</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 mb-2 shadow-xl">
               {dropdownNavItems}

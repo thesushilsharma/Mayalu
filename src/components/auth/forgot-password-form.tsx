@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useActionState, useOptimistic, useEffect } from "react"
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,44 +10,42 @@ import { Field, FieldContent, FieldLabel, FieldError } from "@/components/ui/fie
 import { CheckCircle2, Loader2, ArrowLeft, Mail } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { forgotPasswordAction } from "@/lib/firebase/auth-actions"
+import { authClient } from "@/lib/auth/client"
 
 export function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
-  const [state, formAction, isPending] = useActionState(forgotPasswordAction, null)
-  const [optimisticState, addOptimistic] = useOptimistic(
-    { isSubmitting: false, success: false },
-    (state, newState: { isSubmitting?: boolean; success?: boolean }) => ({
-      ...state,
-      ...newState,
-    })
-  )
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
-  // Handle successful password reset
-  useEffect(() => {
-    if (state?.success) {
-      toast.success(state.message || "Password reset email sent!")
-    }
-  }, [state?.success, state?.message])
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get("email") as string
 
-  // Handle form errors
-  useEffect(() => {
-    if (state?.error?.form) {
-      state.error.form.forEach((error) => {
-        toast.error(error)
+    try {
+      // @ts-ignore - The types from @neondatabase/auth currently omit the base call signature for forgetPassword
+      const { data, error } = await authClient.forgetPassword({
+        email,
+        redirectTo: "/auth/reset-password",
       })
-    }
-  }, [state?.error?.form])
 
-  const handleSubmit = async (formData: FormData) => {
-    addOptimistic({ isSubmitting: true })
-    await formAction(formData)
-    addOptimistic({ isSubmitting: false, success: true })
+      if (error) {
+        toast.error(error.message || "Failed to send reset email")
+        setIsSubmitting(false)
+        return
+      }
+
+      toast.success("Password reset email sent!")
+      setIsSuccess(true)
+      setIsSubmitting(false)
+    } catch (err: any) {
+      toast.error(err.message || "An unexpected error occurred")
+      setIsSubmitting(false)
+    }
   }
 
-  const emailErrors = state?.error?.email
-  const formError = state?.error?.form
-
-  if (state?.success || optimisticState.success) {
+  if (isSuccess) {
     return (
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
@@ -56,7 +54,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
               <Mail className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
-            <CardDescription>We&apos;ve sent password reset instructions to your email</CardDescription>
+            <CardDescription>We've sent password reset instructions to your email</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4">
@@ -65,13 +63,13 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                 <p className="font-medium">Email sent successfully!</p>
               </div>
               <p className="mt-2 text-sm text-green-600 dark:text-green-300">
-                If an account with that email exists, you&apos;ll receive password reset instructions.
+                If an account with that email exists, you'll receive password reset instructions.
               </p>
             </div>
             
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-4">
-                Didn&apos;t receive the email? Check your spam folder or try again.
+                Didn't receive the email? Check your spam folder or try again.
               </p>
               <Button variant="outline">
                 <Link href="/auth/login">
@@ -91,10 +89,10 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Reset your password</CardTitle>
-          <CardDescription>Enter your email address and we&apos;ll send you a reset link</CardDescription>
+          <CardDescription>Enter your email address and we'll send you a reset link</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <Field>
                 <FieldContent>
@@ -106,23 +104,16 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                     placeholder="Enter your email address"
                     required
                     autoComplete="email"
-                    aria-invalid={!!emailErrors}
-                    className={cn(emailErrors && "border-destructive focus-visible:ring-destructive")}
                   />
-                  <FieldError errors={emailErrors?.map(error => ({ message: error }))} />
                 </FieldContent>
               </Field>
-
-              {formError && (
-                <FieldError errors={formError.map(error => ({ message: error }))} />
-              )}
 
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isPending || optimisticState.isSubmitting}
+                disabled={isSubmitting}
               >
-                {isPending || optimisticState.isSubmitting ? (
+                {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Sending reset email...

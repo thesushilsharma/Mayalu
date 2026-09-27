@@ -2,7 +2,7 @@ import { MessagesTable } from "@/components/messages-table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, Send, Inbox, Archive } from "lucide-react";
-import { getMessageStats } from "@/lib/firebase/messages-server";
+import { getMessageStats } from "@/lib/neonDB/messages-server";
 
 export default async function ChatPage() {
   // Fetch message statistics on the server
@@ -90,7 +90,7 @@ export default async function ChatPage() {
         <CardHeader>
           <CardTitle className="text-lg font-semibold">All Conversations</CardTitle>
           <CardDescription>
-            Real-time message updates from Firebase Firestore
+            Message updates from Neon Database
           </CardDescription>
         </CardHeader>
         <CardContent>

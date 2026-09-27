@@ -1,26 +1,22 @@
 "use client"
 
 import type React from "react"
-import { useActionState, useOptimistic } from "react"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Field, FieldContent, FieldLabel, FieldError } from "@/components/ui/field"
-import { CheckCircle2, XCircle } from "lucide-react"
+import { CheckCircle2, XCircle, Loader2 } from "lucide-react"
 import { validatePasswordStrength } from "@/lib/validations/authHelper"
-import { updatePasswordAction } from "@/lib/firebase/auth-actions"
+import { toast } from "sonner"
+import { authClient } from "@/lib/auth/client"
 
 export function UpdatePasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
-  const [state, formAction, isPending] = useActionState(updatePasswordAction, null)
-  const [optimisticState, addOptimistic] = useOptimistic(
-    { isSubmitting: false, success: false },
-    (state, newState: { isSubmitting?: boolean; success?: boolean }) => ({
-      ...state,
-      ...newState,
-    })
-  )
+  const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
   
   const [formData, setFormData] = useState({
     password: "",
@@ -41,7 +37,6 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
 
   const [passwordsMatch, setPasswordsMatch] = useState(false)
 
-  // Validate password strength and matching on input change
   useEffect(() => {
     setPasswordValidation(validatePasswordStrength(formData.password))
     setPasswordsMatch(
@@ -54,18 +49,37 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (formData: FormData) => {
-    addOptimistic({ isSubmitting: true })
-    await formAction(formData)
-    addOptimistic({ isSubmitting: false, success: true })
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    
+    try {
+      const { data, error } = await authClient.resetPassword({
+        newPassword: formData.password,
+      })
+
+      if (error) {
+        toast.error(error.message || "Failed to reset password")
+        setIsSubmitting(false)
+        return
+      }
+
+      toast.success("Password updated successfully!")
+      setIsSuccess(true)
+      setIsSubmitting(false)
+      
+      setTimeout(() => {
+        router.push("/auth/login")
+      }, 2000)
+    } catch (err: any) {
+      toast.error(err.message || "An unexpected error occurred")
+      setIsSubmitting(false)
+    }
   }
 
-  const passwordErrors = state?.error?.password
-  const confirmPasswordErrors = state?.error?.confirmPassword
-  const formError = state?.error?.form
   const isFormValid = passwordValidation.isValid && passwordsMatch
 
-  if (state?.success || optimisticState.success) {
+  if (isSuccess) {
     return (
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
@@ -76,7 +90,7 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
           <CardContent>
             <div className="flex items-center gap-2 text-green-600">
               <CheckCircle2 className="h-5 w-5" />
-              <p>Password updated successfully!</p>
+              <p>Password updated successfully! Redirecting to login...</p>
             </div>
           </CardContent>
         </Card>
@@ -92,7 +106,7 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
           <CardDescription>Please enter your new password below.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <Field>
                 <FieldContent>
@@ -111,96 +125,33 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
                           ? "border-green-500 focus-visible:ring-green-500"
                           : "border-red-500 focus-visible:ring-red-500"),
                     )}
-                    aria-invalid={!!passwordErrors}
                   />
                   
                   {formData.password && (
                     <div className="mt-2 space-y-2">
                       <div className="text-sm font-medium text-muted-foreground">Password must:</div>
                       <ul className="space-y-1 text-sm">
-                        <li
-                          className={cn(
-                            "flex items-center gap-2",
-                            passwordValidation.results.minLength ? "text-green-500" : "text-red-500",
-                          )}
-                        >
-                          {passwordValidation.results.minLength ? (
-                            <CheckCircle2 className="h-4 w-4" />
-                          ) : (
-                            <XCircle className="h-4 w-4" />
-                          )}
-                          Be at least 12 characters
+                        <li className={cn("flex items-center gap-2", passwordValidation.results.minLength ? "text-green-500" : "text-red-500")}>
+                          {passwordValidation.results.minLength ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />} Be at least 12 characters
                         </li>
-                        <li
-                          className={cn(
-                            "flex items-center gap-2",
-                            passwordValidation.results.maxLength ? "text-green-500" : "text-red-500",
-                          )}
-                        >
-                          {passwordValidation.results.maxLength ? (
-                            <CheckCircle2 className="h-4 w-4" />
-                          ) : (
-                            <XCircle className="h-4 w-4" />
-                          )}
-                          Be at most 64 characters
+                        <li className={cn("flex items-center gap-2", passwordValidation.results.maxLength ? "text-green-500" : "text-red-500")}>
+                          {passwordValidation.results.maxLength ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />} Be at most 64 characters
                         </li>
-                        <li
-                          className={cn(
-                            "flex items-center gap-2",
-                            passwordValidation.results.hasUppercase ? "text-green-500" : "text-red-500",
-                          )}
-                        >
-                          {passwordValidation.results.hasUppercase ? (
-                            <CheckCircle2 className="h-4 w-4" />
-                          ) : (
-                            <XCircle className="h-4 w-4" />
-                          )}
-                          Include at least one uppercase letter
+                        <li className={cn("flex items-center gap-2", passwordValidation.results.hasUppercase ? "text-green-500" : "text-red-500")}>
+                          {passwordValidation.results.hasUppercase ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />} Include at least one uppercase letter
                         </li>
-                        <li
-                          className={cn(
-                            "flex items-center gap-2",
-                            passwordValidation.results.hasLowercase ? "text-green-500" : "text-red-500",
-                          )}
-                        >
-                          {passwordValidation.results.hasLowercase ? (
-                            <CheckCircle2 className="h-4 w-4" />
-                          ) : (
-                            <XCircle className="h-4 w-4" />
-                          )}
-                          Include at least one lowercase letter
+                        <li className={cn("flex items-center gap-2", passwordValidation.results.hasLowercase ? "text-green-500" : "text-red-500")}>
+                          {passwordValidation.results.hasLowercase ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />} Include at least one lowercase letter
                         </li>
-                        <li
-                          className={cn(
-                            "flex items-center gap-2",
-                            passwordValidation.results.hasNumber ? "text-green-500" : "text-red-500",
-                          )}
-                        >
-                          {passwordValidation.results.hasNumber ? (
-                            <CheckCircle2 className="h-4 w-4" />
-                          ) : (
-                            <XCircle className="h-4 w-4" />
-                          )}
-                          Include at least one number
+                        <li className={cn("flex items-center gap-2", passwordValidation.results.hasNumber ? "text-green-500" : "text-red-500")}>
+                          {passwordValidation.results.hasNumber ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />} Include at least one number
                         </li>
-                        <li
-                          className={cn(
-                            "flex items-center gap-2",
-                            passwordValidation.results.hasSpecialChar ? "text-green-500" : "text-red-500",
-                          )}
-                        >
-                          {passwordValidation.results.hasSpecialChar ? (
-                            <CheckCircle2 className="h-4 w-4" />
-                          ) : (
-                            <XCircle className="h-4 w-4" />
-                          )}
-                          Include at least one special character (!@#$%^&*())
+                        <li className={cn("flex items-center gap-2", passwordValidation.results.hasSpecialChar ? "text-green-500" : "text-red-500")}>
+                          {passwordValidation.results.hasSpecialChar ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />} Include at least one special character
                         </li>
                       </ul>
                     </div>
                   )}
-                  
-                  <FieldError errors={passwordErrors?.map(error => ({ message: error }))} />
                 </FieldContent>
               </Field>
 
@@ -222,7 +173,6 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
                             ? "border-green-500 focus-visible:ring-green-500"
                             : "border-red-500 focus-visible:ring-red-500"),
                       )}
-                      aria-invalid={!!confirmPasswordErrors}
                     />
                     {formData.confirmPassword && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -240,21 +190,22 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
                       Passwords need to match
                     </div>
                   )}
-                  
-                  <FieldError errors={confirmPasswordErrors?.map(error => ({ message: error }))} />
                 </FieldContent>
               </Field>
-
-              {formError && (
-                <FieldError errors={formError.map(error => ({ message: error }))} />
-              )}
               
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isPending || optimisticState.isSubmitting || !isFormValid}
+                disabled={isSubmitting || !isFormValid}
               >
-                {isPending || optimisticState.isSubmitting ? "Saving..." : "Save new password"}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save new password"
+                )}
               </Button>
             </div>
           </form>

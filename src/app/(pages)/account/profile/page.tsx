@@ -1,4 +1,4 @@
-import { getUserProfile, requireAuth } from "@/lib/firebase/auth-server"
+import { getUserProfile, requireAuth } from "@/lib/neonDB/auth-server"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,10 +8,10 @@ import { CalendarDays, Mail, Phone, Shield, User, Clock } from "lucide-react"
 export default async function ProfilePage() {
   // Require authentication and get user session
   const sessionUser = await requireAuth()
-  
-  // Fetch full user profile data from Firebase
+
+  // Fetch full user profile data from Neon Database
   const profile = await getUserProfile(sessionUser.uid)
-  
+
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -96,7 +96,7 @@ export default async function ProfilePage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <Separator />
-          
+
           {/* Contact Information */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
@@ -112,7 +112,7 @@ export default async function ProfilePage() {
                   <p className="text-sm font-mono truncate">{profile.email || "Not provided"}</p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3">
                 <div className="rounded-lg bg-primary/10 p-2">
                   <Phone className="size-4 text-primary" />
@@ -142,7 +142,7 @@ export default async function ProfilePage() {
                   <p className="text-xs font-mono truncate">{profile.uid}</p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3">
                 <div className="rounded-lg bg-primary/10 p-2">
                   <CalendarDays className="size-4 text-primary" />
@@ -195,7 +195,7 @@ export default async function ProfilePage() {
             </div>
           </CardContent>
         </Card>
-      )}      
+      )}
     </div>
   )
 }

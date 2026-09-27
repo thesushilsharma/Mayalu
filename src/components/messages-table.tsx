@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ArrowUpDown, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { subscribeToMessages, type Message, type MessageStatus } from "@/lib/firebase/messages";
+import { subscribeToMessages, type Message, type MessageStatus } from "@/lib/neonDB/messages";
 
 interface MessagesState {
   messages: Message[];
@@ -71,7 +71,7 @@ function getRelativeTime(date: Date): string {
   if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? "s" : ""} ago`;
   if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
   if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
-  
+
   return date.toLocaleDateString();
 }
 
@@ -85,15 +85,15 @@ export function MessagesTable({ filter = "all" }: MessagesTableProps) {
   useEffect(() => {
     dispatch({ type: "FETCH_START" });
 
-    // Subscribe to real-time messages from Firebase
+    // Fetch messages from Neon Database
     const unsubscribe = subscribeToMessages(
       (messages) => {
         dispatch({ type: "FETCH_SUCCESS", payload: messages });
       },
       (error) => {
-        dispatch({ 
-          type: "FETCH_ERROR", 
-          payload: error.message || "Failed to load messages" 
+        dispatch({
+          type: "FETCH_ERROR",
+          payload: error.message || "Failed to load messages"
         });
       }
     );
@@ -121,7 +121,7 @@ export function MessagesTable({ filter = "all" }: MessagesTableProps) {
     filtered = filtered.filter((message) => {
       const query = state.searchQuery.toLowerCase().trim();
       if (!query) return true;
-      
+
       return (
         message.sender.name.toLowerCase().includes(query) ||
         message.recipient.name.toLowerCase().includes(query) ||
@@ -156,9 +156,9 @@ export function MessagesTable({ filter = "all" }: MessagesTableProps) {
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           {state.error}
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="ml-4"
             onClick={() => window.location.reload()}
           >

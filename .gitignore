@@ -148,3 +148,4 @@ next-env.d.ts
 .cursor
 
 *.md
+.neon

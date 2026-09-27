@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Mail, AlertCircle, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
-import { resendEmailVerificationAction } from "@/lib/firebase/auth-actions"
+import { authClient } from "@/lib/auth/client"
 
 interface EmailVerificationBannerProps {
   show: boolean
@@ -14,19 +14,29 @@ interface EmailVerificationBannerProps {
 
 export function EmailVerificationBanner({ show, onClose }: EmailVerificationBannerProps) {
   const [isResending, setIsResending] = useState(false)
+  const { data } = authClient.useSession()
+  const user = data?.user
 
   if (!show) return null
 
   const handleResendVerification = async () => {
+    if (!user?.email) {
+      toast.error("User email not found")
+      return
+    }
+
     setIsResending(true)
     try {
-      const result = await resendEmailVerificationAction()
-      if (result.success) {
-        toast.success(result.message || "Verification email sent!")
-      } else if (result.error?.form) {
-        result.error.form.forEach((error) => {
-          toast.error(error)
-        })
+      // @ts-ignore - The types from @neondatabase/auth might omit the base call signature for sendVerificationEmail
+      const { data, error } = await authClient.sendVerificationEmail({
+        email: user.email,
+        callbackURL: "/auth/verify-email",
+      })
+
+      if (error) {
+        toast.error(error.message || "Failed to resend verification email")
+      } else {
+        toast.success("Verification email sent!")
       }
     } catch (error) {
       toast.error("Failed to resend verification email")
@@ -56,15 +66,15 @@ export function EmailVerificationBanner({ show, onClose }: EmailVerificationBann
             className="border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-800"
           >
             {isResending ? (
-              <>
-                <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
-                Sending...
-              </>
+               <>
+                 <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
+                 Sending...
+               </>
             ) : (
-              <>
-                <Mail className="mr-1 h-3 w-3" />
-                Resend
-              </>
+               <>
+                 <Mail className="mr-1 h-3 w-3" />
+                 Resend
+               </>
             )}
           </Button>
           {onClose && (

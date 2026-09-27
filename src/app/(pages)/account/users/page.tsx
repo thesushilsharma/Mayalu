@@ -1,19 +1,19 @@
 import { Suspense } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UsersDataTable } from "@/components/users-data-table";
-import { getAllUsers } from "@/lib/firebase/user-actions";
-import { requireAuth } from "@/lib/firebase/auth-server";
+import { getAllUsers } from "@/lib/neonDB/user-actions";
+import { requireAuth } from "@/lib/neonDB/auth-server";
 import { Skeleton } from "@/components/ui/skeleton";
 
 async function UsersTableWrapper() {
   const users = await getAllUsers();
-  
+
   return <UsersDataTable users={users} />;
 }
 
 function UsersTableSkeleton() {
   const skeletonItems = [1, 2, 3, 4, 5];
-  
+
   return (
     <div className="space-y-4">
       <Skeleton className="h-10 w-full" />
@@ -29,7 +29,7 @@ function UsersTableSkeleton() {
 export default async function UsersPage() {
   // Require authentication to access this page
   await requireAuth();
-  
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between">
@@ -40,7 +40,7 @@ export default async function UsersPage() {
           </p>
         </div>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>All Users</CardTitle>

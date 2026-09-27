@@ -1,123 +1,51 @@
 "use client"
 
 import type React from "react"
-import { useActionState, useOptimistic, useTransition, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signInWithEmailAndPassword } from "firebase/auth"
-import { auth } from "@/lib/firebase/firebase"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Field, FieldContent, FieldLabel, FieldError } from "@/components/ui/field"
-import { EmailVerificationBanner } from "./email-verification-banner"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { loginAction } from "@/lib/firebase/auth-actions"
-import { createSessionCookie } from "@/lib/firebase/auth-server"
+import { authClient } from "@/lib/auth/client"
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
-  // React 19 hooks
-  const [state, formAction, isPending] = useActionState(loginAction, null)
-  const [isPendingTransition, startTransition] = useTransition()
-  const [optimisticState, setOptimisticState] = useOptimistic(
-    { isSubmitting: false, message: "" },
-    (currentState, newState: { isSubmitting?: boolean; message?: string }) => ({
-      ...currentState,
-      ...newState,
-    })
-  )
-  
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [showEmailVerificationBanner, setShowEmailVerificationBanner] = useState(false)
   const router = useRouter()
 
-  // Handle successful validation and perform client-side auth
-  useEffect(() => {
-    if (state?.success && state?.data) {
-      // Start optimistic update
-      setOptimisticState({ isSubmitting: true, message: "Signing in..." })
-      
-      // Perform client-side authentication
-      startTransition(async () => {
-        try {
-          if (!state.data) return
-          
-          const { email, password } = state.data
-          
-          // Sign in with Firebase
-          const userCredential = await signInWithEmailAndPassword(auth, email, password)
-          
-          // Get ID token
-          const idToken = await userCredential.user.getIdToken()
-          
-          // Create server-side session cookie
-          const result = await createSessionCookie(idToken)
-          
-          if (!result.success) {
-            throw new Error("Failed to create session")
-          }
-          
-          // Check if email is verified
-          if (!userCredential.user.emailVerified) {
-            toast.warning("Please verify your email address to access all features")
-            setShowEmailVerificationBanner(true)
-          } else {
-            toast.success("Login successful!")
-          }
-          
-          // Update optimistic state
-          setOptimisticState({ isSubmitting: false, message: "Redirecting..." })
-          
-          // Redirect to dashboard
-          router.push("/account/dashboard")
-          router.refresh() // Refresh to update server components with new session
-        } catch (error: any) {
-          console.error("Login error:", error)
-          
-          let errorMessage = "An error occurred during login"
-          
-          switch (error.code) {
-            case "auth/user-not-found":
-            case "auth/wrong-password":
-            case "auth/invalid-credential":
-              errorMessage = "Invalid email or password"
-              break
-            case "auth/too-many-requests":
-              errorMessage = "Too many failed attempts. Please try again later"
-              break
-            case "auth/user-disabled":
-              errorMessage = "This account has been disabled"
-              break
-            case "auth/invalid-email":
-              errorMessage = "Invalid email address"
-              break
-            default:
-              errorMessage = error.message || errorMessage
-          }
-          
-          toast.error(errorMessage)
-          setOptimisticState({ isSubmitting: false, message: "" })
-        }
-      })
-    }
-  }, [state?.success, state?.data, router, setOptimisticState])
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmitting(true)
 
-  // Handle form errors
-  useEffect(() => {
-    if (state?.error?.form) {
-      state.error.form.forEach((error) => {
-        toast.error(error)
-      })
-    }
-  }, [state?.error?.form])
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
 
-  const isLoading = isPending || isPendingTransition || optimisticState.isSubmitting
-  const emailErrors = state?.error?.email
-  const passwordErrors = state?.error?.password
-  const formError = state?.error?.form
+    try {
+      const { data, error } = await authClient.signIn.email({
+        email,
+        password,
+      })
+
+      if (error) {
+        toast.error(error.message || "Invalid email or password")
+        setIsSubmitting(false)
+        return
+      }
+
+      toast.success("Login successful!")
+      router.push("/account/dashboard")
+      router.refresh()
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred during login")
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -127,12 +55,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <EmailVerificationBanner 
-            show={showEmailVerificationBanner}
-            onClose={() => setShowEmailVerificationBanner(false)}
-          />
-          
-          <form action={formAction}>
+          <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-4">
               <Field>
                 <FieldContent>
@@ -144,10 +67,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                     placeholder="Enter your email"
                     required
                     autoComplete="email"
-                    aria-invalid={!!emailErrors}
-                    className={cn(emailErrors && "border-destructive focus-visible:ring-destructive")}
                   />
-                  <FieldError errors={emailErrors?.map(error => ({ message: error }))} />
                 </FieldContent>
               </Field>
 
@@ -162,11 +82,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                       placeholder="Enter your password"
                       required
                       autoComplete="current-password"
-                      aria-invalid={!!passwordErrors}
-                      className={cn(
-                        "pr-10",
-                        passwordErrors && "border-destructive focus-visible:ring-destructive"
-                      )}
+                      className="pr-10"
                     />
                     <Button
                       type="button"
@@ -183,20 +99,15 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                       )}
                     </Button>
                   </div>
-                  <FieldError errors={passwordErrors?.map(error => ({ message: error }))} />
                 </FieldContent>
               </Field>
-
-              {formError && (
-                <FieldError errors={formError.map(error => ({ message: error }))} />
-              )}
 
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
-                {isLoading ? (
+                {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Signing in...

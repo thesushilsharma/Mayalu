@@ -209,7 +209,7 @@ export function UsersDataTable({ users }: UsersDataTableProps) {
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                      <DropdownMenuTrigger>
                         <Button variant="ghost" size="icon" disabled={isPending}>
                           {isPending ? (
                             <Loader2 className="h-4 w-4 animate-spin" />

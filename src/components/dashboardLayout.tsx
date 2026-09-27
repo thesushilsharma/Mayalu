@@ -71,7 +71,7 @@ function DashboardUserLayout() {
     return navItems.slice(4).map((item) => {
       const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
       return (
-        <DropdownMenuItem key={item.href} asChild>
+        <DropdownMenuItem key={item.href}>
           <Link
             href={item.href}
             className={cn(
@@ -213,7 +213,7 @@ function DashboardUserLayout() {
           
           {/* More menu dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <Button
                 variant="ghost"
                 size="sm"
@@ -225,7 +225,7 @@ function DashboardUserLayout() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 mb-2 shadow-xl">
               {dropdownNavItems}
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem >
                 <div className="flex items-center gap-2 w-full cursor-pointer">
                   <LogoutButton />
                 </div>

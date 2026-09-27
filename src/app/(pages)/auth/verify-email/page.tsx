@@ -179,7 +179,7 @@ function AuthActionContent() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Redirecting you to sign in...
                 </p>
-                <Button asChild>
+                <Button>
                   <Link href="/auth/login">
                     Continue to sign in
                   </Link>
@@ -208,7 +208,7 @@ function AuthActionContent() {
               </div>
               
               <div className="flex flex-col gap-3">
-                <Button asChild variant="outline">
+                <Button variant="outline">
                   <Link href="/auth/login">
                     Back to sign in
                   </Link>

@@ -588,12 +588,12 @@ function SignUpSuccessState({
             </Button>
 
             <div className="flex gap-3">
-              <Button asChild variant="default" className="flex-1">
+              <Button variant="default" className="flex-1">
                 <Link href="/auth/login">
                   Continue to sign in
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="flex-1">
+              <Button variant="outline" className="flex-1">
                 <Link href="/auth/sign-up">
                   Create another account
                 </Link>

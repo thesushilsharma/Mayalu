@@ -189,7 +189,7 @@ export function DataTable() {
               </TableCell>
               <TableCell>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                  <DropdownMenuTrigger>
                     <Button variant="ghost" size="icon">
                       <MoreVertical className="h-4 w-4" />
                     </Button>

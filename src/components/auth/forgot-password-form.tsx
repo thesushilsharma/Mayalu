@@ -73,7 +73,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
               <p className="text-sm text-muted-foreground mb-4">
                 Didn&apos;t receive the email? Check your spam folder or try again.
               </p>
-              <Button variant="outline" asChild>
+              <Button variant="outline">
                 <Link href="/auth/login">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back to login
@@ -137,7 +137,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
             </div>
             
             <div className="mt-6 text-center">
-              <Button variant="ghost" asChild>
+              <Button variant="ghost">
                 <Link href="/auth/login">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back to login

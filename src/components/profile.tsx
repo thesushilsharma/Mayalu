@@ -127,7 +127,7 @@ export default function ProfileSection() {
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Badges</h3>
                     <div className="flex flex-wrap gap-2">
                       {user.badges && user.badges.length > 0 ? (
-                        user.badges.map((badge, index) => (
+                        user.badges.map((badge: { name: string; description?: string }, index: number) => (
                           <Badge key={index} className="bg-muted text-foreground">
                             {badge.name}
                           </Badge>
@@ -197,7 +197,7 @@ export default function ProfileSection() {
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {user.interests && user.interests.length > 0 ? (
-                        user.interests.map((interest, index) => (
+                        user.interests.map((interest: string, index: number) => (
                           <Badge key={index} variant="secondary">
                             {interest}
                           </Badge>
@@ -250,7 +250,7 @@ export default function ProfileSection() {
                           />
                         </div>
                       )}
-                      {user.photos && user.photos.length > 0 && user.photos.map((photo, index) => (
+                      {user.photos && user.photos.length > 0 && user.photos.map((photo: string, index: number) => (
                         <div key={index} className="aspect-square rounded-md overflow-hidden">
                           <Image
                             src={photo}
@@ -279,7 +279,7 @@ export default function ProfileSection() {
                   <CardContent>
                     <div className="space-y-4">
                       {user.xpHistory && user.xpHistory.length > 0 ? (
-                        user.xpHistory.map((entry, index) => (
+                        user.xpHistory.map((entry: { activity: string; xp: number; date: string }, index: number) => (
                           <div key={index} className="flex justify-between items-center pb-3 border-b last:border-0">
                             <div>
                               <p className="font-medium">{entry.activity}</p>

@@ -1,6 +1,5 @@
 "use server"
 
-import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/server"
 
@@ -14,8 +13,8 @@ export async function removeSessionCookie() {
 
 export async function getSessionUser() {
   try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session) return null
+    const { data: session } = await auth.getSession()
+    if (!session?.user) return null
     return {
       uid: session.user.id,
       email: session.user.email,
@@ -29,8 +28,8 @@ export async function getSessionUser() {
 
 export async function getUserProfile(uid: string) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session) return null
+    const { data: session } = await auth.getSession()
+    if (!session?.user) return null
     return {
       uid: session.user.id,
       email: session.user.email,
@@ -65,3 +64,4 @@ export async function requireAuth() {
   
   return user
 }
+

@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
                },
           ],
      },
+     logging: {
+          browserToTerminal: true,
+     },
+     cacheComponents: true,
+     partialPrefetching: true,
 };
 
 export default nextConfig;

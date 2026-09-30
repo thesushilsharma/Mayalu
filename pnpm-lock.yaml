@@ -44,6 +44,9 @@ importers:
       framer-motion:
         specifier: ^13.4.4
         version: 13.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      input-otp:
+        specifier: ^1.5.0
+        version: 1.5.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       limiter:
         specifier: ^3.0.0
         version: 3.0.0

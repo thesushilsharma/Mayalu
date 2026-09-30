@@ -18,7 +18,6 @@ import { authClient } from "@/lib/auth/client"
 export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
   
   const [formData, setFormData] = useState({
     givenName: "",
@@ -74,47 +73,13 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
         return
       }
 
-      toast.success("Account created successfully!")
-      setIsSuccess(true)
+      toast.success("Account created! Please enter the 6-digit verification code sent to your email.")
       setIsSubmitting(false)
+      router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`)
     } catch (err: any) {
       toast.error(err.message || "An unexpected error occurred")
       setIsSubmitting(false)
     }
-  }
-
-  if (isSuccess) {
-    return (
-      <Card className={cn("max-w-md mx-auto", className)} {...props}>
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-            <Mail className="h-6 w-6 text-green-600 dark:text-green-400" />
-          </div>
-          <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
-          <CardDescription>
-            We&apos;ve sent a verification link to {formData.email}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-green-900 dark:text-green-100">
-                  Account created successfully!
-                </p>
-                <p className="text-sm text-green-700 dark:text-green-200">
-                  Please check your email and click the verification link to activate your account.
-                </p>
-              </div>
-            </div>
-          </div>
-          <Button className="w-full" onClick={() => router.push("/auth/login")}>
-            Continue to sign in
-          </Button>
-        </CardContent>
-      </Card>
-    )
   }
 
   return (

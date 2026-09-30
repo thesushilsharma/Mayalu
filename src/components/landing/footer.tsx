@@ -1,8 +1,15 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { HeartIcon } from "lucide-react";
 import Link from "next/link";
 
 export default function Footer() {
-    const currentYear = new Date().getFullYear()
+    const [currentYear, setCurrentYear] = useState(2026);
+
+    useEffect(() => {
+        setCurrentYear(new Date().getFullYear());
+    }, []);
     return (
         <footer className="bg-card border-t py-8">
         <div className="container mx-auto px-4">

@@ -1,6 +1,18 @@
 "use client";
 
+import { ArrowUpDown, Loader2, MoreVertical, Search } from "lucide-react";
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -9,20 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Search, MoreVertical, ArrowUpDown, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import type { User } from "@/lib/neonDB/user-actions";
-import { updateUserStatus, deleteUser, setUserClaims } from "@/lib/neonDB/user-actions";
+import {
+  deleteUser,
+  setUserClaims,
+  updateUserStatus,
+} from "@/lib/neonDB/user-actions";
 
 interface UsersDataTableProps {
   users: User[];
@@ -30,14 +34,17 @@ interface UsersDataTableProps {
 
 export function UsersDataTable({ users }: UsersDataTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<"metadata.creationTime" | "email">("metadata.creationTime");
+  const [sortField, setSortField] = useState<"metadata.creationTime" | "email">(
+    "metadata.creationTime",
+  );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [isPending, startTransition] = useTransition();
+  const [pendingUid, setPendingUid] = useState<string | null>(null);
 
   const filteredUsers = users.filter(
     (user) =>
       user.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
@@ -65,40 +72,54 @@ export function UsersDataTable({ users }: UsersDataTableProps) {
     }
   };
 
-  const handleToggleStatus = async (uid: string, currentStatus: boolean) => {
+  const handleToggleStatus = (uid: string, currentStatus: boolean) => {
+    setPendingUid(uid);
     startTransition(async () => {
-      const result = await updateUserStatus(uid, !currentStatus);
-      if (result.success) {
-        toast.success(`User ${!currentStatus ? "disabled" : "enabled"} successfully`);
-        window.location.reload();
-      } else {
-        toast.error(result.error || "Failed to update user status");
+      try {
+        const result = await updateUserStatus(uid, !currentStatus);
+        if (result.success) {
+          toast.success(
+            `User ${!currentStatus ? "disabled" : "enabled"} successfully`,
+          );
+        } else {
+          toast.error(result.error || "Failed to update user status");
+        }
+      } finally {
+        setPendingUid(null);
       }
     });
   };
 
-  const handleDeleteUser = async (uid: string, email: string | undefined) => {
+  const handleDeleteUser = (uid: string, email: string | undefined) => {
     if (!confirm(`Are you sure you want to delete user ${email}?`)) return;
 
+    setPendingUid(uid);
     startTransition(async () => {
-      const result = await deleteUser(uid);
-      if (result.success) {
-        toast.success("User deleted successfully");
-        window.location.reload();
-      } else {
-        toast.error(result.error || "Failed to delete user");
+      try {
+        const result = await deleteUser(uid);
+        if (result.success) {
+          toast.success("User deleted successfully");
+        } else {
+          toast.error(result.error || "Failed to delete user");
+        }
+      } finally {
+        setPendingUid(null);
       }
     });
   };
 
-  const handleSetRole = async (uid: string, role: string) => {
+  const handleSetRole = (uid: string, role: string) => {
+    setPendingUid(uid);
     startTransition(async () => {
-      const result = await setUserClaims(uid, { role });
-      if (result.success) {
-        toast.success(`User role updated to ${role}`);
-        window.location.reload();
-      } else {
-        toast.error(result.error || "Failed to update user role");
+      try {
+        const result = await setUserClaims(uid, { role });
+        if (result.success) {
+          toast.success(`User role updated to ${role}`);
+        } else {
+          toast.error(result.error || "Failed to update user role");
+        }
+      } finally {
+        setPendingUid(null);
       }
     });
   };
@@ -166,79 +187,116 @@ export function UsersDataTable({ users }: UsersDataTableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              sortedUsers.map((user) => (
-                <TableRow key={user.uid}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={user.photoURL} alt={user.displayName || user.email} />
-                        <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{user.displayName || "No name"}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+              sortedUsers.map((user) => {
+                const isRowPending = isPending && pendingUid === user.uid;
+
+                return (
+                  <TableRow key={user.uid}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage
+                            src={user.photoURL}
+                            alt={user.displayName || user.email}
+                          />
+                          <AvatarFallback>
+                            {getUserInitials(user)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">
+                            {user.displayName || "No name"}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={user.disabled ? "destructive" : "default"}>
-                      {user.disabled ? "Disabled" : "Active"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={getUserRole(user) === "admin" ? "default" : "outline"}
-                    >
-                      {getUserRole(user)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={user.emailVerified ? "default" : "secondary"}>
-                      {user.emailVerified ? "Verified" : "Unverified"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {user.metadata.creationTime
-                      ? new Date(user.metadata.creationTime).toLocaleDateString()
-                      : "N/A"}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {user.metadata.lastSignInTime
-                      ? new Date(user.metadata.lastSignInTime).toLocaleDateString()
-                      : "Never"}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className={buttonVariants({ variant: "ghost", size: "icon" })} disabled={isPending}>
-                        {isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <MoreVertical className="h-4 w-4" />
-                        )}
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => handleToggleStatus(user.uid, user.disabled)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={user.disabled ? "destructive" : "default"}
+                      >
+                        {user.disabled ? "Disabled" : "Active"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          getUserRole(user) === "admin" ? "default" : "outline"
+                        }
+                      >
+                        {getUserRole(user)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={user.emailVerified ? "default" : "secondary"}
+                      >
+                        {user.emailVerified ? "Verified" : "Unverified"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {user.metadata.creationTime
+                        ? new Date(
+                            user.metadata.creationTime,
+                          ).toLocaleDateString()
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {user.metadata.lastSignInTime
+                        ? new Date(
+                            user.metadata.lastSignInTime,
+                          ).toLocaleDateString()
+                        : "Never"}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          className={buttonVariants({
+                            variant: "ghost",
+                            size: "icon",
+                          })}
+                          disabled={isPending}
                         >
-                          {user.disabled ? "Enable User" : "Disable User"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleSetRole(user.uid, "admin")}>
-                          Set as Admin
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleSetRole(user.uid, "user")}>
-                          Set as User
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => handleDeleteUser(user.uid, user.email)}
-                        >
-                          Delete User
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
+                          {isRowPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <MoreVertical className="h-4 w-4" />
+                          )}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleToggleStatus(user.uid, user.disabled)
+                            }
+                          >
+                            {user.disabled ? "Enable User" : "Disable User"}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleSetRole(user.uid, "admin")}
+                          >
+                            Set as Admin
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleSetRole(user.uid, "user")}
+                          >
+                            Set as User
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() =>
+                              handleDeleteUser(user.uid, user.email)
+                            }
+                          >
+                            Delete User
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

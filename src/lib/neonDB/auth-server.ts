@@ -1,10 +1,19 @@
-"use server"
+"use server";
 
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth/server"
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth/server";
+
+function isPrerenderSignal(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    (error as { digest?: string }).digest === "HANGING_PROMISE_REJECTION"
+  );
+}
 
 export async function createSessionCookie(idToken: string) {
-  return { success: true }
+  return { success: true };
 }
 
 export async function removeSessionCookie() {
@@ -13,23 +22,26 @@ export async function removeSessionCookie() {
 
 export async function getSessionUser() {
   try {
-    const { data: session } = await auth.getSession()
-    if (!session?.user) return null
+    const { data: session } = await auth.getSession();
+    if (!session?.user) return null;
     return {
       uid: session.user.id,
       email: session.user.email,
       emailVerified: session.user.emailVerified,
-    }
+    };
   } catch (error) {
-    console.error("Error verifying session:", error)
-    return null
+    if (isPrerenderSignal(error)) {
+      throw error;
+    }
+    console.error("Error verifying session:", error);
+    return null;
   }
 }
 
 export async function getUserProfile(uid: string) {
   try {
-    const { data: session } = await auth.getSession()
-    if (!session?.user) return null
+    const { data: session } = await auth.getSession();
+    if (!session?.user) return null;
     return {
       uid: session.user.id,
       email: session.user.email,
@@ -48,20 +60,22 @@ export async function getUserProfile(uid: string) {
         providerId: string;
         email?: string;
       }>,
-    }
+    };
   } catch (error) {
-    console.error("Error fetching user profile:", error)
-    return null
+    if (isPrerenderSignal(error)) {
+      throw error;
+    }
+    console.error("Error fetching user profile:", error);
+    return null;
   }
 }
 
 export async function requireAuth() {
-  const user = await getSessionUser()
-  
-  if (!user) {
-    redirect("/auth/login")
-  }
-  
-  return user
-}
+  const user = await getSessionUser();
 
+  if (!user) {
+    redirect("/auth/login");
+  }
+
+  return user;
+}

@@ -8,13 +8,10 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UsersDataTable } from "@/components/users-data-table";
-import { requireAuth } from "@/lib/neonDB/auth-server";
 import { getAllUsers } from "@/lib/neonDB/user-actions";
 
 async function UsersTableWrapper() {
-  await requireAuth();
   const users = await getAllUsers();
-
   return <UsersDataTable users={users} />;
 }
 

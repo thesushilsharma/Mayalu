@@ -8,7 +8,11 @@ export default function DashboardLayout({
 }>) {
   return (
     <section className="font-sans antialiased flex min-h-screen w-full">
-      <Suspense fallback={<div className="hidden lg:block lg:w-64 min-h-screen border-r bg-muted/20" />}>
+      <Suspense
+        fallback={
+          <div className="hidden lg:block lg:w-64 min-h-screen border-r bg-muted/20" />
+        }
+      >
         <DashboardUserLayout />
       </Suspense>
 

@@ -1,11 +1,18 @@
 import { Suspense } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { UsersDataTable } from "@/components/users-data-table";
-import { getAllUsers } from "@/lib/neonDB/user-actions";
-import { requireAuth } from "@/lib/neonDB/auth-server";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UsersDataTable } from "@/components/users-data-table";
+import { requireAuth } from "@/lib/neonDB/auth-server";
+import { getAllUsers } from "@/lib/neonDB/user-actions";
 
 async function UsersTableWrapper() {
+  await requireAuth();
   const users = await getAllUsers();
 
   return <UsersDataTable users={users} />;
@@ -26,10 +33,7 @@ function UsersTableSkeleton() {
   );
 }
 
-export default async function UsersPage() {
-  // Require authentication to access this page
-  await requireAuth();
-
+export default function UsersPage() {
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between">

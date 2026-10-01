@@ -1,16 +1,47 @@
-import { getUserProfile, requireAuth } from "@/lib/neonDB/auth-server"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { CalendarDays, Mail, Phone, Shield, User, Clock } from "lucide-react"
+import { CalendarDays, Clock, Mail, Phone, Shield, User } from "lucide-react";
+import { Suspense } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getUserProfile, requireAuth } from "@/lib/neonDB/auth-server";
 
-export default async function ProfilePage() {
-  // Require authentication and get user session
-  const sessionUser = await requireAuth()
+function ProfileSkeleton() {
+  return (
+    <Card className="animate-pulse">
+      <CardHeader>
+        <div className="flex items-start gap-4">
+          <Skeleton className="size-20 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-60" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <Separator />
+        <div className="space-y-4">
+          <Skeleton className="h-4 w-32" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Skeleton className="h-12 w-full rounded-lg" />
+            <Skeleton className="h-12 w-full rounded-lg" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
-  // Fetch full user profile data from Neon Database
-  const profile = await getUserProfile(sessionUser.uid)
+async function ProfileContent() {
+  const sessionUser = await requireAuth();
+  const profile = await getUserProfile(sessionUser.uid);
 
   if (!profile) {
     return (
@@ -22,48 +53,46 @@ export default async function ProfilePage() {
           </CardHeader>
         </Card>
       </div>
-    )
+    );
   }
 
-  const getInitials = (email: string | undefined, displayName: string | null | undefined) => {
+  const getInitials = (
+    email: string | undefined,
+    displayName: string | null | undefined,
+  ) => {
     if (displayName) {
       return displayName
         .split(" ")
         .map((n) => n[0])
         .join("")
         .toUpperCase()
-        .slice(0, 2)
+        .slice(0, 2);
     }
-    return email?.charAt(0).toUpperCase() || "U"
-  }
+    return email?.charAt(0).toUpperCase() || "U";
+  };
 
   const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "N/A"
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your account information and preferences
-        </p>
-      </div>
-
+    <>
       {/* Profile Overview Card */}
       <Card>
         <CardHeader>
           <div className="flex items-start gap-4">
             <Avatar className="size-20">
-              <AvatarImage src={profile.photoURL || undefined} alt={profile.displayName || "User"} />
+              <AvatarImage
+                src={profile.photoURL || undefined}
+                alt={profile.displayName || "User"}
+              />
               <AvatarFallback className="text-lg">
                 {getInitials(profile.email, profile.displayName)}
               </AvatarFallback>
@@ -108,8 +137,12 @@ export default async function ProfilePage() {
                   <Mail className="size-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">Email</p>
-                  <p className="text-sm font-mono truncate">{profile.email || "Not provided"}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Email
+                  </p>
+                  <p className="text-sm font-mono truncate">
+                    {profile.email || "Not provided"}
+                  </p>
                 </div>
               </div>
 
@@ -118,8 +151,12 @@ export default async function ProfilePage() {
                   <Phone className="size-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                  <p className="text-sm">{profile.phoneNumber || "Not provided"}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Phone
+                  </p>
+                  <p className="text-sm">
+                    {profile.phoneNumber || "Not provided"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -138,7 +175,9 @@ export default async function ProfilePage() {
                   <User className="size-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">User ID</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    User ID
+                  </p>
                   <p className="text-xs font-mono truncate">{profile.uid}</p>
                 </div>
               </div>
@@ -148,8 +187,12 @@ export default async function ProfilePage() {
                   <CalendarDays className="size-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">Last Sign In</p>
-                  <p className="text-xs">{formatDate(profile.metadata.lastSignInTime)}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Last Sign In
+                  </p>
+                  <p className="text-xs">
+                    {formatDate(profile.metadata.lastSignInTime)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -160,7 +203,10 @@ export default async function ProfilePage() {
               <Separator />
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock className="size-3" />
-                <span>Last token refresh: {formatDate(profile.metadata.lastRefreshTime)}</span>
+                <span>
+                  Last token refresh:{" "}
+                  {formatDate(profile.metadata.lastRefreshTime)}
+                </span>
               </div>
             </>
           )}
@@ -171,13 +217,20 @@ export default async function ProfilePage() {
       {profile.providerData && profile.providerData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Sign-in Methods</CardTitle>
-            <CardDescription>Authentication providers linked to your account</CardDescription>
+            <CardTitle className="text-lg font-semibold">
+              Sign-in Methods
+            </CardTitle>
+            <CardDescription>
+              Authentication providers linked to your account
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {profile.providerData.map((provider) => (
-                <div key={provider.uid || provider.providerId} className="flex items-center justify-between p-3 rounded-lg border">
+                <div
+                  key={provider.uid || provider.providerId}
+                  className="flex items-center justify-between p-3 rounded-lg border"
+                >
                   <div className="flex items-center gap-3">
                     <div className="rounded-lg bg-primary/10 p-2">
                       <Shield className="size-4 text-primary" />
@@ -186,7 +239,9 @@ export default async function ProfilePage() {
                       <p className="text-sm font-medium capitalize">
                         {provider.providerId.replace(".com", "")}
                       </p>
-                      <p className="text-xs text-muted-foreground">{provider.email}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {provider.email}
+                      </p>
                     </div>
                   </div>
                   <Badge variant="outline">Active</Badge>
@@ -196,6 +251,25 @@ export default async function ProfilePage() {
           </CardContent>
         </Card>
       )}
+    </>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Header - Instant Shell */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
+        <p className="text-muted-foreground mt-2">
+          Manage your account information and preferences
+        </p>
+      </div>
+
+      {/* Content - Streamed behind Suspense */}
+      <Suspense fallback={<ProfileSkeleton />}>
+        <ProfileContent />
+      </Suspense>
     </div>
-  )
+  );
 }

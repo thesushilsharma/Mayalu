@@ -1,9 +1,8 @@
-export { AuthGuard } from "./auth-guard"
-export { AuthLayout } from "./auth-layout"
-export { ChangePasswordForm } from "./change-password-form"
-export { EmailVerificationBanner } from "./email-verification-banner"
-export { ForgotPasswordForm } from "./forgot-password-form"
-export { LoginForm } from "./login-form"
-export { LogoutButton } from "./logout-button"
-export { SignUpForm } from "./sign-up-form"
-export { UpdatePasswordForm } from "./update-password-form"
+export { AuthLayout } from "./auth-layout";
+export { ChangePasswordForm } from "./change-password-form";
+export { EmailVerificationBanner } from "./email-verification-banner";
+export { ForgotPasswordForm } from "./forgot-password-form";
+export { LoginForm } from "./login-form";
+export { LogoutButton } from "./logout-button";
+export { SignUpForm } from "./sign-up-form";
+export { UpdatePasswordForm } from "./update-password-form";

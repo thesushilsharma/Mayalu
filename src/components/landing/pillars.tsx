@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { ArrowRight, HeartHandshake, Share2, Trophy, Zap } from "lucide-react";
 
 export function Pillars() {
@@ -56,8 +59,14 @@ export function Pillars() {
     <section className="py-16 md:py-24 border-y border-border/40 bg-muted/20 relative">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3.5 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-widest backdrop-blur-md">
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center max-w-3xl mx-auto mb-16 space-y-3"
+        >
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3.5 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-widest backdrop-blur-md shadow-xs">
             <Zap className="w-3.5 h-3.5 text-rose-500" />
             The Mayalu Architecture
           </div>
@@ -71,20 +80,28 @@ export function Pillars() {
             Trakt revolutionized how people track media. Mayalu transforms how
             people discover authentic love and life partners.
           </p>
-        </div>
+        </motion.div>
 
-        {/* 3 Signature Pillar Cards */}
+        {/* 3 Signature Pillar Cards with Motion In-View */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {pillars.map((pillar) => {
+          {pillars.map((pillar, idx) => {
             const Icon = pillar.icon;
             return (
-              <article
+              <motion.article
                 key={pillar.label}
-                className="group relative rounded-3xl border border-border/60 bg-gradient-to-b from-card to-card/70 p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{
+                  duration: 0.55,
+                  delay: idx * 0.12,
+                  ease: "easeOut",
+                }}
+                className="group relative rounded-3xl border border-border/60 bg-gradient-to-b from-card to-card/70 p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
               >
                 {/* Glow highlight on hover */}
                 <div
-                  className={`absolute -inset-0.5 rounded-3xl bg-gradient-to-r ${pillar.accentColor} opacity-0 group-hover:opacity-10 transition-opacity blur-md -z-10`}
+                  className={`absolute -inset-0.5 rounded-3xl bg-gradient-to-r ${pillar.accentColor} opacity-0 group-hover:opacity-15 transition-opacity blur-md -z-10`}
                 />
 
                 <div className="space-y-6">
@@ -136,7 +153,7 @@ export function Pillars() {
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </div>
-              </article>
+              </motion.article>
             );
           })}
         </div>

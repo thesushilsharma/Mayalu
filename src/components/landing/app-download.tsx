@@ -1,150 +1,290 @@
-import { Smartphone } from "lucide-react";
+"use client";
+
+import { useGSAP } from "@gsap/react";
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import gsap from "gsap";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Globe,
+  Heart,
+  Laptop,
+  Lock,
+  RotateCw,
+  Share2,
+  Smartphone,
+  Sparkles,
+  Tablet,
+  X,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
+import { useRef, useState } from "react";
 import { Button } from "../ui/button";
 
 export function AppDownload() {
+  const containerRef = useRef<HTMLElement | null>(null);
+  const phoneRef = useRef<HTMLDivElement | null>(null);
+  const [swipedState, setSwipedState] = useState<"none" | "liked" | "passed">(
+    "none",
+  );
+
+  // Framer Motion Drag values for phone card
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-100, 100], [-15, 15]);
+  const opacityLike = useTransform(x, [10, 60], [0, 1]);
+  const opacityPass = useTransform(x, [-10, -60], [0, 1]);
+
+  // Gentle floating physics for phone mockup via GSAP
+  useGSAP(
+    () => {
+      if (phoneRef.current) {
+        gsap.to(phoneRef.current, {
+          y: "+=8",
+          duration: 3,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+        });
+      }
+    },
+    { scope: containerRef },
+  );
+
+  const handleDragEnd = (_: unknown, info: { offset: { x: number } }) => {
+    if (info.offset.x > 50) {
+      setSwipedState("liked");
+      setTimeout(() => setSwipedState("none"), 1200);
+    } else if (info.offset.x < -50) {
+      setSwipedState("passed");
+      setTimeout(() => setSwipedState("none"), 1200);
+    }
+  };
+
   return (
-    <section className="py-20 relative overflow-hidden">
+    <section ref={containerRef} className="py-24 relative overflow-hidden">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="relative rounded-3xl border border-border/70 bg-gradient-to-b from-card via-card/95 to-background p-8 sm:p-12 md:p-16 shadow-2xl overflow-hidden">
-          {/* Ambient background glow */}
-          <div className="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 bg-rose-500/10 blur-[100px] rounded-full" />
-          <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 bg-purple-500/10 blur-[100px] rounded-full" />
+          {/* Ambient background glows */}
+          <div className="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 bg-rose-500/15 blur-[120px] rounded-full" />
+          <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 bg-violet-500/15 blur-[120px] rounded-full" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* Left copy: Trakt-inspired */}
-            <div className="lg:col-span-7 space-y-5 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/10 px-3.5 py-1 text-xs font-semibold text-rose-500">
-                <Smartphone className="w-3.5 h-3.5" />
-                Cross-Platform Everywhere
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Left copy: Cross-device web browser experience */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="lg:col-span-7 space-y-6 text-center lg:text-left"
+            >
+              <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/10 px-3.5 py-1 text-xs font-semibold text-rose-500 shadow-xs">
+                <Globe className="w-3.5 h-3.5" />
+                Browser-First Web App · Mobile · Tablet · Laptop
               </div>
 
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-                Get the Mayalu app.{" "}
+                One web platform.{" "}
                 <span className="bg-gradient-to-r from-rose-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">
-                  Love on the go.
+                  Every screen size.
                 </span>
               </h2>
 
               <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Experience instant match notifications, seamless voice note
-                exchanges, and gamified speed dates on iOS, Android, and Web
-                PWA.
+                No App Store or Google Play downloads required. Open Mayalu
+                directly in any modern browser on your phone, tablet, or laptop.
+                Enjoy instant cloud synchronization, touch gestures, and
+                full-screen Progressive Web App (PWA) support.
               </p>
 
-              {/* Trakt-style app store badges */}
+              {/* 3 Device compatibility breakdown cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-left">
+                <div className="p-3.5 rounded-2xl border border-border/70 bg-card/70 backdrop-blur-xs flex flex-col gap-1.5 hover:border-rose-500/40 transition-colors">
+                  <div className="flex items-center gap-2 text-foreground font-semibold text-sm">
+                    <Smartphone className="w-4 h-4 text-rose-500" />
+                    <span>Mobile Browser</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-normal">
+                    Fluid swipe physics, voice notes & touch-optimized mobile
+                    web interface.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl border border-border/70 bg-card/70 backdrop-blur-xs flex flex-col gap-1.5 hover:border-pink-500/40 transition-colors">
+                  <div className="flex items-center gap-2 text-foreground font-semibold text-sm">
+                    <Tablet className="w-4 h-4 text-pink-500" />
+                    <span>Tablet & iPad</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-normal">
+                    Split-screen conversations, relationship graph exploration &
+                    gallery views.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl border border-border/70 bg-card/70 backdrop-blur-xs flex flex-col gap-1.5 hover:border-indigo-500/40 transition-colors">
+                  <div className="flex items-center gap-2 text-foreground font-semibold text-sm">
+                    <Laptop className="w-4 h-4 text-indigo-500" />
+                    <span>Laptop & Desktop</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-normal">
+                    High-res matchmaking, detailed matrimonial profiles &
+                    keyboard navigation.
+                  </p>
+                </div>
+              </div>
+
+              {/* Primary action buttons */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-3">
-                {/* Apple App Store */}
-                <a
-                  href="#app-store"
-                  className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-neutral-900 border border-neutral-700 hover:border-neutral-500 text-white transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg group"
-                >
-                  <svg
-                    className="w-7 h-7 fill-white group-hover:scale-110 transition-transform"
-                    viewBox="0 0 24 24"
-                    role="img"
-                    aria-label="Apple logo"
-                  >
-                    <title>Apple App Store</title>
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.9.04-2.02.6-2.67 1.34-.56.63-1.07 1.66-.94 2.7.99.08 2-.45 2.6-1.17z" />
-                  </svg>
-                  <div className="text-left">
-                    <span className="block text-[10px] uppercase tracking-wider text-neutral-400 font-medium">
-                      Download on the
-                    </span>
-                    <span className="block text-sm font-bold text-white tracking-tight -mt-0.5">
-                      App Store
-                    </span>
-                  </div>
-                </a>
-
-                {/* Google Play */}
-                <a
-                  href="#google-play"
-                  className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-neutral-900 border border-neutral-700 hover:border-neutral-500 text-white transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg group"
-                >
-                  <svg
-                    className="w-6 h-6 group-hover:scale-110 transition-transform"
-                    viewBox="0 0 24 24"
-                    role="img"
-                    aria-label="Google Play logo"
-                  >
-                    <title>Google Play Store</title>
-                    <path
-                      fill="#EA4335"
-                      d="M3.6 1.7L13.8 12 3.6 22.3c-.4-.4-.6-1-.6-1.7V3.4c0-.7.2-1.3.6-1.7z"
-                    />
-                    <path
-                      fill="#FBBC04"
-                      d="M17.3 8.6L13.8 12l3.5 3.4 3.9-2.2c1.1-.6 1.1-1.7 0-2.3l-3.9-2.3z"
-                    />
-                    <path
-                      fill="#4285F4"
-                      d="M3.6 22.3l10.2-10.3 3.5 3.4-11.6 6.6c-.8.5-1.6.5-2.1.3z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M13.8 12L3.6 1.7c.5-.2 1.3-.2 2.1.3l11.6 6.6-3.5 3.4z"
-                    />
-                  </svg>
-                  <div className="text-left">
-                    <span className="block text-[10px] uppercase tracking-wider text-neutral-400 font-medium">
-                      GET IT ON
-                    </span>
-                    <span className="block text-sm font-bold text-white tracking-tight -mt-0.5">
-                      Google Play
-                    </span>
-                  </div>
-                </a>
-
-                {/* Web App CTA */}
                 <Link href="/auth/sign-up">
                   <Button
-                    variant="outline"
-                    className="h-[52px] rounded-2xl border-border px-5 text-sm font-semibold hover:bg-muted"
+                    size="lg"
+                    className="h-12 px-6 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-600 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white font-bold shadow-lg shadow-rose-500/25 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
                   >
-                    Open Web App (PWA)
+                    <span>Launch Web App</span>
+                    <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
+
+                <div className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl border border-border/80 bg-card/90 text-xs sm:text-sm font-medium text-muted-foreground">
+                  <Zap className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>PWA Ready · Add to Home Screen</span>
+                </div>
               </div>
-            </div>
 
-            {/* Right Phone Mockup Card */}
+              {/* Trust badges */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-xs text-muted-foreground pt-1">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  Safari, Chrome, Edge & Firefox
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  Zero storage overhead
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  Instant real-time sync
+                </span>
+              </div>
+            </motion.div>
+
+            {/* Right Phone Mockup Styled as Mobile Web Browser */}
             <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-64 h-[380px] rounded-[36px] border-4 border-neutral-800 bg-neutral-950 p-3 shadow-2xl shadow-rose-500/10 flex flex-col justify-between">
+              <div
+                ref={phoneRef}
+                className="relative w-72 h-[440px] rounded-[44px] border-4 border-neutral-800 bg-neutral-950 p-3.5 shadow-2xl shadow-rose-500/15 flex flex-col justify-between"
+              >
                 {/* Phone Speaker Notch */}
-                <div className="w-20 h-4 bg-neutral-900 rounded-full mx-auto mb-2" />
+                <div className="w-22 h-4 bg-neutral-900 rounded-full mx-auto mb-2" />
 
-                {/* In-app preview */}
-                <div className="flex-1 rounded-[24px] bg-gradient-to-b from-neutral-900 to-neutral-950 border border-neutral-800 p-4 flex flex-col justify-between text-white">
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] text-neutral-400 mb-2">
-                      <span>Mayalu Live</span>
-                      <span className="text-rose-500 font-bold">
-                        ● 98% Match
+                {/* Mobile Browser Window */}
+                <div className="flex-1 rounded-[28px] bg-gradient-to-b from-neutral-900 to-neutral-950 border border-neutral-800/80 p-3 flex flex-col justify-between text-white overflow-hidden relative">
+                  {/* Browser URL bar */}
+                  <div className="rounded-xl bg-neutral-950/90 border border-neutral-800 px-3 py-1.5 flex items-center justify-between text-[11px] text-neutral-400 mb-2 shadow-inner">
+                    <div className="flex items-center gap-1.5 text-neutral-200">
+                      <Lock className="w-3 h-3 text-emerald-400" />
+                      <span className="font-mono text-[10px]">
+                        mayalu.app/discover
                       </span>
                     </div>
-                    <div className="w-full h-32 rounded-xl bg-gradient-to-tr from-rose-500 via-pink-600 to-indigo-600 flex items-center justify-center font-bold text-2xl shadow-inner">
-                      Aayusha, 26
+                    <div className="flex items-center gap-2 text-neutral-500">
+                      <RotateCw className="w-2.5 h-2.5" />
+                      <Share2 className="w-2.5 h-2.5" />
                     </div>
                   </div>
 
-                  <div className="space-y-1.5 text-center">
-                    <p className="text-xs font-bold">
-                      Himalayan Trek Enthusiast
-                    </p>
-                    <p className="text-[10px] text-neutral-400">
-                      Swipe right to level up connection
-                    </p>
+                  {/* Inside Web Page Header */}
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] text-neutral-400 mb-1.5 px-1">
+                      <span className="flex items-center gap-1 font-bold text-neutral-300">
+                        <Sparkles className="w-3 h-3 text-rose-500" />
+                        Live Web Session
+                      </span>
+                      <span className="text-emerald-400 font-bold flex items-center gap-1">
+                        ● Online Sync
+                      </span>
+                    </div>
+
+                    {/* Interactive Swipeable Mini-Card */}
+                    <div className="relative h-40 w-full mt-1">
+                      <motion.div
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        style={{ x, rotate }}
+                        onDragEnd={handleDragEnd}
+                        whileTap={{ cursor: "grabbing" }}
+                        className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-rose-500 via-pink-600 to-indigo-600 p-4 flex flex-col justify-between shadow-lg cursor-grab select-none"
+                      >
+                        {/* Drag Overlay Badges */}
+                        <motion.div
+                          style={{ opacity: opacityLike }}
+                          className="absolute top-2 right-2 border-2 border-emerald-400 text-emerald-300 text-[10px] font-extrabold px-2 py-0.5 rounded-lg rotate-12"
+                        >
+                          LIKE
+                        </motion.div>
+                        <motion.div
+                          style={{ opacity: opacityPass }}
+                          className="absolute top-2 left-2 border-2 border-rose-400 text-rose-300 text-[10px] font-extrabold px-2 py-0.5 rounded-lg -rotate-12"
+                        >
+                          PASS
+                        </motion.div>
+
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded-md self-start">
+                          Featured Profile
+                        </span>
+
+                        <div>
+                          <h4 className="font-extrabold text-base text-white">
+                            Aayusha, 26
+                          </h4>
+                          <p className="text-[11px] text-white/80">
+                            Kathmandu · Architect
+                          </p>
+                        </div>
+                      </motion.div>
+                    </div>
                   </div>
 
-                  <div className="flex justify-center gap-3 pt-2">
-                    <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-xs text-rose-400">
+                  {/* Swipe Status Feedback */}
+                  <div className="text-center py-1">
+                    {swipedState === "liked" ? (
+                      <p className="text-xs font-bold text-emerald-400 flex items-center justify-center gap-1">
+                        <Heart className="w-3.5 h-3.5 fill-emerald-400" />{" "}
+                        Connected!
+                      </p>
+                    ) : swipedState === "passed" ? (
+                      <p className="text-xs font-bold text-rose-400 flex items-center justify-center gap-1">
+                        <X className="w-3.5 h-3.5" /> Next Profile
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-neutral-400 italic">
+                        ← Drag card left / right in browser →
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Phone action buttons */}
+                  <div className="flex justify-center items-center gap-4 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSwipedState("passed");
+                        setTimeout(() => setSwipedState("none"), 1200);
+                      }}
+                      className="w-9 h-9 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-rose-400 flex items-center justify-center text-sm transition-transform active:scale-90 cursor-pointer"
+                    >
                       ✕
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-xs text-white">
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSwipedState("liked");
+                        setTimeout(() => setSwipedState("none"), 1200);
+                      }}
+                      className="w-10 h-10 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center text-sm shadow-md shadow-rose-500/40 transition-transform active:scale-90 cursor-pointer"
+                    >
                       ♥
-                    </div>
+                    </button>
                   </div>
                 </div>
 

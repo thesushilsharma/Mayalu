@@ -1,4 +1,5 @@
 import { AppDownload } from "@/components/landing/app-download";
+import { CloudAtmosphere } from "@/components/landing/cloud-atmosphere";
 import Footer from "@/components/landing/footer";
 import { GraphShowcase } from "@/components/landing/graph-showcase";
 import Header from "@/components/landing/header";
@@ -10,7 +11,10 @@ import { XpShowcase } from "@/components/landing/xp-showcase";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-rose-500 selection:text-white">
+    <div className="relative min-h-screen bg-background text-foreground flex flex-col selection:bg-rose-500 selection:text-white">
+      {/* Ethereal 9th Cloud & Fluttering Butterfly Atmosphere */}
+      <CloudAtmosphere />
+
       {/* Sticky Glass Navbar */}
       <Header />
 

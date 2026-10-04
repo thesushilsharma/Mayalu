@@ -3,10 +3,10 @@
 import { useGSAP } from "@gsap/react";
 import {
   AnimatePresence,
-  type Variants,
   motion,
   useMotionValue,
   useTransform,
+  type Variants,
 } from "framer-motion";
 import gsap from "gsap";
 import {
@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { Button } from "../ui/button";
+import { ButterflyIcon } from "./cloud-atmosphere";
 
 interface SpotlightProfile {
   id: string;
@@ -271,8 +272,8 @@ export function HeroSpotlight() {
           {/* Left Column: Brand Story & High-Impact Copy */}
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
             <div className="hero-chip inline-flex items-center gap-2 rounded-full border border-rose-500/25 bg-rose-500/10 px-4 py-1.5 text-xs font-bold text-rose-500 shadow-xs">
-              <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-ping" />
-              <span>Neo4j Relationship Graph · Nepal Edition</span>
+              <ButterflyIcon className="w-4 h-4" />
+              <span>Butterflies on Cloud Nine · Nepal’s Graph Dating</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.08]">
@@ -281,14 +282,14 @@ export function HeroSpotlight() {
               </span>
               <span className="hero-title-line block">a roll of the dice.</span>
               <span className="hero-title-line block bg-gradient-to-r from-rose-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">
-                It’s connected.
+                It’s written on Cloud 9.
               </span>
             </h1>
 
             <p className="hero-subtitle text-base sm:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-              Mayalu blends high-dimensional graph intelligence with modern
-              dual-intent matchmaking. Move past superficial swiping to discover
-              deep lifestyle chemistry and family alignment.
+              Feel the butterflies of authentic connection. Mayalu blends
+              high-dimensional graph intelligence with heartfelt Nepali romance
+              and lifelong matrimonial harmony.
             </p>
 
             <div className="hero-cta flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
@@ -480,6 +481,7 @@ export function HeroSpotlight() {
                     {/* Top Row: Mode Badge + Neo4j Score Pill */}
                     <div className="relative z-10 flex items-center justify-between">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-black/35 backdrop-blur-md border border-white/25 text-white shadow-xs">
+                        <ButterflyIcon className="w-3.5 h-3.5" />
                         {activeProfile.mode === "dating"
                           ? "💖 Dating Mode"
                           : "💍 Matrimonial"}

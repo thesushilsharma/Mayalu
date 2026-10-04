@@ -8,7 +8,7 @@ Mayalu is a modern dating application built with a robust tech stack designed to
 
 ## 🚀 Tech Stack
 
-- **Frontend & Backend**: [Next.js 15](https://nextjs.org/) with App Router
+- **Frontend & Backend**: [Next.js 16](https://nextjs.org/) with App Router
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Database**: [Neo4j](https://neo4j.com/) for graph-based relationship modeling
 - **Authentication**: [Neon DB](https://neon.com/) for secure user authentication

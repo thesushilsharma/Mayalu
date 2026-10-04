@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, HeartHandshake, Share2, Trophy, Zap } from "lucide-react";
+import { ArrowRight, HeartHandshake, Share2, Trophy } from "lucide-react";
+import { ButterflyIcon } from "./cloud-atmosphere";
 
 export function Pillars() {
   const pillars = [
@@ -66,9 +67,9 @@ export function Pillars() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center max-w-3xl mx-auto mb-16 space-y-3"
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3.5 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-widest backdrop-blur-md shadow-xs">
-            <Zap className="w-3.5 h-3.5 text-rose-500" />
-            The Mayalu Architecture
+          <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/10 px-3.5 py-1 text-xs font-semibold text-rose-500 uppercase tracking-widest backdrop-blur-md shadow-xs">
+            <ButterflyIcon className="w-3.5 h-3.5" />
+            The 3 Pillars of Connection
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
             Built for how modern people{" "}
@@ -77,8 +78,9 @@ export function Pillars() {
             </span>
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg">
-            Trakt revolutionized how people track media. Mayalu transforms how
-            people discover authentic love and life partners.
+            Experience the butterflies of intentional romance on Cloud Nine,
+            grounded by Neo4j graph compatibility and respectful cultural
+            harmony.
           </p>
         </motion.div>
 
@@ -97,7 +99,7 @@ export function Pillars() {
                   delay: idx * 0.12,
                   ease: "easeOut",
                 }}
-                className="group relative rounded-3xl border border-border/60 bg-gradient-to-b from-card to-card/70 p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
+                className="group relative rounded-3xl border border-border/70 bg-card/85 backdrop-blur-xl p-8 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between cloud-glass"
               >
                 {/* Glow highlight on hover */}
                 <div

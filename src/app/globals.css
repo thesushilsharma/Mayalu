@@ -4,108 +4,113 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Mayalu Romantic & Warm Base Palette */
-  --background: oklch(0.99 0.004 15);
-  --foreground: oklch(0.2 0.03 260);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.03 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.03 260);
+  /* Mayalu Romantic "Cloud 9 Sunrise Blush" Palette */
+  --background: oklch(0.985 0.012 350);
+  --foreground: oklch(0.20 0.04 350);
+  --card: oklch(0.995 0.008 350);
+  --card-foreground: oklch(0.20 0.04 350);
+  --popover: oklch(0.995 0.008 350);
+  --popover-foreground: oklch(0.20 0.04 350);
 
-  /* Mayalu Signature Rose Primary */
-  --primary: oklch(0.6 0.23 16);
+  /* Mayalu Signature Romantic Passion Rose Primary */
+  --primary: oklch(0.58 0.24 15);
   --primary-foreground: oklch(1 0 0);
 
-  --secondary: oklch(0.96 0.02 25);
-  --secondary-foreground: oklch(0.3 0.05 16);
-  --muted: oklch(0.96 0.01 260);
-  --muted-foreground: oklch(0.5 0.02 260);
-  --accent: oklch(0.95 0.03 20);
-  --accent-foreground: oklch(0.3 0.05 16);
+  /* Whispering Cloud Mist Secondary */
+  --secondary: oklch(0.955 0.022 335);
+  --secondary-foreground: oklch(0.28 0.06 15);
+  --muted: oklch(0.96 0.012 340);
+  --muted-foreground: oklch(0.48 0.035 340);
+  /* Champagne Starlight & Butterfly Nectar Accent */
+  --accent: oklch(0.94 0.045 45);
+  --accent-foreground: oklch(0.28 0.06 15);
   --destructive: oklch(0.64 0.21 25.33);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0.01 260);
-  --input: oklch(0.9 0.01 260);
-  --ring: oklch(0.6 0.23 16);
+  --border: oklch(0.91 0.018 345);
+  --input: oklch(0.91 0.018 345);
+  --ring: oklch(0.60 0.24 15);
 
   /* Charts and visual tiers */
-  --chart-1: oklch(0.6 0.23 16);
-  --chart-2: oklch(0.75 0.17 70);
-  --chart-3: oklch(0.6 0.22 295);
-  --chart-4: oklch(0.7 0.18 150);
-  --chart-5: oklch(0.55 0.2 220);
+  --chart-1: oklch(0.60 0.24 15);
+  --chart-2: oklch(0.76 0.18 55);
+  --chart-3: oklch(0.64 0.22 305);
+  --chart-4: oklch(0.72 0.18 150);
+  --chart-5: oklch(0.58 0.2 230);
 
-  --sidebar: oklch(0.98 0.004 15);
-  --sidebar-foreground: oklch(0.2 0.03 260);
-  --sidebar-primary: oklch(0.6 0.23 16);
+  --sidebar: oklch(0.985 0.012 350);
+  --sidebar-foreground: oklch(0.20 0.04 350);
+  --sidebar-primary: oklch(0.58 0.24 15);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.95 0.03 20);
-  --sidebar-accent-foreground: oklch(0.3 0.05 16);
-  --sidebar-border: oklch(0.9 0.01 260);
-  --sidebar-ring: oklch(0.6 0.23 16);
+  --sidebar-accent: oklch(0.95 0.025 340);
+  --sidebar-accent-foreground: oklch(0.28 0.06 15);
+  --sidebar-border: oklch(0.91 0.018 345);
+  --sidebar-ring: oklch(0.58 0.24 15);
 
   --font-sans: Montserrat, sans-serif;
   --font-serif: Montserrat, sans-serif;
   --font-mono: Montserrat, sans-serif;
 
   /* Luxury soft curved radius */
-  --radius: 0.85rem;
+  --radius: 0.95rem;
 
-  --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.03);
-  --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
+  /* Pillowy romantic cloud shadows */
+  --shadow-2xs: 0px 3px 6px -1px rgba(244, 63, 94, 0.03);
+  --shadow-xs: 0px 4px 8px -1px rgba(244, 63, 94, 0.05);
   --shadow-sm:
-    0px 4px 8px -1px hsl(0 0% 0% / 0.06), 0px 1px 2px -2px hsl(0 0% 0% / 0.06);
+    0px 4px 10px -1px rgba(244, 63, 94, 0.06), 0px 1px 3px -1px rgba(168, 85, 247, 0.04);
   --shadow:
-    0px 4px 12px -1px hsl(0 0% 0% / 0.08), 0px 1px 2px -2px hsl(0 0% 0% / 0.08);
+    0px 6px 16px -2px rgba(244, 63, 94, 0.08), 0px 2px 5px -1px rgba(168, 85, 247, 0.05);
   --shadow-md:
-    0px 6px 16px -2px hsl(0 0% 0% / 0.08), 0px 2px 4px -2px hsl(0 0% 0% / 0.08);
+    0px 8px 20px -3px rgba(244, 63, 94, 0.1), 0px 3px 8px -2px rgba(168, 85, 247, 0.06);
   --shadow-lg:
-    0px 10px 24px -3px hsl(0 0% 0% / 0.09), 0px 4px 6px -2px hsl(0 0% 0% / 0.09);
+    0px 14px 28px -4px rgba(244, 63, 94, 0.12), 0px 5px 12px -2px rgba(168, 85, 247, 0.08);
   --shadow-xl:
-    0px 20px 32px -4px hsl(0 0% 0% / 0.12),
-    0px 8px 10px -2px hsl(0 0% 0% / 0.12);
-  --shadow-2xl: 0px 25px 50px -12px hsl(0 0% 0% / 0.25);
+    0px 22px 38px -5px rgba(244, 63, 94, 0.15),
+    0px 10px 18px -3px rgba(168, 85, 247, 0.1);
+  --shadow-2xl: 0px 30px 65px -12px rgba(244, 63, 94, 0.22);
 }
 
 .dark {
-  /* Obsidian Velvet Night */
-  --background: oklch(0.13 0.015 260);
-  --foreground: oklch(0.96 0.008 250);
-  --card: oklch(0.18 0.02 260);
-  --card-foreground: oklch(0.96 0.008 250);
-  --popover: oklch(0.18 0.02 260);
-  --popover-foreground: oklch(0.96 0.008 250);
+  /* Midnight Velvet 9th Cloud Atmosphere */
+  --background: oklch(0.12 0.025 295);
+  --foreground: oklch(0.97 0.01 320);
+  --card: oklch(0.165 0.03 305);
+  --card-foreground: oklch(0.97 0.01 320);
+  --popover: oklch(0.165 0.03 305);
+  --popover-foreground: oklch(0.97 0.01 320);
 
-  /* Vibrant Electric Himalayan Rose */
-  --primary: oklch(0.65 0.24 16);
+  /* Bioluminescent Butterfly Electric Rose */
+  --primary: oklch(0.66 0.25 15);
   --primary-foreground: oklch(1 0 0);
 
-  --secondary: oklch(0.24 0.025 260);
-  --secondary-foreground: oklch(0.92 0.01 250);
-  --muted: oklch(0.22 0.02 260);
-  --muted-foreground: oklch(0.65 0.02 260);
-  --accent: oklch(0.25 0.03 16);
-  --accent-foreground: oklch(0.95 0.01 16);
+  /* Ethereal Twilight Nebula Violet */
+  --secondary: oklch(0.22 0.038 315);
+  --secondary-foreground: oklch(0.94 0.015 315);
+  --muted: oklch(0.20 0.026 300);
+  --muted-foreground: oklch(0.70 0.03 310);
+  /* Twilight Butterfly Shimmer Accent */
+  --accent: oklch(0.24 0.04 350);
+  --accent-foreground: oklch(0.96 0.015 15);
   --destructive: oklch(0.64 0.21 25.33);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.26 0.02 260);
-  --input: oklch(0.26 0.02 260);
-  --ring: oklch(0.65 0.24 16);
+  --border: oklch(0.26 0.03 310);
+  --input: oklch(0.26 0.03 310);
+  --ring: oklch(0.66 0.25 15);
 
-  --chart-1: oklch(0.65 0.24 16);
-  --chart-2: oklch(0.78 0.18 75);
-  --chart-3: oklch(0.68 0.2 295);
-  --chart-4: oklch(0.72 0.18 150);
-  --chart-5: oklch(0.6 0.18 220);
+  --chart-1: oklch(0.66 0.25 15);
+  --chart-2: oklch(0.80 0.19 65);
+  --chart-3: oklch(0.70 0.21 300);
+  --chart-4: oklch(0.74 0.18 150);
+  --chart-5: oklch(0.62 0.19 220);
 
-  --sidebar: oklch(0.15 0.018 260);
-  --sidebar-foreground: oklch(0.96 0.008 250);
-  --sidebar-primary: oklch(0.65 0.24 16);
+  --sidebar: oklch(0.13 0.024 295);
+  --sidebar-foreground: oklch(0.97 0.01 320);
+  --sidebar-primary: oklch(0.66 0.25 15);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.22 0.02 260);
-  --sidebar-accent-foreground: oklch(0.92 0.01 250);
-  --sidebar-border: oklch(0.26 0.02 260);
-  --sidebar-ring: oklch(0.65 0.24 16);
+  --sidebar-accent: oklch(0.22 0.035 305);
+  --sidebar-accent-foreground: oklch(0.94 0.015 315);
+  --sidebar-border: oklch(0.26 0.03 310);
+  --sidebar-ring: oklch(0.66 0.25 15);
 }
 
 @theme inline {
@@ -159,6 +164,63 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+}
+
+/* Butterfly Wing Flutter Keyframes */
+@keyframes butterfly-wing-flutter {
+  0%, 100% {
+    transform: perspective(400px) rotateY(0deg) translateY(0);
+  }
+  25% {
+    transform: perspective(400px) rotateY(42deg) translateY(-5px) scaleX(0.85);
+  }
+  50% {
+    transform: perspective(400px) rotateY(-18deg) translateY(-9px) scaleX(0.96);
+  }
+  75% {
+    transform: perspective(400px) rotateY(32deg) translateY(-4px) scaleX(0.88);
+  }
+}
+
+@keyframes butterfly-wing-flutter-rev {
+  0%, 100% {
+    transform: perspective(400px) rotateY(0deg) translateY(0);
+  }
+  25% {
+    transform: perspective(400px) rotateY(-42deg) translateY(-5px) scaleX(0.85);
+  }
+  50% {
+    transform: perspective(400px) rotateY(18deg) translateY(-9px) scaleX(0.96);
+  }
+  75% {
+    transform: perspective(400px) rotateY(-32deg) translateY(-4px) scaleX(0.88);
+  }
+}
+
+.butterfly-flutter {
+  animation: butterfly-wing-flutter 1.8s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.butterfly-flutter-reverse {
+  animation: butterfly-wing-flutter-rev 2.2s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Romantic Cloud Glass Utility */
+.cloud-glass {
+  background: radial-gradient(
+    120% 120% at 50% 0%,
+    var(--card) 0%,
+    color-mix(in oklch, var(--card) 92%, var(--background)) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 40px -10px rgba(244, 63, 94, 0.12),
+              0 0 24px 2px rgba(168, 85, 247, 0.08);
 }
 
 @layer base {

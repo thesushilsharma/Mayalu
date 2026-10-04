@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ModeToggle } from "../mode-toggle";
 import { Button } from "../ui/button";
 import { BrandLogo } from "./brand-logo";
+import { ButterflyIcon } from "./cloud-atmosphere";
 
 export default function Header() {
   return (
@@ -21,12 +22,13 @@ export default function Header() {
               <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-rose-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">
                 Mayalu
               </span>
-              <span className="hidden sm:inline-block rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-500 border border-rose-500/20">
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-500 border border-rose-500/20">
+                <ButterflyIcon className="w-3 h-3" />
                 मयालु
               </span>
             </div>
             <span className="hidden md:block text-[10px] text-muted-foreground font-medium -mt-1 tracking-wider uppercase">
-              Graph Dating & Matrimony
+              Romantic Graph Dating & Matrimony
             </span>
           </div>
         </Link>

@@ -4,6 +4,7 @@ import { Heart } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "./brand-logo";
+import { ButterflyIcon } from "./cloud-atmosphere";
 
 export default function Footer() {
   const [currentYear, setCurrentYear] = useState(2026);
@@ -24,17 +25,19 @@ export default function Footer() {
                 <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-rose-500 to-violet-500 bg-clip-text text-transparent">
                   Mayalu
                 </span>
-                <span className="text-xs text-rose-500 font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20">
+                <span className="text-xs text-rose-500 font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center gap-1">
+                  <ButterflyIcon className="w-3 h-3" />
                   मयालु
                 </span>
               </div>
             </Link>
 
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm">
-              <strong className="text-foreground">Mayalu</strong> means{" "}
-              <em>Beloved</em> or <em>My Love</em> in Nepali. Designed to foster
-              meaningful romantic connections and lifelong matrimonial
-              partnerships powered by Neo4j graph technology.
+              <strong className="text-foreground">Mayalu</strong> (मयालु) means{" "}
+              <em>Beloved</em> or <em>My Love</em> in Nepali. Where authentic
+              butterflies meet on Cloud Nine, uniting romantic souls and
+              lifelong matrimonial partnerships powered by Neo4j graph
+              technology.
             </p>
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
@@ -171,11 +174,16 @@ export default function Footer() {
         <div className="pt-8 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>
             © {currentYear} Mayalu. All rights reserved. Crafted with care for
-            meaningful connection.
+            meaningful romantic connection.
           </p>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span>Built with Next.js 15, Neo4j & Neon</span>
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
+            <span>Built with Next.js 16, Neo4j & Neon</span>
             <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
+            <span className="text-muted-foreground/60">•</span>
+            <span className="flex items-center gap-1 font-medium text-foreground/80">
+              <ButterflyIcon className="w-3.5 h-3.5" />
+              Love on Cloud Nine
+            </span>
           </div>
         </div>
       </div>

@@ -262,7 +262,7 @@ export function RoadmapSection() {
             <div className="lg:col-span-7 flex flex-wrap gap-2.5 sm:gap-3 items-center justify-start lg:justify-end">
               <span className="px-3.5 py-1.5 rounded-full border border-border/80 bg-background text-xs font-semibold text-foreground flex items-center gap-1.5 shadow-xs hover:border-emerald-500/40 transition-colors">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Next.js 15+ App Router
+                Next.js 16+ App Router
               </span>
               <span className="px-3.5 py-1.5 rounded-full border border-border/80 bg-background text-xs font-semibold text-foreground flex items-center gap-1.5 shadow-xs hover:border-cyan-500/40 transition-colors">
                 <Database className="w-3.5 h-3.5 text-cyan-500" />

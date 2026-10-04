@@ -1,13 +1,13 @@
-import { SignUpForm } from "@/components/auth/"
-import { AuthLayout } from "@/components/auth/auth-layout"
+import { SignUpForm } from "@/components/auth";
+import { AuthLayout } from "@/components/auth/auth-layout";
 
-export default function Page() {
+export default function SignUpPage() {
   return (
-    <AuthLayout 
+    <AuthLayout
       title="Create your account"
-      subtitle="Join us today and get started"
+      subtitle="Begin your graph-connected love story on Cloud Nine."
     >
       <SignUpForm />
     </AuthLayout>
-  )
+  );
 }

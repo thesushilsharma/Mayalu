@@ -1,3 +1,6 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import DashboardUserLayout from "@/components/dashboardLayout";
 
@@ -6,6 +9,15 @@ export default function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isOnboarding =
+    pathname === "/account/onboarding" ||
+    pathname.startsWith("/account/onboarding");
+
+  if (isOnboarding) {
+    return <>{children}</>;
+  }
+
   return (
     <section className="font-sans antialiased flex min-h-screen w-full">
       <Suspense

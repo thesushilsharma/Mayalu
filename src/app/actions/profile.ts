@@ -1,7 +1,7 @@
 "use server";
 
-import { getSessionUser, requireAuth } from "@/lib/neonDB/auth-server";
 import { neon } from "@neondatabase/serverless";
+import { getSessionUser, requireAuth } from "@/lib/neonDB/auth-server";
 
 export interface UserProfile {
   // Basic Info
@@ -50,25 +50,61 @@ export async function getUserProfileData(): Promise<UserProfile | null> {
 
     let displayName = sessionUser.email?.split("@")[0] || "User";
     let profileImage = "";
+    let age = 25;
+    let location = "Location not set";
+    let relationshipType = "Dating";
+    let bio = "Welcome to my profile!";
+    let height: string | undefined;
+    let education: string | undefined;
+    let occupation: string | undefined;
+    let interests = ["Travel", "Music", "Photography"];
+    let interestedIn = "Everyone";
 
     if (process.env.DATABASE_URL) {
       try {
         const sql = neon(process.env.DATABASE_URL);
-        const users = await sql`
+
+        // Fetch from public.user_profiles first
+        const profiles = await sql`
           SELECT 
-            id as uid, 
-            email, 
-            name as "displayName", 
-            image as "photoURL"
-          FROM "user"
-          WHERE id = ${sessionUser.uid}
+            p.*,
+            u.name as auth_name,
+            u.image as auth_image
+          FROM public.user_profiles p
+          LEFT JOIN neon_auth."user" u ON u.id = p.user_id
+          WHERE p.user_id = ${sessionUser.uid}
           LIMIT 1
         `;
 
-        if (users.length > 0 && users[0]) {
-          const u = users[0];
-          if (u.displayName) displayName = u.displayName;
-          if (u.photoURL) profileImage = u.photoURL;
+        if (profiles.length > 0) {
+          const p = profiles[0];
+          displayName = p.first_name || p.auth_name || displayName;
+          profileImage = p.profile_photo || p.auth_image || "";
+          age = p.age || age;
+          location = p.location || location;
+          relationshipType = p.relationship_intent || relationshipType;
+          bio = p.bio || bio;
+          height = p.height || undefined;
+          education = p.education || undefined;
+          occupation = p.occupation || undefined;
+          if (Array.isArray(p.interests) && p.interests.length > 0) {
+            interests = p.interests;
+          }
+          if (p.interested_in) {
+            interestedIn = p.interested_in;
+          }
+        } else {
+          // Fallback to neon_auth."user"
+          const users = await sql`
+            SELECT id, email, name, image
+            FROM neon_auth."user"
+            WHERE id = ${sessionUser.uid}
+            LIMIT 1
+          `;
+          if (users.length > 0 && users[0]) {
+            if (users[0].name) displayName = users[0].name;
+            if (users[0].image) profileImage = users[0].image;
+          }
         }
       } catch (dbErr) {
         console.error("Error querying user profile from database:", dbErr);
@@ -77,28 +113,31 @@ export async function getUserProfileData(): Promise<UserProfile | null> {
 
     return {
       name: displayName,
-      age: 25,
-      location: "Location not set",
-      relationshipType: "Dating",
-      bio: "Welcome to my profile!",
+      age,
+      location,
+      relationshipType,
+      bio,
       profileImage: profileImage || undefined,
       photos: profileImage ? [profileImage] : [],
-      height: undefined,
-      education: undefined,
-      occupation: undefined,
-      interests: ["Travel", "Music", "Photography"],
+      height,
+      education,
+      occupation,
+      interests,
       preferences: {
-        interestedIn: "Everyone",
-        ageRange: "20-30",
-        distance: "25 miles",
+        interestedIn,
+        ageRange: "20-35",
+        distance: "50 km",
       },
       badges: [
-        { name: "Early Adopter", description: "Joined during beta" },
-        { name: "Profile Complete", description: "Filled in basic info" }
+        {
+          name: "Kura-Kani Verified",
+          description: "Completed Mayalu Onboarding",
+        },
+        { name: "Early Pioneer", description: "Joined the community" },
       ],
       xpHistory: [
-        { activity: "Completed Profile", xp: 50, date: "Today" },
-        { activity: "Daily Login", xp: 10, date: "Today" }
+        { activity: "Completed Onboarding Kura-Kani", xp: 100, date: "Today" },
+        { activity: "Daily Active", xp: 10, date: "Today" },
       ],
     };
   } catch (error) {
@@ -120,4 +159,3 @@ export async function getCurrentUserProfile(): Promise<UserProfile | null> {
 export async function updateProfileAction(prevState: any, formData: FormData) {
   return { success: true };
 }
-

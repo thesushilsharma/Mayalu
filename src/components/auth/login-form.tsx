@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth/client";
+import { syncUserOnboardingStatus } from "@/lib/neonDB/onboarding-actions";
 import { cn } from "@/lib/utils";
 
 export function LoginForm({
@@ -39,8 +40,10 @@ export function LoginForm({
         return;
       }
 
+      // Check Neon Postgres onboarding status and sync edge cookie
+      const syncResult = await syncUserOnboardingStatus();
       toast.success("Login successful!");
-      router.push("/account/dashboard");
+      router.push(syncResult.redirectTo);
       router.refresh();
     } catch (err: unknown) {
       toast.error(

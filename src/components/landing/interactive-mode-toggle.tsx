@@ -204,7 +204,7 @@ export function InteractiveModeToggle() {
                     <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-xs hover:border-rose-500/40 transition-colors">
                       <div className="font-bold text-xs text-rose-500 mb-1 flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5" />
-                        Vibe Check Prompt
+                        Kura-Kani Prompt
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Interactive questions to skip dry texting and discover

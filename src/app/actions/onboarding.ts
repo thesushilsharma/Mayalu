@@ -2,8 +2,8 @@
 
 // Notice the import path is different from the client
 import {
-  ServerValidateError,
   createServerValidate,
+  ServerValidateError,
 } from "@tanstack/react-form-nextjs";
 import { onboardingFormOpts } from "@/lib/onboarding-form";
 
@@ -36,7 +36,7 @@ const serverValidate = createServerValidate({
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
-      
+
       if (
         age < 18 ||
         (age === 18 && monthDiff < 0) ||
@@ -55,7 +55,7 @@ const serverValidate = createServerValidate({
     if (value.ageRangeMin && value.ageRangeMax) {
       const minAge = Number.parseInt(value.ageRangeMin);
       const maxAge = Number.parseInt(value.ageRangeMax);
-      
+
       if (minAge >= maxAge) {
         return "Maximum age must be greater than minimum age";
       }
@@ -63,16 +63,65 @@ const serverValidate = createServerValidate({
   },
 });
 
+import {
+  getUserOnboardingStatus as dbGetUserOnboardingStatus,
+  saveOnboardingProfile as dbSaveOnboardingProfile,
+  syncUserOnboardingStatus as dbSyncUserOnboardingStatus,
+  type OnboardingData,
+} from "@/lib/neonDB/onboarding-actions";
+
+export type { OnboardingData };
+
+export async function getUserOnboardingStatus(userId?: string) {
+  return dbGetUserOnboardingStatus(userId);
+}
+
+export async function saveOnboardingProfile(data: OnboardingData) {
+  return dbSaveOnboardingProfile(data);
+}
+
+export async function syncUserOnboardingStatus() {
+  return dbSyncUserOnboardingStatus();
+}
+
 export async function submitOnboarding(_prev: unknown, formData: FormData) {
   try {
     const validatedData = await serverValidate(formData);
-    console.log("validatedData", validatedData);
-    
-    // TODO: Persist the form data to the database
-    // await db.users.create({
-    //   data: validatedData
-    // });
-    
+
+    // Calculate approximate age if birthdate is present
+    let calculatedAge: number | undefined;
+    if (validatedData.birthdate) {
+      const birthDate = new Date(validatedData.birthdate);
+      const today = new Date();
+      calculatedAge = today.getFullYear() - birthDate.getFullYear();
+    }
+
+    // Persist to Neon Postgres user_profiles table
+    await saveOnboardingProfile({
+      firstName: "",
+      birthdate: validatedData.birthdate,
+      age: calculatedAge,
+      gender: validatedData.gender,
+      interestedIn: validatedData.interestedIn,
+      location: validatedData.location,
+      relationshipIntent:
+        validatedData.relationshipType === "matrimonial"
+          ? "Marriage / Settle down"
+          : "Dating with intent",
+      bio: validatedData.bio,
+      height: validatedData.height,
+      education: validatedData.education,
+      occupation: validatedData.occupation,
+      interests: validatedData.interests,
+      profilePhoto: validatedData.profilePhoto,
+      additionalPhotos: validatedData.additionalPhotos,
+      dealbreakers: {
+        ageRangeMin: Number(validatedData.ageRangeMin) || 18,
+        ageRangeMax: Number(validatedData.ageRangeMax) || 50,
+        distance: validatedData.distanceRange,
+      },
+    });
+
     // Return the form state for successful submission
     return {
       values: validatedData,

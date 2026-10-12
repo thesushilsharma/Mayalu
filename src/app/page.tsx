@@ -6,6 +6,7 @@ import Header from "@/components/landing/header";
 import { HeroSpotlight } from "@/components/landing/hero-spotlight";
 import { InteractiveModeToggle } from "@/components/landing/interactive-mode-toggle";
 import { Pillars } from "@/components/landing/pillars";
+import { Privacy } from "@/components/landing/privacy";
 import { RoadmapSection } from "@/components/landing/roadmap-section";
 import { XpShowcase } from "@/components/landing/xp-showcase";
 
@@ -35,10 +36,13 @@ export default function Home() {
         {/* 5. Gamified XP System, Quests & Unlockable Themes */}
         <XpShowcase />
 
-        {/* 6. Product Roadmap & Tech Stack Architecture from README.md */}
+        {/* 6. Mayalu's Privacy Dhukuti & Trust Guarantees */}
+        <Privacy />
+
+        {/* 7. Product Roadmap & Tech Stack Architecture from README.md */}
         <RoadmapSection />
 
-        {/* 7. Trakt-Style Native Apps & PWA Ecosystem */}
+        {/* 8. Trakt-Style Native Apps & PWA Ecosystem */}
         <AppDownload />
       </main>
 

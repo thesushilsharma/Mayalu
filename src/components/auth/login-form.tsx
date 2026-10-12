@@ -41,10 +41,17 @@ export function LoginForm({
       }
 
       // Check Neon Postgres onboarding status and sync edge cookie
-      const syncResult = await syncUserOnboardingStatus();
-      toast.success("Login successful!");
-      router.push(syncResult.redirectTo);
-      router.refresh();
+      try {
+        const syncResult = await syncUserOnboardingStatus();
+        toast.success("Login successful!");
+        router.push(syncResult.redirectTo || "/account/dashboard");
+        router.refresh();
+      } catch (syncErr) {
+        console.warn("Onboarding status sync fallback to dashboard:", syncErr);
+        toast.success("Login successful!");
+        router.push("/account/dashboard");
+        router.refresh();
+      }
     } catch (err: unknown) {
       toast.error(
         err instanceof Error ? err.message : "An error occurred during login",

@@ -135,6 +135,17 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
+                <a
+                  href="#privacy"
+                  className="hover:text-rose-500 transition-colors flex items-center gap-1.5 font-medium text-foreground/80"
+                >
+                  <span>Mayalu&apos;s Privacy Dhukuti</span>
+                  <span className="text-[10px] text-rose-500 font-bold px-1.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20">
+                    Trust
+                  </span>
+                </a>
+              </li>
+              <li>
                 <Link
                   href="/privacy"
                   className="hover:text-foreground transition-colors"

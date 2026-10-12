@@ -10,7 +10,9 @@ import {
   ChevronRight,
   ExternalLink,
   Heart,
+  Mail,
   MapPin,
+  ShieldCheck,
   Sparkles,
   Volume2,
   VolumeX,
@@ -29,6 +31,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Questionnaire,
+  QuestionnaireChoice,
+  QuestionnaireChoices,
+  QuestionnaireInput,
+  QuestionnaireItem,
+} from "@/components/ui/questionnaire";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useUserLevel } from "@/contexts/userContext";
@@ -724,8 +733,7 @@ export default function OnboardingComponent() {
       case 13:
         return (
           <>
-            Now the best part 💛 Pick a{" "}
-            <strong>Prasang</strong> and drop your
+            Now the best part 💛 Pick a <strong>Prasang</strong> and drop your
             authentic, witty answer:
           </>
         );
@@ -737,8 +745,8 @@ export default function OnboardingComponent() {
         return (
           <>
             Subhakamana, {formData.firstName}! 🌸 Your authentic{" "}
-            <strong>Chino</strong> is woven and ready. Choose your
-            avatar, tweak your bio, and seal your profile to enter Mayalu!
+            <strong>Chino</strong> is woven and ready. Choose your avatar, tweak
+            your bio, and seal your profile to enter Mayalu!
           </>
         );
       default:
@@ -768,7 +776,7 @@ export default function OnboardingComponent() {
   }
 
   return (
-    <div className="h-screen max-h-screen w-full overflow-hidden flex flex-col bg-background text-foreground relative selection:bg-rose-500 selection:text-white">
+    <div className="h-[100dvh] max-h-[100dvh] w-full overflow-hidden flex flex-col bg-background text-foreground relative selection:bg-rose-500 selection:text-white">
       {/* Landing page ethereal ambient cloud lighting */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[450px] bg-gradient-to-b from-rose-500/15 via-pink-500/10 to-transparent blur-3xl opacity-75" />
@@ -855,9 +863,9 @@ export default function OnboardingComponent() {
       </header>
 
       {/* Main Focus Area (Strictly zero outer window scroll) */}
-      <main className="flex-1 min-h-0 w-full overflow-hidden flex flex-col items-center justify-center p-2 sm:px-4 sm:py-3">
+      <main className="flex-1 min-h-0 w-full overflow-hidden flex flex-col items-center justify-center p-2 sm:px-4 sm:py-2">
         {/* The Central Onboarding Glass Card */}
-        <Card className="w-full max-w-2xl h-full max-h-[calc(100vh-5.5rem)] flex flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-2xl shadow-2xl overflow-hidden relative p-0 gap-0">
+        <Card className="w-full max-w-2xl h-full max-h-[min(650px,calc(100dvh-5.25rem))] flex flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-2xl shadow-2xl overflow-hidden relative p-0 gap-0">
           {/* Card Top: Maya's Guidance Section (Compact & sleek) */}
           <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-border/30 bg-muted/20 shrink-0">
             <div className="flex items-start gap-2.5 sm:gap-3">
@@ -1133,444 +1141,510 @@ export default function OnboardingComponent() {
 
                 {/* ================= STEP 4: RELATIONSHIP INTENT ================= */}
                 {step === 4 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 max-w-xl mx-auto pt-1">
-                    {[
-                      {
-                        id: "Marriage & Serious",
-                        title: "💍 Marriage & Serious",
-                        desc: "Ready to settle down, family-aligned, seeking a lifelong partner.",
-                      },
-                      {
-                        id: "Dating with intent",
-                        title: "💖 Dating with intent",
-                        desc: "Meaningful romance & chemistry, seeing where it leads.",
-                      },
-                      {
-                        id: "Open to possibilities",
-                        title: "✨ Open to it",
-                        desc: "Meeting genuine people first, seeing what develops naturally.",
-                      },
-                    ].map((item) => (
-                      <button
-                        type="button"
-                        key={item.id}
-                        onClick={() =>
-                          setFormData({
-                            ...formData,
-                            relationshipIntent: item.id,
-                          })
-                        }
-                        className={`p-3.5 rounded-2xl cursor-pointer transition-all border text-left ${
-                          formData.relationshipIntent === item.id
-                            ? "bg-rose-500/10 border-rose-500 text-foreground shadow-lg shadow-rose-500/10 ring-1 ring-rose-500"
-                            : "bg-card border-border/70 text-foreground hover:border-border"
-                        }`}
-                      >
-                        <h4 className="font-semibold text-xs sm:text-sm mb-1 text-rose-500 dark:text-rose-400">
-                          {item.title}
-                        </h4>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed">
-                          {item.desc}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
+                  <Questionnaire
+                    defaultItem="intent"
+                    className="max-w-xl mx-auto pt-1 gap-0"
+                  >
+                    <QuestionnaireItem name="intent" className="gap-2.5">
+                      <QuestionnaireChoices className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {[
+                          {
+                            id: "Marriage & Serious",
+                            title: "💍 Marriage & Serious",
+                            desc: "Ready to settle down, family-aligned, seeking a lifelong partner.",
+                          },
+                          {
+                            id: "Dating with intent",
+                            title: "💖 Dating with intent",
+                            desc: "Meaningful romance & chemistry, seeing where it leads.",
+                          },
+                          {
+                            id: "Open to possibilities",
+                            title: "✨ Open to it",
+                            desc: "Meeting genuine people first, seeing what develops naturally.",
+                          },
+                        ].map((item) => (
+                          <QuestionnaireChoice
+                            key={item.id}
+                            value={item.id}
+                            checked={formData.relationshipIntent === item.id}
+                            onChange={() =>
+                              setFormData({
+                                ...formData,
+                                relationshipIntent: item.id,
+                              })
+                            }
+                            className={`p-3.5 rounded-2xl cursor-pointer transition-all ${
+                              formData.relationshipIntent === item.id
+                                ? "bg-rose-500/10 border-rose-500 text-foreground shadow-lg shadow-rose-500/10 ring-1 ring-rose-500"
+                                : "bg-card border-border/70 text-foreground hover:border-border"
+                            }`}
+                          >
+                            <div className="flex flex-col">
+                              <h4 className="font-semibold text-xs sm:text-sm mb-1 text-rose-500 dark:text-rose-400">
+                                {item.title}
+                              </h4>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                {item.desc}
+                              </p>
+                            </div>
+                          </QuestionnaireChoice>
+                        ))}
+                      </QuestionnaireChoices>
+                    </QuestionnaireItem>
+                  </Questionnaire>
                 )}
 
                 {/* ================= STEP 5: DAL BHAT POWER + CUSTOM OPTION ================= */}
                 {step === 5 && (
-                  <div className="space-y-2 max-w-lg mx-auto pt-1">
-                    <div className="grid grid-cols-1 gap-2">
-                      {DAL_BHAT_PRESETS.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => {
+                  <Questionnaire
+                    defaultItem="dalBhat"
+                    className="max-w-lg mx-auto pt-1 gap-2"
+                  >
+                    <QuestionnaireItem name="dalBhat" className="gap-2">
+                      <QuestionnaireChoices className="grid grid-cols-1 gap-2">
+                        {DAL_BHAT_PRESETS.map((item) => (
+                          <QuestionnaireChoice
+                            key={item.id}
+                            value={item.id}
+                            checked={
+                              formData.dalBhatFrequency === item.id &&
+                              !isOtherDalBhat
+                            }
+                            onChange={() => {
+                              setFormData({
+                                ...formData,
+                                dalBhatFrequency: item.id,
+                              });
+                              setIsOtherDalBhat(false);
+                              setCustomDalBhat("");
+                            }}
+                            className={`p-2.5 sm:p-3 rounded-2xl text-left border transition-all ${
+                              formData.dalBhatFrequency === item.id &&
+                              !isOtherDalBhat
+                                ? "bg-amber-500/15 border-amber-500 text-foreground shadow-sm ring-1 ring-amber-500"
+                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                            }`}
+                          >
+                            <div className="flex flex-col">
+                              <div className="text-xs sm:text-sm font-semibold">
+                                {item.label}
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">
+                                {item.note}
+                              </div>
+                            </div>
+                          </QuestionnaireChoice>
+                        ))}
+
+                        {/* Explicit "Others" Button */}
+                        <QuestionnaireChoice
+                          value="others"
+                          checked={isOtherDalBhat}
+                          onChange={() => {
+                            setIsOtherDalBhat(true);
                             setFormData({
                               ...formData,
-                              dalBhatFrequency: item.id,
+                              dalBhatFrequency: customDalBhat.trim() || "",
                             });
-                            setIsOtherDalBhat(false);
-                            setCustomDalBhat("");
                           }}
                           className={`p-2.5 sm:p-3 rounded-2xl text-left border transition-all ${
-                            formData.dalBhatFrequency === item.id &&
-                            !isOtherDalBhat
+                            isOtherDalBhat
                               ? "bg-amber-500/15 border-amber-500 text-foreground shadow-sm ring-1 ring-amber-500"
                               : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                           }`}
                         >
-                          <div className="text-xs sm:text-sm font-semibold">
-                            {item.label}
-                          </div>
-                          <div className="text-[11px] text-muted-foreground mt-0.5">
-                            {item.note}
-                          </div>
-                        </button>
-                      ))}
-
-                      {/* Explicit "Others" Button */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsOtherDalBhat(true);
-                          setFormData({
-                            ...formData,
-                            dalBhatFrequency: customDalBhat.trim() || "",
-                          });
-                        }}
-                        className={`p-2.5 sm:p-3 rounded-2xl text-left border transition-all ${
-                          isOtherDalBhat
-                            ? "bg-amber-500/15 border-amber-500 text-foreground shadow-sm ring-1 ring-amber-500"
-                            : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-xs sm:text-sm font-semibold text-amber-500 dark:text-amber-400">
-                              Others / Custom Food Routine ✍️
+                          <div className="flex items-center justify-between w-full">
+                            <div>
+                              <div className="text-xs sm:text-sm font-semibold text-amber-500 dark:text-amber-400">
+                                Others / Custom Food Routine ✍️
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">
+                                {isOtherDalBhat && customDalBhat.trim()
+                                  ? `Selected: "${customDalBhat.trim()}"`
+                                  : "Describe your own eating habits, diet, or routine."}
+                              </div>
                             </div>
-                            <div className="text-[11px] text-muted-foreground mt-0.5">
-                              {isOtherDalBhat && customDalBhat.trim()
-                                ? `Selected: "${customDalBhat.trim()}"`
-                                : "Describe your own eating habits, diet, or routine."}
-                            </div>
+                            {isOtherDalBhat && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-500 bg-amber-500/10 font-medium ml-auto"
+                              >
+                                Selected
+                              </Badge>
+                            )}
                           </div>
-                          {isOtherDalBhat && (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-500 bg-amber-500/10 font-medium"
-                            >
-                              Selected
-                            </Badge>
-                          )}
-                        </div>
-                      </button>
-                    </div>
+                        </QuestionnaireChoice>
+                      </QuestionnaireChoices>
 
-                    {/* Custom Dal Bhat Input */}
-                    <div className="pt-0.5 space-y-1">
-                      <Input
-                        placeholder="Or describe your custom dal bhat / food routine..."
-                        value={customDalBhat}
-                        onFocus={() => {
-                          setIsOtherDalBhat(true);
-                          if (customDalBhat.trim()) {
+                      {/* Custom Dal Bhat Input */}
+                      <div className="pt-0.5 space-y-1">
+                        <QuestionnaireInput
+                          placeholder="Or describe your custom dal bhat / food routine..."
+                          value={customDalBhat}
+                          onFocus={() => {
+                            setIsOtherDalBhat(true);
+                            if (customDalBhat.trim()) {
+                              setFormData({
+                                ...formData,
+                                dalBhatFrequency: customDalBhat.trim(),
+                              });
+                            }
+                          }}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCustomDalBhat(val);
+                            setIsOtherDalBhat(true);
                             setFormData({
                               ...formData,
-                              dalBhatFrequency: customDalBhat.trim(),
+                              dalBhatFrequency: val.trim(),
                             });
-                          }
-                        }}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setCustomDalBhat(val);
-                          setIsOtherDalBhat(true);
-                          setFormData({
-                            ...formData,
-                            dalBhatFrequency: val.trim(),
-                          });
-                        }}
-                        className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl transition-all ${
-                          isOtherDalBhat
-                            ? "border-amber-500 ring-1 ring-amber-500"
-                            : "border-input"
-                        }`}
-                      />
-                    </div>
-                  </div>
+                          }}
+                          className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${
+                            isOtherDalBhat
+                              ? "border-amber-500 ring-1 ring-amber-500"
+                              : "border-input"
+                          }`}
+                        />
+                      </div>
+                    </QuestionnaireItem>
+                  </Questionnaire>
                 )}
 
                 {/* ================= STEP 6: CHIYA & RITUAL + CUSTOM OPTION ================= */}
                 {step === 6 && (
-                  <div className="space-y-1.5 max-w-lg mx-auto pt-0.5">
-                    {CHIYA_PRESETS.map((ch) => (
-                      <button
-                        key={ch.id}
-                        type="button"
-                        onClick={() => {
-                          setFormData({
-                            ...formData,
-                            privateCorner: {
-                              ...formData.privateCorner,
-                              chiyaPreference: ch.id,
-                            },
-                          });
-                          setIsOtherChiya(false);
-                          setCustomChiya("");
-                        }}
-                        className={`w-full p-2 sm:p-2.5 rounded-xl border text-left transition-all ${
-                          formData.privateCorner?.chiyaPreference === ch.id &&
-                          !isOtherChiya
-                            ? "bg-rose-500/15 border-rose-500 text-foreground shadow-sm ring-1 ring-rose-500"
-                            : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                        }`}
-                      >
-                        <div className="text-xs sm:text-sm font-semibold text-rose-500 dark:text-rose-400">
-                          {ch.title}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5">
-                          {ch.sub}
-                        </div>
-                      </button>
-                    ))}
-
-                    {/* Explicit "Others" Button */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsOtherChiya(true);
-                        setFormData({
-                          ...formData,
-                          privateCorner: {
-                            ...formData.privateCorner,
-                            chiyaPreference: customChiya.trim() || "",
-                          },
-                        });
-                      }}
-                      className={`w-full p-2 sm:p-2.5 rounded-xl border text-left transition-all ${
-                        isOtherChiya
-                          ? "bg-rose-500/15 border-rose-500 text-foreground shadow-sm ring-1 ring-rose-500"
-                          : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-xs sm:text-sm font-semibold text-rose-500 dark:text-rose-400">
-                            Others / Custom Drink Ritual ✍️
-                          </div>
-                          <div className="text-[11px] text-muted-foreground mt-0.5">
-                            {isOtherChiya && customChiya.trim()
-                              ? `Selected: "${customChiya.trim()}"`
-                              : "Matcha, herbal infusion, freshly brewed coffee, or cold water purist."}
-                          </div>
-                        </div>
-                        {isOtherChiya && (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] px-1.5 py-0 border-rose-500/40 text-rose-500 bg-rose-500/10 font-medium"
+                  <Questionnaire
+                    defaultItem="chiya"
+                    className="max-w-lg mx-auto pt-0.5 gap-1.5"
+                  >
+                    <QuestionnaireItem name="chiya" className="gap-1.5">
+                      <QuestionnaireChoices className="grid grid-cols-1 gap-1.5">
+                        {CHIYA_PRESETS.map((ch) => (
+                          <QuestionnaireChoice
+                            key={ch.id}
+                            value={ch.id}
+                            checked={
+                              formData.privateCorner?.chiyaPreference ===
+                                ch.id && !isOtherChiya
+                            }
+                            onChange={() => {
+                              setFormData({
+                                ...formData,
+                                privateCorner: {
+                                  ...formData.privateCorner,
+                                  chiyaPreference: ch.id,
+                                },
+                              });
+                              setIsOtherChiya(false);
+                              setCustomChiya("");
+                            }}
+                            className={`w-full p-2 sm:p-2.5 rounded-xl border text-left transition-all ${
+                              formData.privateCorner?.chiyaPreference ===
+                                ch.id && !isOtherChiya
+                                ? "bg-rose-500/15 border-rose-500 text-foreground shadow-sm ring-1 ring-rose-500"
+                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                            }`}
                           >
-                            Selected
-                          </Badge>
-                        )}
-                      </div>
-                    </button>
+                            <div className="flex flex-col">
+                              <div className="text-xs sm:text-sm font-semibold text-rose-500 dark:text-rose-400">
+                                {ch.title}
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">
+                                {ch.sub}
+                              </div>
+                            </div>
+                          </QuestionnaireChoice>
+                        ))}
 
-                    {/* Custom Chiya Input */}
-                    <div className="pt-0.5 space-y-1">
-                      <Input
-                        placeholder="Or enter your custom daily drink (e.g. Matcha latte, Mint tea, Lassi)..."
-                        value={customChiya}
-                        onFocus={() => {
-                          setIsOtherChiya(true);
-                          if (customChiya.trim()) {
+                        {/* Explicit "Others" Button */}
+                        <QuestionnaireChoice
+                          value="others"
+                          checked={isOtherChiya}
+                          onChange={() => {
+                            setIsOtherChiya(true);
                             setFormData({
                               ...formData,
                               privateCorner: {
                                 ...formData.privateCorner,
-                                chiyaPreference: customChiya.trim(),
+                                chiyaPreference: customChiya.trim() || "",
                               },
                             });
-                          }
-                        }}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setCustomChiya(val);
-                          setIsOtherChiya(true);
-                          setFormData({
-                            ...formData,
-                            privateCorner: {
-                              ...formData.privateCorner,
-                              chiyaPreference: val.trim(),
-                            },
-                          });
-                        }}
-                        className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl transition-all ${
-                          isOtherChiya
-                            ? "border-rose-500 ring-1 ring-rose-500"
-                            : "border-input"
-                        }`}
-                      />
-                    </div>
-                  </div>
+                          }}
+                          className={`w-full p-2 sm:p-2.5 rounded-xl border text-left transition-all ${
+                            isOtherChiya
+                              ? "bg-rose-500/15 border-rose-500 text-foreground shadow-sm ring-1 ring-rose-500"
+                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <div>
+                              <div className="text-xs sm:text-sm font-semibold text-rose-500 dark:text-rose-400">
+                                Others / Custom Drink Ritual ✍️
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">
+                                {isOtherChiya && customChiya.trim()
+                                  ? `Selected: "${customChiya.trim()}"`
+                                  : "Matcha, herbal infusion, freshly brewed coffee, or cold water purist."}
+                              </div>
+                            </div>
+                            {isOtherChiya && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] px-1.5 py-0 border-rose-500/40 text-rose-500 bg-rose-500/10 font-medium ml-auto"
+                              >
+                                Selected
+                              </Badge>
+                            )}
+                          </div>
+                        </QuestionnaireChoice>
+                      </QuestionnaireChoices>
+
+                      {/* Custom Chiya Input */}
+                      <div className="pt-0.5 space-y-1">
+                        <QuestionnaireInput
+                          placeholder="Or enter your custom daily drink (e.g. Matcha latte, Mint tea, Lassi)..."
+                          value={customChiya}
+                          onFocus={() => {
+                            setIsOtherChiya(true);
+                            if (customChiya.trim()) {
+                              setFormData({
+                                ...formData,
+                                privateCorner: {
+                                  ...formData.privateCorner,
+                                  chiyaPreference: customChiya.trim(),
+                                },
+                              });
+                            }
+                          }}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCustomChiya(val);
+                            setIsOtherChiya(true);
+                            setFormData({
+                              ...formData,
+                              privateCorner: {
+                                ...formData.privateCorner,
+                                chiyaPreference: val.trim(),
+                              },
+                            });
+                          }}
+                          className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${
+                            isOtherChiya
+                              ? "border-rose-500 ring-1 ring-rose-500"
+                              : "border-input"
+                          }`}
+                        />
+                      </div>
+                    </QuestionnaireItem>
+                  </Questionnaire>
                 )}
 
                 {/* ================= STEP 7: MUSIC ON REPEAT + CUSTOM OPTION ================= */}
                 {step === 7 && (
-                  <div className="space-y-2.5 max-w-lg mx-auto pt-1">
-                    <div className="flex flex-wrap gap-1.5">
-                      {MUSIC_PRESETS.map((art) => (
-                        <button
-                          key={art}
-                          type="button"
-                          onClick={() => {
-                            setFormData({ ...formData, musicRepeat: art });
-                            setIsOtherMusic(false);
-                            setCustomMusic("");
+                  <Questionnaire
+                    defaultItem="music"
+                    className="max-w-lg mx-auto pt-1 gap-2.5"
+                  >
+                    <QuestionnaireItem name="music" className="gap-2.5">
+                      <QuestionnaireChoices className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                        {MUSIC_PRESETS.map((art) => (
+                          <QuestionnaireChoice
+                            key={art}
+                            value={art}
+                            checked={
+                              formData.musicRepeat === art && !isOtherMusic
+                            }
+                            onChange={() => {
+                              setFormData({ ...formData, musicRepeat: art });
+                              setIsOtherMusic(false);
+                              setCustomMusic("");
+                            }}
+                            className={`p-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
+                              formData.musicRepeat === art && !isOtherMusic
+                                ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
+                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                            }`}
+                          >
+                            <span className="leading-snug">{art}</span>
+                          </QuestionnaireChoice>
+                        ))}
+
+                        {/* Explicit "Others" Music Chip */}
+                        <QuestionnaireChoice
+                          value="others"
+                          checked={isOtherMusic}
+                          onChange={() => {
+                            setIsOtherMusic(true);
+                            setFormData({
+                              ...formData,
+                              musicRepeat: customMusic.trim() || "",
+                            });
                           }}
-                          className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all border ${
-                            formData.musicRepeat === art && !isOtherMusic
-                              ? "bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/25"
+                          className={`p-2 rounded-xl text-xs sm:text-sm font-medium transition-all col-span-2 sm:col-span-3 ${
+                            isOtherMusic
+                              ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
                               : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                           }`}
                         >
-                          {art}
-                        </button>
-                      ))}
+                          <div className="flex items-center justify-between w-full">
+                            <span>Others ✍️</span>
+                            {isOtherMusic && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] px-1.5 py-0 border-rose-500/40 text-rose-500 bg-rose-500/10 font-medium ml-auto"
+                              >
+                                Selected
+                              </Badge>
+                            )}
+                          </div>
+                        </QuestionnaireChoice>
+                      </QuestionnaireChoices>
 
-                      {/* Explicit "Others" Music Chip */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsOtherMusic(true);
-                          setFormData({
-                            ...formData,
-                            musicRepeat: customMusic.trim() || "",
-                          });
-                        }}
-                        className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all border ${
-                          isOtherMusic
-                            ? "bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/25"
-                            : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                        }`}
-                      >
-                        Others ✍️
-                      </button>
-                    </div>
-
-                    {/* Custom Music Artist Option */}
-                    <div className="pt-0.5 space-y-1">
-                      <Input
-                        placeholder="Or enter your favorite artist, band, or genre on repeat..."
-                        value={customMusic}
-                        onFocus={() => {
-                          setIsOtherMusic(true);
-                          if (customMusic.trim()) {
+                      {/* Custom Music Artist Option */}
+                      <div className="pt-0.5 space-y-1">
+                        <QuestionnaireInput
+                          placeholder="Or enter your favorite artist, band, or genre on repeat..."
+                          value={customMusic}
+                          onFocus={() => {
+                            setIsOtherMusic(true);
+                            if (customMusic.trim()) {
+                              setFormData({
+                                ...formData,
+                                musicRepeat: customMusic.trim(),
+                              });
+                            }
+                          }}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCustomMusic(val);
+                            setIsOtherMusic(true);
                             setFormData({
                               ...formData,
-                              musicRepeat: customMusic.trim(),
+                              musicRepeat: val.trim(),
                             });
-                          }
-                        }}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setCustomMusic(val);
-                          setIsOtherMusic(true);
-                          setFormData({
-                            ...formData,
-                            musicRepeat: val.trim(),
-                          });
-                        }}
-                        className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl transition-all ${
-                          isOtherMusic
-                            ? "border-rose-500 ring-1 ring-rose-500"
-                            : "border-input"
-                        }`}
-                      />
-                      {isOtherMusic && customMusic.trim() && (
-                        <p className="text-[11px] text-rose-500 font-medium flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Selected artist / sound:
-                          "{customMusic.trim()}"
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                          }}
+                          className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${
+                            isOtherMusic
+                              ? "border-rose-500 ring-1 ring-rose-500"
+                              : "border-input"
+                          }`}
+                        />
+                        {isOtherMusic && customMusic.trim() && (
+                          <p className="text-[11px] text-rose-500 font-medium flex items-center gap-1">
+                            <Check className="w-3 h-3" /> Selected artist /
+                            sound: "{customMusic.trim()}"
+                          </p>
+                        )}
+                      </div>
+                    </QuestionnaireItem>
+                  </Questionnaire>
                 )}
 
-                {/* ================= STEP 8: GREEN FLAG + CUSTOM OPTION ================= */}
+                {/* ================= STEP 8: GREEN FLAG + SHADCN QUESTIONNAIRE ================= */}
                 {step === 8 && (
-                  <div className="space-y-2 max-w-lg mx-auto pt-1">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {GREEN_FLAGS_PRESET.map((flag) => (
-                        <button
-                          key={flag}
-                          type="button"
-                          onClick={() => {
-                            setFormData({ ...formData, greenFlag: flag });
-                            setIsOtherGreenFlag(false);
-                            setCustomGreenFlag("");
-                          }}
-                          className={`p-2.5 rounded-xl text-left border text-xs sm:text-[13px] font-medium transition-all leading-snug ${
-                            formData.greenFlag === flag && !isOtherGreenFlag
-                              ? "bg-emerald-500/15 border-emerald-500 text-foreground shadow-sm ring-1 ring-emerald-500 font-semibold"
-                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                          }`}
-                        >
-                          {flag}
-                        </button>
-                      ))}
-
-                      {/* Explicit "Others / Type your own" Option Button */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsOtherGreenFlag(true);
-                          setFormData({
-                            ...formData,
-                            greenFlag: customGreenFlag.trim() || "",
-                          });
-                        }}
-                        className={`p-2.5 rounded-xl text-left border text-xs sm:text-[13px] font-medium transition-all leading-snug col-span-1 sm:col-span-2 ${
-                          isOtherGreenFlag
-                            ? "bg-emerald-500/15 border-emerald-500 text-foreground shadow-sm ring-1 ring-emerald-500 font-semibold"
-                            : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="flex items-center gap-2">
-                            <span>✍️</span>
-                            <span>
-                              {isOtherGreenFlag && customGreenFlag.trim()
-                                ? `Others: "${customGreenFlag.trim()}"`
-                                : "Others (Type your own green flag)"}
+                  <Questionnaire
+                    defaultItem="greenFlag"
+                    className="max-w-xl mx-auto pt-1 gap-2.5"
+                  >
+                    <QuestionnaireItem name="greenFlag" className="gap-2.5">
+                      <QuestionnaireChoices className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {GREEN_FLAGS_PRESET.map((flag) => (
+                          <QuestionnaireChoice
+                            key={flag}
+                            value={flag}
+                            checked={
+                              formData.greenFlag === flag && !isOtherGreenFlag
+                            }
+                            onChange={() => {
+                              setFormData({ ...formData, greenFlag: flag });
+                              setIsOtherGreenFlag(false);
+                              setCustomGreenFlag("");
+                            }}
+                            className={`rounded-2xl p-2.5 sm:p-3 text-xs sm:text-[13px] font-medium transition-all ${
+                              formData.greenFlag === flag && !isOtherGreenFlag
+                                ? "border-emerald-500 bg-emerald-500/15 text-foreground ring-1 ring-emerald-500 font-semibold"
+                                : "border-border/70 hover:bg-muted/50"
+                            }`}
+                          >
+                            <span className="leading-snug break-words">
+                              {flag}
                             </span>
-                          </span>
-                          {isOtherGreenFlag && (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] px-1.5 py-0 border-emerald-500/40 text-emerald-500 bg-emerald-500/10 font-medium"
-                            >
-                              Selected
-                            </Badge>
-                          )}
-                        </div>
-                      </button>
-                    </div>
+                          </QuestionnaireChoice>
+                        ))}
 
-                    {/* Custom Green Flag Option */}
-                    <div className="pt-0.5 space-y-1">
-                      <Input
-                        placeholder="Or type your own #1 green flag (e.g. Always sends goodnight texts, emotionally honest)..."
-                        value={customGreenFlag}
-                        onFocus={() => {
-                          setIsOtherGreenFlag(true);
-                          if (customGreenFlag.trim()) {
+                        {/* Explicit "Others / Type your own" Option */}
+                        <QuestionnaireChoice
+                          value="others"
+                          checked={isOtherGreenFlag}
+                          onChange={() => {
+                            setIsOtherGreenFlag(true);
                             setFormData({
                               ...formData,
-                              greenFlag: customGreenFlag.trim(),
+                              greenFlag: customGreenFlag.trim() || "",
                             });
-                          }
-                        }}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setCustomGreenFlag(val);
-                          setIsOtherGreenFlag(true);
-                          setFormData({ ...formData, greenFlag: val.trim() });
-                        }}
-                        className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl transition-all ${
-                          isOtherGreenFlag
-                            ? "border-emerald-500 ring-1 ring-emerald-500"
-                            : "border-input"
-                        }`}
-                      />
-                      {isOtherGreenFlag && customGreenFlag.trim() && (
-                        <p className="text-[11px] text-emerald-500 font-medium flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Using your custom green
-                          flag: "{customGreenFlag.trim()}"
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                          }}
+                          className={`rounded-2xl p-2.5 sm:p-3 text-xs sm:text-[13px] font-medium transition-all col-span-1 sm:col-span-2 ${
+                            isOtherGreenFlag
+                              ? "border-emerald-500 bg-emerald-500/15 text-foreground ring-1 ring-emerald-500 font-semibold"
+                              : "border-border/70 hover:bg-muted/50"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <span className="flex items-center gap-2">
+                              <span>✍️</span>
+                              <span className="break-words">
+                                {isOtherGreenFlag && customGreenFlag.trim()
+                                  ? `Others: "${customGreenFlag.trim()}"`
+                                  : "Others (Type your own green flag)"}
+                              </span>
+                            </span>
+                            {isOtherGreenFlag && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] px-1.5 py-0 border-emerald-500/40 text-emerald-500 bg-emerald-500/10 font-medium ml-auto"
+                              >
+                                Selected
+                              </Badge>
+                            )}
+                          </div>
+                        </QuestionnaireChoice>
+                      </QuestionnaireChoices>
+
+                      {/* Custom Green Flag Input */}
+                      <div className="pt-0.5 space-y-1">
+                        <QuestionnaireInput
+                          placeholder="Or type your own #1 green flag (e.g. Always sends goodnight texts, emotionally honest)..."
+                          value={customGreenFlag}
+                          onFocus={() => {
+                            setIsOtherGreenFlag(true);
+                            if (customGreenFlag.trim()) {
+                              setFormData({
+                                ...formData,
+                                greenFlag: customGreenFlag.trim(),
+                              });
+                            }
+                          }}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCustomGreenFlag(val);
+                            setIsOtherGreenFlag(true);
+                            setFormData({ ...formData, greenFlag: val.trim() });
+                          }}
+                          className={`h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${
+                            isOtherGreenFlag
+                              ? "border-emerald-500 ring-1 ring-emerald-500"
+                              : "border-input"
+                          }`}
+                        />
+                        {isOtherGreenFlag && customGreenFlag.trim() && (
+                          <p className="text-[11px] text-emerald-500 font-medium flex items-center gap-1">
+                            <Check className="w-3 h-3" /> Using your custom
+                            green flag: "{customGreenFlag.trim()}"
+                          </p>
+                        )}
+                      </div>
+                    </QuestionnaireItem>
+                  </Questionnaire>
                 )}
 
                 {/* ================= STEP 9: OCCUPATION ================= */}
@@ -1711,6 +1785,19 @@ export default function OnboardingComponent() {
                 {/* ================= STEP 11: VALUES & PRIVATE CORNER ================= */}
                 {step === 11 && (
                   <div className="space-y-3 max-w-lg mx-auto pt-1">
+                    {/* Private Corner Trust Banner */}
+                    <div className="rounded-2xl border border-violet-500/25 bg-violet-500/5 p-3 space-y-1">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-violet-500">
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Private Corner Guarantee</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Caste, gotra, religion and visa status stay private. I
+                        only use them for matching, and only if you choose to
+                        answer.
+                      </p>
+                    </div>
+
                     <div className="space-y-1">
                       <span className="text-xs font-semibold text-muted-foreground block">
                         Dietary Preference 🥗
@@ -2065,6 +2152,19 @@ export default function OnboardingComponent() {
                 {/* ================= STEP 15: CHINO REVEAL ================= */}
                 {step === 15 && (
                   <div className="space-y-3 max-w-lg mx-auto pt-1">
+                    {/* Mayalu's Privacy Dhukuti Guarantee */}
+                    <div className="rounded-2xl border border-rose-500/25 bg-rose-500/5 p-3 space-y-1">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-rose-500">
+                        <Mail className="w-4 h-4" />
+                        <span>Mayalu&apos;s Privacy Dhukuti Guarantee</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Your photo stays in my dhukuti until you say so. Only
+                        your nickname, age, city and answers are shown. Nobody
+                        sees your photos until you both match and say yes.
+                      </p>
+                    </div>
+
                     {/* Avatar selector */}
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs text-muted-foreground">

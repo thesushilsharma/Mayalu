@@ -5,6 +5,11 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { getSessionUser } from "@/lib/neonDB/auth-server";
 
+import {
+  formatBirthdateToISO,
+  calculateAgeFromBirthdate,
+} from "@/lib/date-utils";
+
 export interface OnboardingData {
   firstName: string;
   birthdate?: string;
@@ -115,7 +120,10 @@ export async function getUserOnboardingStatus(userId?: string): Promise<{
       };
     }
 
-    const profile = rows[0];
+    const profile = { ...rows[0] };
+    if (profile.birthdate) {
+      profile.birthdate = formatBirthdateToISO(profile.birthdate);
+    }
     const isOnboarded = Boolean(profile.onboarding_completed);
 
     // Sync cookie directly for edge proxy
@@ -217,10 +225,16 @@ export async function saveOnboardingProfile(data: OnboardingData) {
   const userId = sessionUser.uid;
   const sql = getDb();
 
+  const cleanBirthdate = formatBirthdateToISO(data.birthdate);
   const birthdateVal =
-    data.birthdate && data.birthdate.trim().length > 0 ? data.birthdate : null;
-  const ageVal =
+    cleanBirthdate && /^\d{4}-\d{2}-\d{2}$/.test(cleanBirthdate)
+      ? cleanBirthdate
+      : null;
+  let ageVal =
     data.age && !Number.isNaN(Number(data.age)) ? Number(data.age) : null;
+  if (!ageVal && birthdateVal) {
+    ageVal = calculateAgeFromBirthdate(birthdateVal);
+  }
   const interestsVal = Array.isArray(data.interests) ? data.interests : [];
   const promptAnswersVal = JSON.stringify(data.promptAnswers || {});
   const speedRoundVal = JSON.stringify(data.speedRound || {});

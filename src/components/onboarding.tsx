@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertCircle,
   ArrowLeft,
   Cake,
   Camera,
@@ -41,6 +42,10 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useUserLevel } from "@/contexts/userContext";
+import {
+  formatBirthdateToISO,
+  calculateAgeFromBirthdate,
+} from "@/lib/date-utils";
 import {
   getUserOnboardingStatus,
   type OnboardingData,
@@ -302,7 +307,7 @@ export default function OnboardingComponent() {
   // Form State
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
-    birthdate: "",
+    birthdate: "2000-01-01",
     age: 24,
     gender: "woman",
     interestedIn: "men",
@@ -385,13 +390,17 @@ export default function OnboardingComponent() {
         }
         if (status.profile) {
           const p = status.profile as Record<string, unknown>;
+          const loadedBirthdate =
+            formatBirthdateToISO(p.birthdate) || "2000-01-01";
+          const loadedAge =
+            typeof p.age === "number" && p.age >= 18
+              ? p.age
+              : calculateAgeFromBirthdate(loadedBirthdate);
           setFormData((prev) => ({
             ...prev,
             firstName: (p.first_name as string) || prev.firstName,
-            age: typeof p.age === "number" ? p.age : prev.age,
-            birthdate: p.birthdate
-              ? String(p.birthdate).split("T")[0]
-              : prev.birthdate,
+            age: loadedAge,
+            birthdate: loadedBirthdate,
             gender: (p.gender as string) || prev.gender,
             interestedIn: (p.interested_in as string) || prev.interestedIn,
             location: (p.location as string) || prev.location,
@@ -460,12 +469,306 @@ export default function OnboardingComponent() {
     checkStatus();
   }, [router]);
 
+  const totalSteps = 16;
+
   const awardStepXp = (amount: number) => {
     addXp(amount);
     setEarnedXpTotal((prev) => prev + amount);
   };
 
+  // Comprehensive step-by-step validator for each questionnaire
+  const getStepValidation = (
+    stepIndex: number,
+  ): {
+    isValid: boolean;
+    error: string | null;
+    hint?: string;
+  } => {
+    switch (stepIndex) {
+      case 0: {
+        const name = formData.firstName?.trim() || "";
+        if (name.length < 2) {
+          return {
+            isValid: false,
+            error: "Please enter your first name (at least 2 letters)",
+            hint: "Type at least 2 letters",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 1: {
+        const bdate = formatBirthdateToISO(formData.birthdate);
+        const age = formData.age ?? 0;
+        if (!bdate || !/^\d{4}-\d{2}-\d{2}$/.test(bdate)) {
+          return {
+            isValid: false,
+            error: "Please select a valid date of birth (YYYY-MM-DD)",
+            hint: "Select your birthday",
+          };
+        }
+        if (age < 18) {
+          return {
+            isValid: false,
+            error: "You must be at least 18 years old to join Mayalu",
+            hint: "Minimum age requirement is 18",
+          };
+        }
+        if (age > 100) {
+          return {
+            isValid: false,
+            error: "Please enter a realistic date of birth",
+            hint: "Age must be under 100",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 2: {
+        const hasGender = Boolean(formData.gender?.trim());
+        const hasInterestedIn = Boolean(formData.interestedIn?.trim());
+        if (!hasGender || !hasInterestedIn) {
+          return {
+            isValid: false,
+            error:
+              "Please select both your gender and who you are looking for",
+            hint: !hasGender
+              ? "Select your gender"
+              : "Select who you are looking for",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 3: {
+        const loc = formData.location?.trim() || "";
+        if (loc.length < 2) {
+          return {
+            isValid: false,
+            error: "Please select a hub or enter your city/neighborhood",
+            hint: "Select or type your location",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 4: {
+        const intent = formData.relationshipIntent?.trim() || "";
+        if (!intent) {
+          return {
+            isValid: false,
+            error: "Please select your relationship intention",
+            hint: "Select your relationship intent",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 5: {
+        if (isOtherDalBhat) {
+          if (!customDalBhat.trim() || customDalBhat.trim().length < 2) {
+            return {
+              isValid: false,
+              error:
+                "Please describe your custom food routine (at least 2 letters)",
+              hint: "Type custom routine or pick preset",
+            };
+          }
+        } else if (!formData.dalBhatFrequency?.trim()) {
+          return {
+            isValid: false,
+            error:
+              "Please choose your Dal Bhat frequency or describe your routine",
+            hint: "Choose your frequency",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 6: {
+        const chiya = formData.privateCorner?.chiyaPreference?.trim() || "";
+        if (isOtherChiya) {
+          if (!customChiya.trim() || customChiya.trim().length < 2) {
+            return {
+              isValid: false,
+              error:
+                "Please enter your custom daily drink ritual (at least 2 letters)",
+              hint: "Type custom drink or pick preset",
+            };
+          }
+        } else if (!chiya) {
+          return {
+            isValid: false,
+            error: "Please choose your daily Chiya / drink ritual",
+            hint: "Select your drink ritual",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 7: {
+        const music = formData.musicRepeat?.trim() || "";
+        if (isOtherMusic) {
+          if (!customMusic.trim() || customMusic.trim().length < 2) {
+            return {
+              isValid: false,
+              error: "Please enter your favorite artist or sound on repeat",
+              hint: "Type artist name or pick preset",
+            };
+          }
+        } else if (!music) {
+          return {
+            isValid: false,
+            error: "Please choose who is on repeat in your headphones",
+            hint: "Select an artist on repeat",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 8: {
+        const flag = formData.greenFlag?.trim() || "";
+        if (isOtherGreenFlag) {
+          if (!customGreenFlag.trim() || customGreenFlag.trim().length < 3) {
+            return {
+              isValid: false,
+              error:
+                "Please enter your custom #1 green flag (at least 3 characters)",
+              hint: "Type green flag (min 3 chars)",
+            };
+          }
+        } else if (!flag) {
+          return {
+            isValid: false,
+            error: "Please select or type your #1 green flag",
+            hint: "Select a green flag",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 9: {
+        const occ = formData.occupation?.trim() || "";
+        if (occ.length < 2) {
+          return {
+            isValid: false,
+            error: "Please select or enter your occupation/field of study",
+            hint: "Select or type your career/field",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 10: {
+        const count = formData.interests?.length || 0;
+        if (count < 3) {
+          return {
+            isValid: false,
+            error: `Please select at least 3 passions (${count}/3 selected)`,
+            hint: `Pick ${3 - count} more passion${3 - count === 1 ? "" : "s"} (${count}/7)`,
+          };
+        }
+        if (count > 7) {
+          return {
+            isValid: false,
+            error: "Maximum 7 passions allowed",
+            hint: "Keep 7 or fewer",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 11: {
+        const dietary = formData.privateCorner?.dietary?.trim();
+        const astro = formData.privateCorner?.astrologyOpenness?.trim();
+        if (!dietary || !astro) {
+          return {
+            isValid: false,
+            error:
+              "Please select both dietary preference and astrology outlook",
+            hint: !dietary
+              ? "Select dietary preference"
+              : "Select astrology vibe",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 12: {
+        const minAge = formData.dealbreakers?.ageRangeMin ?? 21;
+        const maxAge = formData.dealbreakers?.ageRangeMax ?? 32;
+        const dist = formData.dealbreakers?.distance?.trim();
+        if (minAge < 18) {
+          return {
+            isValid: false,
+            error: "Minimum partner age must be at least 18",
+            hint: "Min age >= 18",
+          };
+        }
+        if (maxAge < minAge) {
+          return {
+            isValid: false,
+            error: "Maximum age must be greater than or equal to minimum age",
+            hint: "Max age >= Min age",
+          };
+        }
+        if (!dist) {
+          return {
+            isValid: false,
+            error: "Please select your preferred distance scope",
+            hint: "Select distance scope",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 13: {
+        const promptText = activePromptText?.trim() || "";
+        if (promptText.length < 5) {
+          return {
+            isValid: false,
+            error:
+              "Please write an authentic answer to the prompt (at least 5 characters)",
+            hint: "Write at least 5 characters",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 14: {
+        const drinking = formData.speedRound?.drinking?.trim();
+        const smoking = formData.speedRound?.smoking?.trim();
+        const kids = formData.speedRound?.kids?.trim();
+        if (!drinking || !smoking || !kids) {
+          return {
+            isValid: false,
+            error:
+              "Please answer all 3 speed round questions (Drinking, Smoking, Kids)",
+            hint: !drinking
+              ? "Select drinking habit"
+              : !smoking
+                ? "Select smoking habit"
+                : "Select kids preference",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      case 15: {
+        const photo = formData.profilePhoto?.trim();
+        const name = formData.firstName?.trim();
+        if (!photo) {
+          return {
+            isValid: false,
+            error: "Please choose an avatar for your Chino",
+            hint: "Select an avatar",
+          };
+        }
+        if (!name) {
+          return {
+            isValid: false,
+            error: "First name is missing from your profile",
+            hint: "Name required",
+          };
+        }
+        return { isValid: true, error: null };
+      }
+      default:
+        return { isValid: true, error: null };
+    }
+  };
+
   const advanceStep = () => {
+    const val = getStepValidation(step);
+    if (!val.isValid) {
+      toast.warning(val.error || "Please complete this step to continue");
+      return;
+    }
     if (soundEnabled) playStepSound();
     setIsTyping(true);
     setTimeout(() => {
@@ -483,24 +786,16 @@ export default function OnboardingComponent() {
 
   // Birthday change handler with age derivation
   const handleBirthdateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
+    const rawVal = e.target.value;
+    const val = formatBirthdateToISO(rawVal) || rawVal;
     let derivedAge = 24;
-    if (val) {
-      const birth = new Date(val);
-      const today = new Date();
-      derivedAge = today.getFullYear() - birth.getFullYear();
-      const monthDiff = today.getMonth() - birth.getMonth();
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birth.getDate())
-      ) {
-        derivedAge -= 1;
-      }
+    if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+      derivedAge = calculateAgeFromBirthdate(val);
     }
     setFormData((prev) => ({
       ...prev,
       birthdate: val,
-      age: derivedAge > 0 ? derivedAge : 24,
+      age: derivedAge,
     }));
   };
 
@@ -594,15 +889,35 @@ export default function OnboardingComponent() {
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
     try {
+      // Validate all steps first
+      for (let s = 0; s < totalSteps; s++) {
+        const val = getStepValidation(s);
+        if (!val.isValid) {
+          setStep(s);
+          toast.warning(`Please review step ${s + 1}: ${val.error}`);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      const cleanBirthdate =
+        formatBirthdateToISO(formData.birthdate) || "2000-01-01";
+      const cleanAge =
+        typeof formData.age === "number" && formData.age >= 18
+          ? formData.age
+          : calculateAgeFromBirthdate(cleanBirthdate);
+
       const finalBio =
-        formData.bio ||
+        formData.bio?.trim() ||
         `${formData.occupation || "Mayalu member"} based in ${formData.location}. ${formData.relationshipIntent}. Dal bhat: ${formData.dalBhatFrequency}.`;
 
       const payload: OnboardingData = {
         ...formData,
+        birthdate: cleanBirthdate,
+        age: cleanAge,
         bio: finalBio,
         promptAnswers: {
-          [activePrompt]: activePromptText,
+          [activePrompt]: activePromptText.trim(),
         },
       };
 
@@ -622,7 +937,6 @@ export default function OnboardingComponent() {
     }
   };
 
-  const totalSteps = 16;
   const progressPercent = Math.min(
     100,
     Math.round(((step + 1) / totalSteps) * 100),
@@ -774,6 +1088,8 @@ export default function OnboardingComponent() {
       </div>
     );
   }
+
+  const currentValidation = getStepValidation(step);
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] w-full overflow-hidden flex flex-col bg-background text-foreground relative selection:bg-rose-500 selection:text-white">
@@ -973,7 +1289,18 @@ export default function OnboardingComponent() {
                         <Input
                           id="birthdate-input"
                           type="date"
-                          value={formData.birthdate || "2000-01-01"}
+                          min="1920-01-01"
+                          max={new Date(
+                            new Date().setFullYear(
+                              new Date().getFullYear() - 18,
+                            ),
+                          )
+                            .toISOString()
+                            .slice(0, 10)}
+                          value={
+                            formatBirthdateToISO(formData.birthdate) ||
+                            "2000-01-01"
+                          }
                           onChange={handleBirthdateChange}
                           className="h-11 text-base bg-background/80 border-input focus-visible:ring-rose-500 rounded-xl max-w-xs"
                         />
@@ -1008,9 +1335,16 @@ export default function OnboardingComponent() {
                 {step === 2 && (
                   <div className="space-y-3 max-w-lg mx-auto pt-1">
                     <div className="space-y-1.5">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
-                        I am a
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+                          I am a
+                        </span>
+                        {!formData.gender && (
+                          <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Select one
+                          </span>
+                        )}
+                      </div>
                       <div className="grid grid-cols-3 gap-2">
                         {[
                           { id: "woman", label: "Woman 👩" },
@@ -1041,9 +1375,16 @@ export default function OnboardingComponent() {
                     <Separator className="my-1.5" />
 
                     <div className="space-y-1.5">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
-                        Looking for
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+                          Looking for
+                        </span>
+                        {!formData.interestedIn && (
+                          <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Select one
+                          </span>
+                        )}
+                      </div>
                       <div className="grid grid-cols-3 gap-2">
                         {[
                           { id: "men", label: "Men 👨" },
@@ -1146,6 +1487,16 @@ export default function OnboardingComponent() {
                     className="max-w-xl mx-auto pt-1 gap-0"
                   >
                     <QuestionnaireItem name="intent" className="gap-2.5">
+                      <div className="flex items-center justify-between pb-0.5">
+                        <span className="text-xs text-muted-foreground font-medium">
+                          Select what describes your intent:
+                        </span>
+                        {!formData.relationshipIntent && (
+                          <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Select one
+                          </span>
+                        )}
+                      </div>
                       <QuestionnaireChoices className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                         {[
                           {
@@ -1202,6 +1553,19 @@ export default function OnboardingComponent() {
                     className="max-w-lg mx-auto pt-1 gap-2"
                   >
                     <QuestionnaireItem name="dalBhat" className="gap-2">
+                      <div className="flex items-center justify-between pb-0.5">
+                        <span className="text-xs text-muted-foreground font-medium">
+                          Choose a routine or customize below:
+                        </span>
+                        {isOtherDalBhat &&
+                          (!customDalBhat.trim() ||
+                            customDalBhat.trim().length < 2) && (
+                            <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" /> Type routine
+                              below
+                            </span>
+                          )}
+                      </div>
                       <QuestionnaireChoices className="grid grid-cols-1 gap-2">
                         {DAL_BHAT_PRESETS.map((item) => (
                           <QuestionnaireChoice
@@ -1318,6 +1682,19 @@ export default function OnboardingComponent() {
                     className="max-w-lg mx-auto pt-0.5 gap-1.5"
                   >
                     <QuestionnaireItem name="chiya" className="gap-1.5">
+                      <div className="flex items-center justify-between pb-0.5">
+                        <span className="text-xs text-muted-foreground font-medium">
+                          Pick your favorite or enter a custom ritual:
+                        </span>
+                        {isOtherChiya &&
+                          (!customChiya.trim() ||
+                            customChiya.trim().length < 2) && (
+                            <span className="text-[10px] text-rose-500 font-medium flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" /> Type drink
+                              below
+                            </span>
+                          )}
+                      </div>
                       <QuestionnaireChoices className="grid grid-cols-1 gap-1.5">
                         {CHIYA_PRESETS.map((ch) => (
                           <QuestionnaireChoice
@@ -1446,6 +1823,19 @@ export default function OnboardingComponent() {
                     className="max-w-lg mx-auto pt-1 gap-2.5"
                   >
                     <QuestionnaireItem name="music" className="gap-2.5">
+                      <div className="flex items-center justify-between pb-0.5">
+                        <span className="text-xs text-muted-foreground font-medium">
+                          Choose an artist or type your own below:
+                        </span>
+                        {isOtherMusic &&
+                          (!customMusic.trim() ||
+                            customMusic.trim().length < 2) && (
+                            <span className="text-[10px] text-rose-500 font-medium flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" /> Type artist
+                              below
+                            </span>
+                          )}
+                      </div>
                       <QuestionnaireChoices className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                         {MUSIC_PRESETS.map((art) => (
                           <QuestionnaireChoice
@@ -1547,6 +1937,19 @@ export default function OnboardingComponent() {
                     className="max-w-xl mx-auto pt-1 gap-2.5"
                   >
                     <QuestionnaireItem name="greenFlag" className="gap-2.5">
+                      <div className="flex items-center justify-between pb-0.5">
+                        <span className="text-xs text-muted-foreground font-medium">
+                          Select a green flag or write your own below:
+                        </span>
+                        {isOtherGreenFlag &&
+                          (!customGreenFlag.trim() ||
+                            customGreenFlag.trim().length < 3) && (
+                            <span className="text-[10px] text-emerald-500 font-medium flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" /> Min 3 chars
+                              below
+                            </span>
+                          )}
+                      </div>
                       <QuestionnaireChoices className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {GREEN_FLAGS_PRESET.map((flag) => (
                           <QuestionnaireChoice
@@ -1650,6 +2053,16 @@ export default function OnboardingComponent() {
                 {/* ================= STEP 9: OCCUPATION ================= */}
                 {step === 9 && (
                   <div className="space-y-2.5 max-w-lg mx-auto pt-1">
+                    <div className="flex items-center justify-between pb-0.5">
+                      <span className="text-xs text-muted-foreground font-medium">
+                        Popular categories (or enter your specific field):
+                      </span>
+                      {!formData.occupation?.trim() && (
+                        <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" /> Select or type field
+                        </span>
+                      )}
+                    </div>
                     <div className="flex flex-wrap gap-1.5">
                       {[
                         "Tech & Software 💻",
@@ -1799,9 +2212,16 @@ export default function OnboardingComponent() {
                     </div>
 
                     <div className="space-y-1">
-                      <span className="text-xs font-semibold text-muted-foreground block">
-                        Dietary Preference 🥗
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-muted-foreground block">
+                          Dietary Preference 🥗
+                        </span>
+                        {!formData.privateCorner?.dietary && (
+                          <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Select one
+                          </span>
+                        )}
+                      </div>
                       <div className="grid grid-cols-2 gap-2">
                         {[
                           "Non-vegetarian 🍗",
@@ -1836,9 +2256,16 @@ export default function OnboardingComponent() {
                     <Separator />
 
                     <div className="space-y-1">
-                      <span className="text-xs font-semibold text-muted-foreground block">
-                        Astrology & Kundali Vibe 🔮
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-muted-foreground block">
+                          Astrology & Kundali Vibe 🔮
+                        </span>
+                        {!formData.privateCorner?.astrologyOpenness && (
+                          <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Select one
+                          </span>
+                        )}
+                      </div>
                       <div className="flex flex-col gap-1.5">
                         {[
                           {
@@ -1944,14 +2371,31 @@ export default function OnboardingComponent() {
                           />
                         </div>
                       </div>
+                      {(formData.dealbreakers?.ageRangeMin ?? 21) >
+                        (formData.dealbreakers?.ageRangeMax ?? 32) && (
+                        <p className="text-xs text-destructive font-medium flex items-center gap-1 pt-1">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span>
+                            Maximum age must be greater than or equal to minimum
+                            age.
+                          </span>
+                        </p>
+                      )}
                     </div>
 
                     <Separator />
 
                     <div className="space-y-1">
-                      <span className="text-xs font-semibold text-muted-foreground block">
-                        Distance Scope 🗺️
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-muted-foreground block">
+                          Distance Scope 🗺️
+                        </span>
+                        {!formData.dealbreakers?.distance && (
+                          <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Select one
+                          </span>
+                        )}
+                      </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                         {[
                           "Within my city / nearby 📍",
@@ -2027,6 +2471,18 @@ export default function OnboardingComponent() {
                         placeholder="पोख्नुहोस् आफ्नो मनको कुरा (Write your authentic response)..."
                         className="bg-background/80 border-input text-xs resize-none rounded-xl"
                       />
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
+                        <span>Authentic answers get 2.8x more replies</span>
+                        <span
+                          className={
+                            activePromptText.trim().length >= 5
+                              ? "text-emerald-500 font-medium"
+                              : "text-amber-500 font-medium"
+                          }
+                        >
+                          {activePromptText.trim().length}/5 min characters
+                        </span>
+                      </div>
 
                       <div className="space-y-1 pt-0.5">
                         <span className="text-[11px] text-amber-500 font-medium flex items-center gap-1">
@@ -2056,9 +2512,16 @@ export default function OnboardingComponent() {
                 {step === 14 && (
                   <div className="space-y-2.5 max-w-lg mx-auto pt-1">
                     <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground font-medium block">
-                        Drinking 🍷
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground font-medium block">
+                          Drinking 🍷
+                        </span>
+                        {!formData.speedRound?.drinking && (
+                          <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Select one
+                          </span>
+                        )}
+                      </div>
                       <div className="flex gap-2">
                         {["Never", "Socially", "Regularly"].map((v) => (
                           <button
@@ -2086,9 +2549,16 @@ export default function OnboardingComponent() {
                     </div>
 
                     <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground font-medium block">
-                        Smoking 🚭
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground font-medium block">
+                          Smoking 🚭
+                        </span>
+                        {!formData.speedRound?.smoking && (
+                          <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Select one
+                          </span>
+                        )}
+                      </div>
                       <div className="flex gap-2">
                         {["Never", "Socially", "Yes"].map((v) => (
                           <button
@@ -2116,9 +2586,16 @@ export default function OnboardingComponent() {
                     </div>
 
                     <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground font-medium block">
-                        Kids in the future? 👶
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground font-medium block">
+                          Kids in the future? 👶
+                        </span>
+                        {!formData.speedRound?.kids && (
+                          <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Select one
+                          </span>
+                        )}
+                      </div>
                       <div className="flex gap-2">
                         {["Want someday", "Open to it", "Don't want"].map(
                           (v) => (
@@ -2360,7 +2837,7 @@ export default function OnboardingComponent() {
           </div>
 
           {/* Card Bottom: Navigation Action Bar */}
-          <div className="p-3.5 sm:p-4 pt-2.5 border-t border-border/40 bg-muted/20 flex items-center justify-between shrink-0">
+          <div className="p-3.5 sm:p-4 pt-2.5 border-t border-border/40 bg-muted/20 flex items-center justify-between shrink-0 gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -2372,15 +2849,25 @@ export default function OnboardingComponent() {
               <span>Back</span>
             </Button>
 
-            <span className="text-xs text-muted-foreground hidden sm:inline-block font-medium">
-              Step {step + 1} of {totalSteps}
-            </span>
+            <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-center min-w-0">
+              <span className="text-xs text-muted-foreground font-medium shrink-0">
+                Step {step + 1} of {totalSteps}
+              </span>
+              {!currentValidation.isValid && (
+                <span className="text-[11px] text-amber-500 dark:text-amber-400 font-medium hidden md:inline-flex items-center gap-1 max-w-[220px] truncate">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span className="truncate">
+                    {currentValidation.hint || currentValidation.error}
+                  </span>
+                </span>
+              )}
+            </div>
 
             {step === totalSteps - 1 ? (
               <Button
                 onClick={handleFinalSubmit}
-                disabled={isSubmitting}
-                className="rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 text-white font-semibold px-6 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all gap-1.5"
+                disabled={!currentValidation.isValid || isSubmitting}
+                className="rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 text-white font-semibold px-6 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {isSubmitting ? (
                   <>
@@ -2397,15 +2884,8 @@ export default function OnboardingComponent() {
             ) : (
               <Button
                 onClick={advanceStep}
-                disabled={
-                  (step === 0 && formData.firstName.trim().length < 2) ||
-                  (step === 1 && (formData.age ?? 0) < 18) ||
-                  (step === 3 && !formData.location.trim()) ||
-                  (step === 8 && !formData.greenFlag?.trim()) ||
-                  (step === 10 && (formData.interests?.length || 0) < 3) ||
-                  (step === 13 && !activePromptText.trim())
-                }
-                className="rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 text-white font-semibold px-6 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all gap-1.5"
+                disabled={!currentValidation.isValid || isSubmitting}
+                className="rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 text-white font-semibold px-6 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <span>Continue</span>
                 <ChevronRight className="w-4 h-4" />

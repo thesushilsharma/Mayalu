@@ -4,22 +4,22 @@ import { type User } from "./messages";
 const users: User[] = [
   {
     name: "Sarah Johnson",
-    image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=600",
+    image: "https://api.dicebear.com/10.x/initial-face/svg?seed=SarahJohnson",
     uid: "user1",
   },
   {
     name: "Michael Chen",
-    image: "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600",
+    image: "https://api.dicebear.com/10.x/initial-face/svg?seed=MichaelChen",
     uid: "user2",
   },
   {
     name: "Emily Turner",
-    image: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=600",
+    image: "https://api.dicebear.com/10.x/initial-face/svg?seed=EmilyTurner",
     uid: "user3",
   },
   {
     name: "David Kim",
-    image: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=600",
+    image: "https://api.dicebear.com/10.x/initial-face/svg?seed=DavidKim",
     uid: "user4",
   },
 ];

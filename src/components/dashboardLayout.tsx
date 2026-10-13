@@ -153,7 +153,7 @@ function DashboardUserLayout() {
           <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20 rounded-2xl p-4 border border-pink-100 dark:border-pink-900/30 shadow-sm">
             <div className="flex items-center gap-3 mb-3">
               <Avatar className="h-12 w-12 ring-2 ring-pink-200 dark:ring-pink-800">
-                <AvatarImage src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=600" />
+                <AvatarImage src="https://api.dicebear.com/10.x/initial-face/svg?seed=Sushi" alt="User Avatar" />
                 <AvatarFallback className="bg-gradient-to-br from-pink-400 to-rose-400 text-white">
                   JD
                 </AvatarFallback>
@@ -231,8 +231,8 @@ function DashboardUserLayout() {
                 </span>
               </div>
             </div>
-            <Avatar className="h-9 w-9 ring-2 ring-pink-200 dark:ring-pink-800">
-              <AvatarImage src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=600" />
+              <Avatar className="h-9 w-9 ring-2 ring-pink-200 dark:ring-pink-800">
+                <AvatarImage src="https://api.dicebear.com/10.x/initial-face/svg?seed=Sushi" alt="User Avatar" />
               <AvatarFallback className="bg-gradient-to-br from-pink-400 to-rose-400 text-white text-xs">
                 JD
               </AvatarFallback>

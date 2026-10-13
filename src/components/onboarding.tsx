@@ -11,6 +11,7 @@ import {
   ChevronRight,
   ExternalLink,
   Heart,
+  Lock,
   Mail,
   MapPin,
   ShieldCheck,
@@ -52,19 +53,15 @@ import {
   saveOnboardingProfile,
 } from "@/lib/neonDB/onboarding-actions";
 
-// Curated avatar options with Nepali & South Asian aesthetic portraits
-const AVATAR_OPTIONS = [
-  "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=400",
-];
+import {
+  DICEBEAR_AVATAR_OPTIONS,
+  getDiceBearUrl,
+} from "@/lib/dicebear";
+import { DiceBearAvatarStudio } from "@/components/dicebear-avatar-studio";
+import { DhukutiPhotoVault } from "@/components/dhukuti-photo-vault";
+
+// Expressive DiceBear SVG avatars replacing stock Pexels photos
+const AVATAR_OPTIONS = DICEBEAR_AVATAR_OPTIONS;
 
 // Rich Nepali dating prompts with click-to-inspire suggestions
 interface PromptItem {
@@ -333,6 +330,8 @@ export default function OnboardingComponent() {
       chiyaPreference: "Kadak Masala Chiya with elaichi ☕",
       astrologyOpenness: "Open-minded / Casual ✨",
       familyVibe: "Close-knit & family-first 👨‍👩‍👧",
+      verificationSelfie: "",
+      verificationStatus: "pending_review",
     },
     dealbreakers: {
       ageRangeMin: 22,
@@ -340,6 +339,7 @@ export default function OnboardingComponent() {
       distance: "Anywhere in Nepal & Diaspora 🌍",
     },
     profilePhoto: AVATAR_OPTIONS[0],
+    additionalPhotos: [] as string[],
     interests: [
       "Momos & Street Food 🥟",
       "Chiya Walks ☕",
@@ -413,6 +413,10 @@ export default function OnboardingComponent() {
             occupation: (p.occupation as string) || prev.occupation,
             bio: (p.bio as string) || prev.bio,
             profilePhoto: (p.profile_photo as string) || prev.profilePhoto,
+            additionalPhotos:
+              Array.isArray(p.additional_photos) && p.additional_photos.length > 0
+                ? (p.additional_photos as string[])
+                : prev.additionalPhotos,
             interests:
               Array.isArray(p.interests) && p.interests.length > 0
                 ? (p.interests as string[])
@@ -2636,78 +2640,45 @@ export default function OnboardingComponent() {
                         <span>Mayalu&apos;s Privacy Dhukuti Guarantee</span>
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        Your photo stays in my dhukuti until you say so. Only
-                        your nickname, age, city and answers are shown. Nobody
-                        sees your photos until you both match and say yes.
+                        Your real photos & verification selfie stay locked in my dhukuti until you say so. Only your public DiceBear avatar, nickname, age, city and answers are shown to others. Nobody sees your photos until you both match and say yes 💘.
                       </p>
                     </div>
 
-                    {/* Avatar selector */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Pick your avatar:</span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setShowCustomPhotoField(!showCustomPhotoField)
-                          }
-                          className="text-rose-500 hover:underline flex items-center gap-1 font-medium"
-                        >
-                          <Camera className="w-3.5 h-3.5" />
-                          <span>Custom photo URL</span>
-                        </button>
-                      </div>
+                    {/* 1. Public DiceBear Avatar Studio */}
+                    <DiceBearAvatarStudio
+                      selectedAvatarUrl={formData.profilePhoto || AVATAR_OPTIONS[0]}
+                      onSelectAvatar={(url) =>
+                        setFormData({
+                          ...formData,
+                          profilePhoto: url,
+                        })
+                      }
+                      userFirstName={formData.firstName}
+                    />
 
-                      <div className="flex justify-center items-center gap-2 overflow-x-auto py-1">
-                        {AVATAR_OPTIONS.map((img) => (
-                          <button
-                            key={img}
-                            type="button"
-                            onClick={() =>
-                              setFormData({
-                                ...formData,
-                                profilePhoto: img,
-                              })
-                            }
-                            className={`rounded-2xl overflow-hidden border-2 transition-all shrink-0 ${
-                              formData.profilePhoto === img
-                                ? "border-rose-500 scale-110 shadow-lg shadow-rose-500/30"
-                                : "border-border/60 opacity-60 hover:opacity-100"
-                            }`}
-                          >
-                            <Image
-                              src={img}
-                              alt="Avatar"
-                              width={42}
-                              height={42}
-                              className="w-10 h-10 object-cover rounded-xl"
-                            />
-                          </button>
-                        ))}
-                      </div>
+                    {/* 2. Private Dhukuti Photo Vault (Max 3 Pics) & Admin Verification Selfie */}
+                    <DhukutiPhotoVault
+                      photos={formData.additionalPhotos || []}
+                      onChangePhotos={(photos) =>
+                        setFormData({
+                          ...formData,
+                          additionalPhotos: photos,
+                        })
+                      }
+                      verificationSelfie={formData.privateCorner?.verificationSelfie || ""}
+                      onChangeSelfie={(selfieUrl) =>
+                        setFormData({
+                          ...formData,
+                          privateCorner: {
+                            ...formData.privateCorner,
+                            verificationSelfie: selfieUrl,
+                            verificationStatus: selfieUrl ? "pending_review" : "unsubmitted",
+                          },
+                        })
+                      }
+                    />
 
-                      {showCustomPhotoField && (
-                        <div className="p-2.5 bg-muted/50 border border-border/70 rounded-xl flex gap-2 items-center mt-1">
-                          <Input
-                            placeholder="Paste image URL (https://...)"
-                            value={customPhotoInput}
-                            onChange={(e) =>
-                              setCustomPhotoInput(e.target.value)
-                            }
-                            className="h-8 text-xs bg-background"
-                          />
-                          <Button
-                            size="sm"
-                            onClick={applyCustomPhoto}
-                            className="h-8 text-xs bg-rose-500 text-white"
-                          >
-                            Apply
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Bio weaver */}
+                    {/* 3. Bio weaver */}
                     <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/70 space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-muted-foreground">
@@ -2735,7 +2706,7 @@ export default function OnboardingComponent() {
                       />
                     </div>
 
-                    {/* The Chino Card */}
+                    {/* 4. The Chino Card Preview */}
                     <div className="relative rounded-3xl p-0.5 bg-gradient-to-br from-rose-500 via-purple-500 to-amber-400 shadow-xl shadow-rose-500/15">
                       <div className="bg-card/95 backdrop-blur-xl rounded-[22px] p-3.5 space-y-2.5">
                         <div className="flex items-center gap-3">
@@ -2744,7 +2715,8 @@ export default function OnboardingComponent() {
                             alt={formData.firstName || "Profile"}
                             width={54}
                             height={54}
-                            className="w-12 h-12 rounded-2xl object-cover ring-2 ring-rose-500/50 shrink-0"
+                            className="w-12 h-12 rounded-2xl object-cover ring-2 ring-rose-500/50 shrink-0 bg-muted/50"
+                            unoptimized
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 font-bold text-sm sm:text-base">
@@ -2764,13 +2736,23 @@ export default function OnboardingComponent() {
                                 {formData.occupation}
                               </span>
                             </p>
-                            <div className="flex gap-1.5 pt-0.5">
+                            <div className="flex flex-wrap gap-1.5 pt-0.5">
                               <Badge className="bg-rose-500/15 text-rose-500 text-[10px] px-2 py-0 border-none">
                                 {formData.relationshipIntent}
                               </Badge>
                               {formData.privateCorner?.dietary && (
                                 <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] px-2 py-0 border-none">
                                   {formData.privateCorner.dietary}
+                                </Badge>
+                              )}
+                              <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] px-2 py-0 border-none flex items-center gap-0.5">
+                                <Lock className="w-2.5 h-2.5" />
+                                <span>{(formData.additionalPhotos?.length || 0)}/3 Dhukuti Photos</span>
+                              </Badge>
+                              {formData.privateCorner?.verificationSelfie && (
+                                <Badge className="bg-violet-500/10 text-violet-600 dark:text-violet-400 text-[10px] px-2 py-0 border-none flex items-center gap-0.5">
+                                  <ShieldCheck className="w-2.5 h-2.5" />
+                                  <span>Selfie in Review</span>
                                 </Badge>
                               )}
                             </div>

@@ -17,7 +17,7 @@ const mockConversation = {
   user: {
     id: "123",
     name: "Jessica Lee",
-    image: "https://images.pexels.com/photos/712513/pexels-photo-712513.jpeg?auto=compress&cs=tinysrgb&w=600",
+    image: "https://api.dicebear.com/10.x/initial-face/svg?seed=JessicaLee",
     online: true,
     lastActive: "Just now",
   },

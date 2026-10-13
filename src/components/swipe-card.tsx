@@ -122,8 +122,9 @@ export function SwipeCard({ profile, onSwipe, onSuperLike, style }: SwipeCardPro
             src={profile.images[currentImageIndex]}
             alt={`${profile.name} photo ${currentImageIndex + 1}`}
             fill
-            className="object-cover"
+            className="object-cover bg-muted/40"
             sizes="(max-width: 768px) 100vw, 448px"
+            unoptimized
           />
           
           {/* Image indicators */}

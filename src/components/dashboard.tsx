@@ -13,6 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { SwipeCard } from "@/components/swipe-card";
 
+import { Lock, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react";
+import { getDiceBearUrl } from "@/lib/dicebear";
+
 const mockProfiles = [
   {
     id: "1",
@@ -21,9 +24,9 @@ const mockProfiles = [
     location: "San Francisco, CA",
     bio: "Adventure enthusiast and coffee lover. Always up for hiking trails and discovering new cafes. Looking for someone who shares my passion for the outdoors! 🏔️☕",
     images: [
-      "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=600",
-      "https://images.pexels.com/photos/1758144/pexels-photo-1758144.jpeg?auto=compress&cs=tinysrgb&w=600",
-      "https://images.pexels.com/photos/1391498/pexels-photo-1391498.jpeg?auto=compress&cs=tinysrgb&w=600",
+      getDiceBearUrl("Sarah", "initial-face"),
+      getDiceBearUrl("Sarah-Outdoors", "personas"),
+      getDiceBearUrl("Sarah-Chai", "lorelei"),
     ],
     interests: ["Hiking", "Photography", "Coffee", "Travel", "Yoga"],
     occupation: "UX Designer",
@@ -38,9 +41,9 @@ const mockProfiles = [
     location: "Chicago, IL",
     bio: "Software engineer by day, chef by night. I love experimenting with new recipes and exploring the city's food scene. Let's cook together! 👨‍🍳",
     images: [
-      "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600",
-      "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=600",
-      "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=600",
+      getDiceBearUrl("David", "initial-face"),
+      getDiceBearUrl("David-Chef", "notionists"),
+      getDiceBearUrl("David-Tech", "personas"),
     ],
     interests: ["Cooking", "Technology", "Reading", "Board Games", "Wine"],
     occupation: "Software Engineer",
@@ -55,9 +58,9 @@ const mockProfiles = [
     location: "Austin, TX",
     bio: "Music lover and festival enthusiast. I play guitar and love discovering new artists. Life's too short for bad music and boring conversations! 🎸🎵",
     images: [
-      "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=600",
-      "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=600",
-      "https://images.pexels.com/photos/712513/pexels-photo-712513.jpeg?auto=compress&cs=tinysrgb&w=600",
+      getDiceBearUrl("Emily", "initial-face"),
+      getDiceBearUrl("Emily-Guitar", "lorelei"),
+      getDiceBearUrl("Emily-Music", "adventurer"),
     ],
     interests: ["Music", "Concerts", "Guitar", "Art", "Dancing"],
     occupation: "Music Teacher",
@@ -72,9 +75,9 @@ const mockProfiles = [
     location: "Seattle, WA",
     bio: "Fitness enthusiast and nature photographer. When I'm not at the gym, you'll find me capturing the beauty of the Pacific Northwest. 📸💪",
     images: [
-      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600",
-      "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600",
-      "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=600",
+      getDiceBearUrl("Michael", "initial-face"),
+      getDiceBearUrl("Michael-Trek", "adventurer"),
+      getDiceBearUrl("Michael-Fit", "personas"),
     ],
     interests: ["Fitness", "Photography", "Hiking", "Rock Climbing", "Travel"],
     occupation: "Personal Trainer",
@@ -89,9 +92,9 @@ const mockProfiles = [
     location: "Miami, FL",
     bio: "Beach lover and yoga instructor. I believe in living life to the fullest and spreading positive vibes wherever I go. Namaste! 🧘‍♀️🌊",
     images: [
-      "https://images.pexels.com/photos/1382731/pexels-photo-1382731.jpeg?auto=compress&cs=tinysrgb&w=600",
-      "https://images.pexels.com/photos/1858175/pexels-photo-1858175.jpeg?auto=compress&cs=tinysrgb&w=600",
-      "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=600",
+      getDiceBearUrl("Jessica", "initial-face"),
+      getDiceBearUrl("Jessica-Yoga", "lorelei"),
+      getDiceBearUrl("Jessica-Zen", "personas"),
     ],
     interests: ["Yoga", "Meditation", "Beach", "Wellness", "Surfing"],
     occupation: "Yoga Instructor",
@@ -158,6 +161,23 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-md">
+        {/* Mayalu Dhukuti Photo & Verification Status Card */}
+        <div className="rounded-2xl border border-rose-500/25 bg-gradient-to-r from-rose-500/10 via-pink-500/5 to-violet-500/10 p-3.5 mb-5 shadow-sm space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-rose-500">
+              <Lock className="w-3.5 h-3.5" />
+              <span>Dhukuti Photo Guarantee</span>
+            </div>
+            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-none text-[10px] px-2 py-0 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" />
+              <span>Selfie Verified by Admin</span>
+            </Badge>
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-snug">
+            3 showcase photos sealed in Dhukuti. Public sees your DiceBear avatar until mutual 💘 match.
+          </p>
+        </div>
+
         {/* Mode Toggle */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 mb-6 shadow-lg">
           <div className="flex items-center justify-between">

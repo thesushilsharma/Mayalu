@@ -56,12 +56,32 @@ function DropdownMenuLabel({
   className,
   inset,
   ...props
+}: React.ComponentProps<"div"> & {
+  inset?: boolean
+}) {
+  return (
+    <div
+      data-slot="dropdown-menu-label"
+      data-inset={inset}
+      className={cn(
+        "px-3 py-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase data-inset:pl-9.5",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function DropdownMenuGroupLabel({
+  className,
+  inset,
+  ...props
 }: MenuPrimitive.GroupLabel.Props & {
   inset?: boolean
 }) {
   return (
     <MenuPrimitive.GroupLabel
-      data-slot="dropdown-menu-label"
+      data-slot="dropdown-menu-group-label"
       data-inset={inset}
       className={cn(
         "px-3 py-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase data-inset:pl-9.5",
@@ -254,6 +274,7 @@ export {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuGroupLabel,
   DropdownMenuLabel,
   DropdownMenuItem,
   DropdownMenuCheckboxItem,

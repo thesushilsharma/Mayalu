@@ -196,9 +196,10 @@ export function Privacy() {
                   {/* Photo Frame */}
                   <div className="relative h-64 w-full rounded-xl overflow-hidden bg-muted">
                     <Image
-                      src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=600"
+                      src="https://robohash.org/sushil"
                       alt="Sample Mayalu Profile"
                       fill
+                      unoptimized
                       className={`object-cover transition-all duration-700 ease-in-out ${
                         isPhotoUnblurred
                           ? "blur-none scale-100 filter-none"

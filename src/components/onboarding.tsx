@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import { BrandLogo } from "@/components/landing/brand-logo";
 import { ButterflyIcon } from "@/components/landing/cloud-atmosphere";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -60,7 +60,7 @@ import {
 import { DiceBearAvatarStudio } from "@/components/dicebear-avatar-studio";
 import { DhukutiPhotoVault } from "@/components/dhukuti-photo-vault";
 
-// Expressive DiceBear SVG avatars replacing stock Pexels photos
+// Expressive DiceBear SVG avatars for profile onboarding
 const AVATAR_OPTIONS = DICEBEAR_AVATAR_OPTIONS;
 
 // Rich Nepali dating prompts with click-to-inspire suggestions
@@ -920,6 +920,7 @@ export default function OnboardingComponent() {
         birthdate: cleanBirthdate,
         age: cleanAge,
         bio: finalBio,
+        profilePhoto: formData.profilePhoto || AVATAR_OPTIONS[0],
         promptAnswers: {
           [activePrompt]: activePromptText.trim(),
         },
@@ -1191,6 +1192,11 @@ export default function OnboardingComponent() {
             <div className="flex items-start gap-2.5 sm:gap-3">
               <div className="relative shrink-0">
                 <Avatar className="w-8 h-8 sm:w-9 sm:h-9 ring-2 ring-rose-500/40 shadow-sm">
+                  <AvatarImage
+                    src="https://robohash.org/mayalu"
+                    alt="Maya"
+                    className="object-cover"
+                  />
                   <AvatarFallback className="bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-400 text-white font-bold text-xs">
                     M
                   </AvatarFallback>
@@ -1364,11 +1370,10 @@ export default function OnboardingComponent() {
                                 gender: opt.id,
                               })
                             }
-                            className={`p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all border text-center ${
-                              formData.gender === opt.id
+                            className={`p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all border text-center ${formData.gender === opt.id
                                 ? "bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/25"
                                 : "bg-card border-border/80 text-foreground hover:bg-muted/80"
-                            }`}
+                              }`}
                           >
                             {opt.label}
                           </button>
@@ -1404,11 +1409,10 @@ export default function OnboardingComponent() {
                                 interestedIn: opt.id,
                               })
                             }
-                            className={`p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all border text-center ${
-                              formData.interestedIn === opt.id
+                            className={`p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all border text-center ${formData.interestedIn === opt.id
                                 ? "bg-gradient-to-r from-amber-500 to-rose-500 text-white border-transparent shadow-md shadow-amber-500/20"
                                 : "bg-card border-border/80 text-foreground hover:bg-muted/80"
-                            }`}
+                              }`}
                           >
                             {opt.label}
                           </button>
@@ -1451,11 +1455,10 @@ export default function OnboardingComponent() {
                                 location: loc,
                               })
                             }
-                            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
-                              formData.location === loc
+                            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${formData.location === loc
                                 ? "bg-rose-500 text-white border-rose-500 shadow-sm"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             {loc}
                           </button>
@@ -1529,11 +1532,10 @@ export default function OnboardingComponent() {
                                 relationshipIntent: item.id,
                               })
                             }
-                            className={`p-3.5 rounded-2xl cursor-pointer transition-all ${
-                              formData.relationshipIntent === item.id
+                            className={`p-3.5 rounded-2xl cursor-pointer transition-all ${formData.relationshipIntent === item.id
                                 ? "bg-rose-500/10 border-rose-500 text-foreground shadow-lg shadow-rose-500/10 ring-1 ring-rose-500"
                                 : "bg-card border-border/70 text-foreground hover:border-border"
-                            }`}
+                              }`}
                           >
                             <div className="flex flex-col">
                               <h4 className="font-semibold text-xs sm:text-sm mb-1 text-rose-500 dark:text-rose-400">
@@ -1587,12 +1589,11 @@ export default function OnboardingComponent() {
                               setIsOtherDalBhat(false);
                               setCustomDalBhat("");
                             }}
-                            className={`p-2.5 sm:p-3 rounded-2xl text-left border transition-all ${
-                              formData.dalBhatFrequency === item.id &&
-                              !isOtherDalBhat
+                            className={`p-2.5 sm:p-3 rounded-2xl text-left border transition-all ${formData.dalBhatFrequency === item.id &&
+                                !isOtherDalBhat
                                 ? "bg-amber-500/15 border-amber-500 text-foreground shadow-sm ring-1 ring-amber-500"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             <div className="flex flex-col">
                               <div className="text-xs sm:text-sm font-semibold">
@@ -1616,11 +1617,10 @@ export default function OnboardingComponent() {
                               dalBhatFrequency: customDalBhat.trim() || "",
                             });
                           }}
-                          className={`p-2.5 sm:p-3 rounded-2xl text-left border transition-all ${
-                            isOtherDalBhat
+                          className={`p-2.5 sm:p-3 rounded-2xl text-left border transition-all ${isOtherDalBhat
                               ? "bg-amber-500/15 border-amber-500 text-foreground shadow-sm ring-1 ring-amber-500"
                               : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center justify-between w-full">
                             <div>
@@ -1668,11 +1668,10 @@ export default function OnboardingComponent() {
                               dalBhatFrequency: val.trim(),
                             });
                           }}
-                          className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${
-                            isOtherDalBhat
+                          className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${isOtherDalBhat
                               ? "border-amber-500 ring-1 ring-amber-500"
                               : "border-input"
-                          }`}
+                            }`}
                         />
                       </div>
                     </QuestionnaireItem>
@@ -1706,7 +1705,7 @@ export default function OnboardingComponent() {
                             value={ch.id}
                             checked={
                               formData.privateCorner?.chiyaPreference ===
-                                ch.id && !isOtherChiya
+                              ch.id && !isOtherChiya
                             }
                             onChange={() => {
                               setFormData({
@@ -1719,12 +1718,11 @@ export default function OnboardingComponent() {
                               setIsOtherChiya(false);
                               setCustomChiya("");
                             }}
-                            className={`w-full p-2 sm:p-2.5 rounded-xl border text-left transition-all ${
-                              formData.privateCorner?.chiyaPreference ===
+                            className={`w-full p-2 sm:p-2.5 rounded-xl border text-left transition-all ${formData.privateCorner?.chiyaPreference ===
                                 ch.id && !isOtherChiya
                                 ? "bg-rose-500/15 border-rose-500 text-foreground shadow-sm ring-1 ring-rose-500"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             <div className="flex flex-col">
                               <div className="text-xs sm:text-sm font-semibold text-rose-500 dark:text-rose-400">
@@ -1751,11 +1749,10 @@ export default function OnboardingComponent() {
                               },
                             });
                           }}
-                          className={`w-full p-2 sm:p-2.5 rounded-xl border text-left transition-all ${
-                            isOtherChiya
+                          className={`w-full p-2 sm:p-2.5 rounded-xl border text-left transition-all ${isOtherChiya
                               ? "bg-rose-500/15 border-rose-500 text-foreground shadow-sm ring-1 ring-rose-500"
                               : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center justify-between w-full">
                             <div>
@@ -1809,11 +1806,10 @@ export default function OnboardingComponent() {
                               },
                             });
                           }}
-                          className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${
-                            isOtherChiya
+                          className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${isOtherChiya
                               ? "border-rose-500 ring-1 ring-rose-500"
                               : "border-input"
-                          }`}
+                            }`}
                         />
                       </div>
                     </QuestionnaireItem>
@@ -1853,11 +1849,10 @@ export default function OnboardingComponent() {
                               setIsOtherMusic(false);
                               setCustomMusic("");
                             }}
-                            className={`p-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
-                              formData.musicRepeat === art && !isOtherMusic
+                            className={`p-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${formData.musicRepeat === art && !isOtherMusic
                                 ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             <span className="leading-snug">{art}</span>
                           </QuestionnaireChoice>
@@ -1874,11 +1869,10 @@ export default function OnboardingComponent() {
                               musicRepeat: customMusic.trim() || "",
                             });
                           }}
-                          className={`p-2 rounded-xl text-xs sm:text-sm font-medium transition-all col-span-2 sm:col-span-3 ${
-                            isOtherMusic
+                          className={`p-2 rounded-xl text-xs sm:text-sm font-medium transition-all col-span-2 sm:col-span-3 ${isOtherMusic
                               ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
                               : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center justify-between w-full">
                             <span>Others ✍️</span>
@@ -1917,11 +1911,10 @@ export default function OnboardingComponent() {
                               musicRepeat: val.trim(),
                             });
                           }}
-                          className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${
-                            isOtherMusic
+                          className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${isOtherMusic
                               ? "border-rose-500 ring-1 ring-rose-500"
                               : "border-input"
-                          }`}
+                            }`}
                         />
                         {isOtherMusic && customMusic.trim() && (
                           <p className="text-[11px] text-rose-500 font-medium flex items-center gap-1">
@@ -1967,11 +1960,10 @@ export default function OnboardingComponent() {
                               setIsOtherGreenFlag(false);
                               setCustomGreenFlag("");
                             }}
-                            className={`rounded-2xl p-2.5 sm:p-3 text-xs sm:text-[13px] font-medium transition-all ${
-                              formData.greenFlag === flag && !isOtherGreenFlag
+                            className={`rounded-2xl p-2.5 sm:p-3 text-xs sm:text-[13px] font-medium transition-all ${formData.greenFlag === flag && !isOtherGreenFlag
                                 ? "border-emerald-500 bg-emerald-500/15 text-foreground ring-1 ring-emerald-500 font-semibold"
                                 : "border-border/70 hover:bg-muted/50"
-                            }`}
+                              }`}
                           >
                             <span className="leading-snug break-words">
                               {flag}
@@ -1990,11 +1982,10 @@ export default function OnboardingComponent() {
                               greenFlag: customGreenFlag.trim() || "",
                             });
                           }}
-                          className={`rounded-2xl p-2.5 sm:p-3 text-xs sm:text-[13px] font-medium transition-all col-span-1 sm:col-span-2 ${
-                            isOtherGreenFlag
+                          className={`rounded-2xl p-2.5 sm:p-3 text-xs sm:text-[13px] font-medium transition-all col-span-1 sm:col-span-2 ${isOtherGreenFlag
                               ? "border-emerald-500 bg-emerald-500/15 text-foreground ring-1 ring-emerald-500 font-semibold"
                               : "border-border/70 hover:bg-muted/50"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center justify-between w-full">
                             <span className="flex items-center gap-2">
@@ -2037,11 +2028,10 @@ export default function OnboardingComponent() {
                             setIsOtherGreenFlag(true);
                             setFormData({ ...formData, greenFlag: val.trim() });
                           }}
-                          className={`h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${
-                            isOtherGreenFlag
+                          className={`h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${isOtherGreenFlag
                               ? "border-emerald-500 ring-1 ring-emerald-500"
                               : "border-input"
-                          }`}
+                            }`}
                         />
                         {isOtherGreenFlag && customGreenFlag.trim() && (
                           <p className="text-[11px] text-emerald-500 font-medium flex items-center gap-1">
@@ -2088,11 +2078,10 @@ export default function OnboardingComponent() {
                               occupation: occ,
                             })
                           }
-                          className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all border ${
-                            formData.occupation === occ
+                          className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all border ${formData.occupation === occ
                               ? "bg-rose-500 text-white border-rose-500 shadow-sm"
                               : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                          }`}
+                            }`}
                         >
                           {occ}
                         </button>
@@ -2151,11 +2140,10 @@ export default function OnboardingComponent() {
                                 key={item}
                                 type="button"
                                 onClick={() => toggleInterest(item)}
-                                className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-all border flex items-center gap-1.5 ${
-                                  isSelected
+                                className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-all border flex items-center gap-1.5 ${isSelected
                                     ? "bg-rose-500 text-white border-rose-500 shadow-sm ring-1 ring-rose-400"
                                     : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                                }`}
+                                  }`}
                               >
                                 <span>{item}</span>
                                 {isSelected && (
@@ -2245,11 +2233,10 @@ export default function OnboardingComponent() {
                                 },
                               })
                             }
-                            className={`py-2 px-3 rounded-xl text-xs font-medium text-left border transition-all ${
-                              formData.privateCorner?.dietary === d
+                            className={`py-2 px-3 rounded-xl text-xs font-medium text-left border transition-all ${formData.privateCorner?.dietary === d
                                 ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             {d}
                           </button>
@@ -2297,11 +2284,10 @@ export default function OnboardingComponent() {
                                 },
                               })
                             }
-                            className={`py-2 px-3 rounded-xl text-xs font-medium text-left border transition-all ${
-                              formData.privateCorner?.astrologyOpenness === a.id
+                            className={`py-2 px-3 rounded-xl text-xs font-medium text-left border transition-all ${formData.privateCorner?.astrologyOpenness === a.id
                                 ? "bg-amber-500/15 border-amber-500 text-foreground ring-1 ring-amber-500 font-semibold"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             {a.label}
                           </button>
@@ -2377,14 +2363,14 @@ export default function OnboardingComponent() {
                       </div>
                       {(formData.dealbreakers?.ageRangeMin ?? 21) >
                         (formData.dealbreakers?.ageRangeMax ?? 32) && (
-                        <p className="text-xs text-destructive font-medium flex items-center gap-1 pt-1">
-                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                          <span>
-                            Maximum age must be greater than or equal to minimum
-                            age.
-                          </span>
-                        </p>
-                      )}
+                          <p className="text-xs text-destructive font-medium flex items-center gap-1 pt-1">
+                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                            <span>
+                              Maximum age must be greater than or equal to minimum
+                              age.
+                            </span>
+                          </p>
+                        )}
                     </div>
 
                     <Separator />
@@ -2419,11 +2405,10 @@ export default function OnboardingComponent() {
                                 },
                               })
                             }
-                            className={`py-2 px-3 rounded-xl text-xs font-medium text-left border transition-all ${
-                              formData.dealbreakers?.distance === dist
+                            className={`py-2 px-3 rounded-xl text-xs font-medium text-left border transition-all ${formData.dealbreakers?.distance === dist
                                 ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             {dist}
                           </button>
@@ -2451,11 +2436,10 @@ export default function OnboardingComponent() {
                                 setActivePromptText(pObj.inspirations[0]);
                               }
                             }}
-                            className={`text-xs px-2.5 py-1 rounded-xl border transition-all ${
-                              activePrompt === pObj.prompt
+                            className={`text-xs px-2.5 py-1 rounded-xl border transition-all ${activePrompt === pObj.prompt
                                 ? "bg-rose-500 text-white border-rose-500 shadow-sm"
                                 : "bg-card border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             {pObj.prompt}
                           </button>
@@ -2540,11 +2524,10 @@ export default function OnboardingComponent() {
                                 },
                               })
                             }
-                            className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all border ${
-                              formData.speedRound?.drinking === v
+                            className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all border ${formData.speedRound?.drinking === v
                                 ? "bg-rose-500 text-white border-rose-500 shadow-sm"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             {v}
                           </button>
@@ -2577,11 +2560,10 @@ export default function OnboardingComponent() {
                                 },
                               })
                             }
-                            className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all border ${
-                              formData.speedRound?.smoking === v
+                            className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all border ${formData.speedRound?.smoking === v
                                 ? "bg-rose-500 text-white border-rose-500 shadow-sm"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             {v}
                           </button>
@@ -2615,11 +2597,10 @@ export default function OnboardingComponent() {
                                   },
                                 })
                               }
-                              className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all border ${
-                                formData.speedRound?.kids === v
+                              className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all border ${formData.speedRound?.kids === v
                                   ? "bg-rose-500 text-white border-rose-500 shadow-sm"
                                   : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                              }`}
+                                }`}
                             >
                               {v}
                             </button>

@@ -331,7 +331,7 @@ export async function saveOnboardingProfile(data: OnboardingData) {
           UPDATE neon_auth."user"
           SET 
             name = ${data.firstName},
-            image = COALESCE(${data.profilePhoto || null}, image),
+            image = ${data.profilePhoto || null},
             "updatedAt" = CURRENT_TIMESTAMP
           WHERE id = ${userId}
         `;

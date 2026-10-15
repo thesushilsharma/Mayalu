@@ -26,6 +26,7 @@ import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -204,34 +205,36 @@ export default function Header() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="my-1 border-border/50" />
-                    <DropdownMenuItem
-                      onClick={() => router.push("/account/dashboard")}
-                      className="rounded-lg gap-2 cursor-pointer text-xs font-medium normal-case"
-                    >
-                      <LayoutDashboard className="w-3.5 h-3.5 text-rose-500" />
-                      Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push("/account/profile")}
-                      className="rounded-lg gap-2 cursor-pointer text-xs font-medium normal-case"
-                    >
-                      <User className="w-3.5 h-3.5 text-violet-500" />
-                      Profile & Chino
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push("/account/chats")}
-                      className="rounded-lg gap-2 cursor-pointer text-xs font-medium normal-case"
-                    >
-                      <MessagesSquare className="w-3.5 h-3.5 text-amber-500" />
-                      Conversations
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push("/account/settings")}
-                      className="rounded-lg gap-2 cursor-pointer text-xs font-medium normal-case"
-                    >
-                      <Settings className="w-3.5 h-3.5 text-blue-500" />
-                      Account Settings
-                    </DropdownMenuItem>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        onClick={() => router.push("/account/dashboard")}
+                        className="rounded-lg gap-2 cursor-pointer text-xs font-medium normal-case"
+                      >
+                        <LayoutDashboard className="w-3.5 h-3.5 text-rose-500" />
+                        Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => router.push("/account/profile")}
+                        className="rounded-lg gap-2 cursor-pointer text-xs font-medium normal-case"
+                      >
+                        <User className="w-3.5 h-3.5 text-violet-500" />
+                        Profile & Chino
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => router.push("/account/chats")}
+                        className="rounded-lg gap-2 cursor-pointer text-xs font-medium normal-case"
+                      >
+                        <MessagesSquare className="w-3.5 h-3.5 text-amber-500" />
+                        Conversations
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => router.push("/account/settings")}
+                        className="rounded-lg gap-2 cursor-pointer text-xs font-medium normal-case"
+                      >
+                        <Settings className="w-3.5 h-3.5 text-blue-500" />
+                        Account Settings
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
                     <DropdownMenuSeparator className="my-1 border-border/50" />
                     <DropdownMenuItem
                       onClick={handleSignOut}

@@ -41,7 +41,7 @@ export function Privacy() {
     {
       icon: ShieldCheck,
       title:
-        "Caste, gotra and visa status stay private. I only use them for matching.",
+        "Caste, gotra and religion stay private. I only use them for matching.",
       desc: "Never shown on your card. Handled as strictly confidential parameters for graph compatibility.",
       accent: "from-violet-500 to-purple-600",
       iconBg: "bg-violet-500/10 text-violet-500 border-violet-500/20",
@@ -76,8 +76,8 @@ export function Privacy() {
       badge: "Core Journey",
     },
     {
-      q: "Will anyone see my caste, gotra, religion or visa status?",
-      a: "Never. Caste, gotra, religion and visa status stay private. I only use them for matching, and only if you choose to answer.",
+      q: "Will anyone see my caste, gotra, or religion?",
+      a: "Never. Caste, gotra and religion stay private. I only use them for matching, and only if you choose to answer.",
       badge: "Confidentiality",
     },
     {

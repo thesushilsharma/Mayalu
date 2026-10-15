@@ -8,6 +8,7 @@ import {
   Camera,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   ExternalLink,
   Heart,
@@ -290,6 +291,59 @@ const GREEN_FLAGS_PRESET = [
   "Active listener who remembers details 💌",
 ];
 
+const NEPALI_RELIGIONS = [
+  "Hindu",
+  "Buddhist",
+  "Kirat",
+  "Christian",
+  "Muslim",
+  "Jain / Sikh",
+  "Spiritual / Agnostic",
+  "Open / No preference",
+] as const;
+
+const NEPALI_CASTES = [
+  "Brahmin",
+  "Chhetri",
+  "Newar",
+  "Magar",
+  "Gurung",
+  "Tamang",
+  "Rai",
+  "Limbu",
+  "Tharu",
+  "Thakuri",
+  "Yadav",
+  "Sherpa",
+  "Dalit",
+  "Marwadi",
+  "Madhesi / Maithil",
+  "Other / Open to all",
+] as const;
+
+const NEPALI_GOTRAS = [
+  "Mudgal",
+  "Kashyap",
+  "Bharadwaj",
+  "Vashistha",
+  "Gautam",
+  "Sandilya",
+  "Garga",
+  "Kaushik",
+  "Parashara",
+  "Agastya",
+  "Atri",
+  "Vishwamitra",
+  "Angirasa",
+  "Vatsa",
+  "Harita",
+  "Dhananjaya",
+  "Kaudinya",
+  "Upamanyu",
+  "Not applicable / Unknown",
+  "Open / Skip",
+] as const;
+
 export default function OnboardingComponent() {
   const router = useRouter();
   const { addXp } = useUserLevel();
@@ -324,8 +378,9 @@ export default function OnboardingComponent() {
       kids: "Want someday",
     },
     privateCorner: {
-      caste: "Open / No preference",
-      religion: "Spiritual / Hindu",
+      caste: "Brahmin",
+      religion: "Hindu",
+      gotra: "Mudgal",
       dietary: "Non-vegetarian 🍗",
       chiyaPreference: "Kadak Masala Chiya with elaichi ☕",
       astrologyOpenness: "Open-minded / Casual ✨",
@@ -335,7 +390,7 @@ export default function OnboardingComponent() {
     },
     dealbreakers: {
       ageRangeMin: 22,
-      ageRangeMax: 32,
+      ageRangeMax: 27,
       distance: "Anywhere in Nepal & Diaspora 🌍",
     },
     profilePhoto: AVATAR_OPTIONS[0],
@@ -372,6 +427,9 @@ export default function OnboardingComponent() {
   // Custom photo link state
   const [customPhotoInput, setCustomPhotoInput] = useState("");
   const [showCustomPhotoField, setShowCustomPhotoField] = useState(false);
+
+  // Private corner lock feedback state
+  const [isPrivateCornerLocked, setIsPrivateCornerLocked] = useState(false);
 
   const [isChecking, setIsChecking] = useState(true);
   const [isAlreadyOnboarded, setIsAlreadyOnboarded] = useState(false);
@@ -2189,24 +2247,179 @@ export default function OnboardingComponent() {
 
                 {/* ================= STEP 11: VALUES & PRIVATE CORNER ================= */}
                 {step === 11 && (
-                  <div className="space-y-3 max-w-lg mx-auto pt-1">
-                    {/* Private Corner Trust Banner */}
-                    <div className="rounded-2xl border border-violet-500/25 bg-violet-500/5 p-3 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-violet-500">
-                        <ShieldCheck className="w-4 h-4" />
-                        <span>Private Corner Guarantee</span>
+                  <div className="flex flex-col gap-2.5 max-w-lg mx-auto pt-0.5">
+                    {/* Nepali Religion, Caste & Gotra Selector Card with Integrated Guarantee */}
+                    <div className="rounded-2xl border-2 border-dashed border-violet-500/30 dark:border-violet-500/40 bg-violet-500/[0.03] dark:bg-violet-950/20 p-3 sm:p-3.5 text-foreground shadow-xs flex flex-col gap-2.5 backdrop-blur-sm">
+                      {/* Integrated Private Corner Guarantee Header */}
+                      <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/50 dark:border-border/30">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400">
+                          <ShieldCheck className="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                          <span>Private Corner Guarantee</span>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] py-0 px-1.5 bg-violet-500/10 border-violet-500/25 text-violet-600 dark:text-violet-300 font-medium"
+                          >
+                            Confidential
+                          </Badge>
+                        </div>
+                        <span className="text-[11px] text-muted-foreground hidden sm:inline">
+                          Caste, gotra & religion stay private
+                        </span>
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Caste, gotra, religion and visa status stay private. I
-                        only use them for matching, and only if you choose to
-                        answer.
+
+                      <p className="text-[11px] text-muted-foreground leading-tight">
+                        Caste, gotra, religion remain private — only used to match if you choose to share.
                       </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5">
+                        {/* Religion */}
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-muted-foreground block">
+                            Religion
+                          </label>
+                          <div className="relative">
+                            <select
+                              value={formData.privateCorner?.religion || "Hindu"}
+                              onChange={(e) => {
+                                setIsPrivateCornerLocked(false);
+                                setFormData({
+                                  ...formData,
+                                  privateCorner: {
+                                    ...formData.privateCorner,
+                                    religion: e.target.value,
+                                  },
+                                });
+                              }}
+                              className="w-full appearance-none rounded-full bg-background border border-border/80 text-foreground font-semibold px-3 py-1.5 pr-7 text-xs shadow-xs focus:outline-none focus:ring-2 focus:ring-rose-500/30 hover:border-violet-500/40 transition-colors cursor-pointer"
+                            >
+                              {NEPALI_RELIGIONS.map((rel) => (
+                                <option key={rel} value={rel}>
+                                  {rel}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2]" />
+                          </div>
+                        </div>
+
+                        {/* Caste */}
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-muted-foreground block">
+                            Caste
+                          </label>
+                          <div className="relative">
+                            <select
+                              value={
+                                formData.privateCorner?.caste === "Open / No preference"
+                                  ? "Other / Open to all"
+                                  : formData.privateCorner?.caste || "Brahmin"
+                              }
+                              onChange={(e) => {
+                                setIsPrivateCornerLocked(false);
+                                setFormData({
+                                  ...formData,
+                                  privateCorner: {
+                                    ...formData.privateCorner,
+                                    caste: e.target.value,
+                                  },
+                                });
+                              }}
+                              className="w-full appearance-none rounded-full bg-background border border-border/80 text-foreground font-semibold px-3 py-1.5 pr-7 text-xs shadow-xs focus:outline-none focus:ring-2 focus:ring-rose-500/30 hover:border-violet-500/40 transition-colors cursor-pointer"
+                            >
+                              {NEPALI_CASTES.map((c) => (
+                                <option key={c} value={c}>
+                                  {c}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2]" />
+                          </div>
+                        </div>
+
+                        {/* Gotra */}
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-muted-foreground block">
+                            Gotra
+                          </label>
+                          <div className="relative">
+                            <select
+                              value={formData.privateCorner?.gotra || "Mudgal"}
+                              onChange={(e) => {
+                                setIsPrivateCornerLocked(false);
+                                setFormData({
+                                  ...formData,
+                                  privateCorner: {
+                                    ...formData.privateCorner,
+                                    gotra: e.target.value,
+                                  },
+                                });
+                              }}
+                              className="w-full appearance-none rounded-full bg-background border border-violet-500/40 dark:border-violet-400/40 text-foreground font-semibold px-3 py-1.5 pr-7 text-xs shadow-xs ring-1 ring-violet-500/25 focus:outline-none focus:ring-2 focus:ring-violet-500/40 transition-colors cursor-pointer"
+                            >
+                              {NEPALI_GOTRAS.map((g) => (
+                                <option key={g} value={g}>
+                                  {g}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2]" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center justify-between pt-0.5">
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <Lock className="w-3 h-3 text-muted-foreground shrink-0" />
+                          <span>Optional & confidential</span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsPrivateCornerLocked(false);
+                              setFormData({
+                                ...formData,
+                                privateCorner: {
+                                  ...formData.privateCorner,
+                                  religion: "Open / No preference",
+                                  caste: "Other / Open to all",
+                                  gotra: "Open / Skip",
+                                },
+                              });
+                              toast.info("Skipped — kept open for all matches ✨");
+                            }}
+                            className="px-3.5 py-1 text-xs font-semibold rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-transform duration-150 ease-out active:scale-95 shadow-xs"
+                          >
+                            Skip
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsPrivateCornerLocked(true);
+                              toast.success("Locked in your Private Corner 🔒", {
+                                description: `${formData.privateCorner?.religion || "Hindu"} • ${formData.privateCorner?.caste || "Brahmin"} • ${formData.privateCorner?.gotra || "Mudgal"} sealed securely.`,
+                              });
+                            }}
+                            className={`px-4 py-1 text-xs font-semibold rounded-full transition-transform duration-150 ease-out active:scale-95 flex items-center gap-1.5 shadow-sm ${
+                              isPrivateCornerLocked
+                                ? "bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30"
+                                : "bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 text-white shadow-rose-500/25 hover:shadow-rose-500/35 hover:scale-[1.02]"
+                            }`}
+                          >
+                            <span>{isPrivateCornerLocked ? "Locked in" : "Lock it in"}</span>
+                            <span>🔒</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="space-y-1">
+                    {/* Dietary Preference (Compact 4-Pill Row) */}
+                    <div className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-muted-foreground block">
-                          Dietary Preference 🥗
+                        <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                          <span>Dietary Preference</span>
+                          <span>🥗</span>
                         </span>
                         {!formData.privateCorner?.dietary && (
                           <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
@@ -2214,7 +2427,7 @@ export default function OnboardingComponent() {
                           </span>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {[
                           "Non-vegetarian 🍗",
                           "Vegetarian 🥬",
@@ -2233,10 +2446,11 @@ export default function OnboardingComponent() {
                                 },
                               })
                             }
-                            className={`py-2 px-3 rounded-xl text-xs font-medium text-left border transition-all ${formData.privateCorner?.dietary === d
-                                ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
+                            className={`py-1.5 px-2 rounded-xl text-xs font-medium text-center border transition-all duration-150 active:scale-[0.98] ${
+                              formData.privateCorner?.dietary === d
+                                ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold shadow-xs"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                              }`}
+                            }`}
                           >
                             {d}
                           </button>
@@ -2244,12 +2458,12 @@ export default function OnboardingComponent() {
                       </div>
                     </div>
 
-                    <Separator />
-
-                    <div className="space-y-1">
+                    {/* Astrology & Kundali Vibe (Compact 3-Card Row) */}
+                    <div className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-muted-foreground block">
-                          Astrology & Kundali Vibe 🔮
+                        <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                          <span>Astrology & Kundali Vibe</span>
+                          <span>🔮</span>
                         </span>
                         {!formData.privateCorner?.astrologyOpenness && (
                           <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
@@ -2257,19 +2471,22 @@ export default function OnboardingComponent() {
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-col gap-1.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {[
                           {
                             id: "Believer (Kundali match is fun/meaningful) 🔮",
-                            label: "Believer (Kundali match matters) 🔮",
+                            title: "Believer 🔮",
+                            desc: "Kundali match matters",
                           },
                           {
                             id: "Open-minded / Casual ✨",
-                            label: "Open-minded / Casual ✨",
+                            title: "Open-minded ✨",
+                            desc: "Casual & fun vibe",
                           },
                           {
                             id: "Not into it 🙅‍♂️",
-                            label: "Not into it / Modern outlook 🙅‍♂️",
+                            title: "Not into it 🙅‍♂️",
+                            desc: "Modern outlook",
                           },
                         ].map((a) => (
                           <button
@@ -2284,12 +2501,21 @@ export default function OnboardingComponent() {
                                 },
                               })
                             }
-                            className={`py-2 px-3 rounded-xl text-xs font-medium text-left border transition-all ${formData.privateCorner?.astrologyOpenness === a.id
-                                ? "bg-amber-500/15 border-amber-500 text-foreground ring-1 ring-amber-500 font-semibold"
+                            className={`py-1.5 px-2.5 rounded-xl text-left border transition-all duration-150 active:scale-[0.98] flex flex-col justify-between ${
+                              formData.privateCorner?.astrologyOpenness === a.id
+                                ? "bg-amber-500/15 border-amber-500 text-foreground ring-1 ring-amber-500 font-semibold shadow-xs"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                              }`}
+                            }`}
                           >
-                            {a.label}
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-xs font-semibold">{a.title}</span>
+                              {formData.privateCorner?.astrologyOpenness === a.id && (
+                                <Check className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                              )}
+                            </div>
+                            <span className="text-[10px] text-muted-foreground block leading-tight mt-0.5">
+                              {a.desc}
+                            </span>
                           </button>
                         ))}
                       </div>
@@ -2309,8 +2535,8 @@ export default function OnboardingComponent() {
                           variant="outline"
                           className="text-rose-500 border-rose-500/30 font-semibold"
                         >
-                          {formData.dealbreakers?.ageRangeMin || 21} -{" "}
-                          {formData.dealbreakers?.ageRangeMax || 32} yrs
+                          {formData.dealbreakers?.ageRangeMin || 23} -{" "}
+                          {formData.dealbreakers?.ageRangeMax || 27} yrs
                         </Badge>
                       </div>
 
@@ -2323,13 +2549,13 @@ export default function OnboardingComponent() {
                             type="number"
                             min={18}
                             max={60}
-                            value={formData.dealbreakers?.ageRangeMin || 21}
+                            value={formData.dealbreakers?.ageRangeMin || 23}
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
                                 dealbreakers: {
                                   ...formData.dealbreakers,
-                                  ageRangeMin: Number(e.target.value) || 21,
+                                  ageRangeMin: Number(e.target.value) || 23,
                                 },
                               })
                             }
@@ -2347,7 +2573,7 @@ export default function OnboardingComponent() {
                             type="number"
                             min={18}
                             max={65}
-                            value={formData.dealbreakers?.ageRangeMax || 32}
+                            value={formData.dealbreakers?.ageRangeMax || 27}
                             onChange={(e) =>
                               setFormData({
                                 ...formData,

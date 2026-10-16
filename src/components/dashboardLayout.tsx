@@ -2,11 +2,13 @@
 
 import {
   CircleUser,
+  Flame,
   HeartIcon,
   Home,
   Menu,
   MessageCircle,
   Settings,
+  ShieldCheck,
   Users,
   Zap,
 } from "lucide-react";
@@ -27,11 +29,12 @@ import { cn } from "@/lib/utils";
 import { LogoutButton } from "./auth/logout-button";
 
 const navItems = [
+  { name: "Hallway", href: "/account/hallway", icon: Flame },
   { name: "Dashboard", href: "/account/dashboard", icon: Home },
-  { name: "Chat", href: "/account/chats", icon: MessageCircle },
-  { name: "Profile", href: "/account/profile", icon: CircleUser },
+  { name: "Kura-Kani", href: "/account/chats", icon: MessageCircle },
+  { name: "Chino", href: "/account/profile", icon: CircleUser },
+  { name: "Moderation", href: "/account/users", icon: ShieldCheck },
   { name: "Settings", href: "/account/settings", icon: Settings },
-  { name: "Users", href: "/account/users", icon: Users },
 ];
 
 function DashboardUserLayout() {

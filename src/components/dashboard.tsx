@@ -10,167 +10,193 @@ import { Progress } from "@/components/ui/progress";
 import { useUserLevel } from "@/contexts/userContext";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { SwipeCard } from "@/components/swipe-card";
+import { TinderSwipeDeck, type Profile } from "@/components/tinder-swipe-deck";
+import { toast } from "sonner";
 
 import { Lock, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react";
 import { getDiceBearUrl } from "@/lib/dicebear";
 
-const mockProfiles = [
+const mockProfiles: Profile[] = [
   {
     id: "1",
-    name: "Sarah",
-    age: 27,
-    location: "San Francisco, CA",
-    bio: "Adventure enthusiast and coffee lover. Always up for hiking trails and discovering new cafes. Looking for someone who shares my passion for the outdoors! 🏔️☕",
+    name: "Aastha",
+    age: 26,
+    location: "San Francisco, CA (Kathmandu)",
+    bio: "UX Designer by day, amateur momo chef by weekend. Always up for misty hikes in Marin and hunting for genuine Nepali chiya spots! 🏔️☕",
     images: [
-      getDiceBearUrl("Sarah", "initial-face"),
-      getDiceBearUrl("Sarah-Outdoors", "personas"),
-      getDiceBearUrl("Sarah-Chai", "lorelei"),
+      getDiceBearUrl("Aastha-Nepali", "lorelei"),
+      getDiceBearUrl("Aastha-Trek", "personas"),
+      getDiceBearUrl("Aastha-Chai", "notionists"),
     ],
-    interests: ["Hiking", "Photography", "Coffee", "Travel", "Yoga"],
+    interests: ["Hiking", "Momo Crawls", "Acoustic Pop", "Photography", "Yoga"],
     occupation: "UX Designer",
     education: "Stanford University",
     distance: 3,
     verified: true,
+    dalBhatFrequency: "Every single day (Rice is life)",
+    musicRepeat: "Albatross - Kalo Kesh",
+    gotra: "Kashyap",
+    caste: "Brahmin",
+    relationshipIntent: "Long-term relationship",
+    dietary: "Vegetarian",
+    promptQuestion: "The secret to my heart...",
+    promptAnswer: "Properly spiced timur ko jhol achar and a good road-trip playlist.",
   },
   {
     id: "2",
-    name: "David",
-    age: 30,
-    location: "Chicago, IL",
-    bio: "Software engineer by day, chef by night. I love experimenting with new recipes and exploring the city's food scene. Let's cook together! 👨‍🍳",
+    name: "Bikram",
+    age: 29,
+    location: "New York, NY (Pokhara)",
+    bio: "Fintech engineer, avid trekker, and rooftop acoustic guitarist. Can cook dal bhat in under 25 minutes. Let's debate old Nepali rock bands! 🎸👨‍🍳",
     images: [
-      getDiceBearUrl("David", "initial-face"),
-      getDiceBearUrl("David-Chef", "notionists"),
-      getDiceBearUrl("David-Tech", "personas"),
+      getDiceBearUrl("Bikram-Pokhara", "personas"),
+      getDiceBearUrl("Bikram-Guitar", "adventurer"),
+      getDiceBearUrl("Bikram-Tech", "notionists"),
     ],
-    interests: ["Cooking", "Technology", "Reading", "Board Games", "Wine"],
-    occupation: "Software Engineer",
-    education: "MIT",
-    distance: 7,
-    verified: false,
+    interests: ["Guitar", "Annapurna Treks", "Cooking", "Chess", "Indie Rock"],
+    occupation: "Senior Software Engineer",
+    education: "Columbia University",
+    distance: 6,
+    verified: true,
+    dalBhatFrequency: "Twice a day",
+    musicRepeat: "1974 AD - Mayalu",
+    gotra: "Vashistha",
+    caste: "Chhetri",
+    relationshipIntent: "Marriage / Matrimonial",
+    dietary: "Non-Vegetarian",
+    promptQuestion: "Ideal Sunday morning...",
+    promptAnswer: "Reading with black coffee, followed by an impromptu bike ride.",
   },
   {
     id: "3",
-    name: "Emily",
+    name: "Pooja",
     age: 25,
-    location: "Austin, TX",
-    bio: "Music lover and festival enthusiast. I play guitar and love discovering new artists. Life's too short for bad music and boring conversations! 🎸🎵",
+    location: "Austin, TX (Lalitpur)",
+    bio: "Music producer & podcast host. Deeply in love with traditional Newari architecture, indie music, and street photography. 🎨🎵",
     images: [
-      getDiceBearUrl("Emily", "initial-face"),
-      getDiceBearUrl("Emily-Guitar", "lorelei"),
-      getDiceBearUrl("Emily-Music", "adventurer"),
+      getDiceBearUrl("Pooja-Newar", "lorelei"),
+      getDiceBearUrl("Pooja-Music", "personas"),
+      getDiceBearUrl("Pooja-Art", "adventurer"),
     ],
-    interests: ["Music", "Concerts", "Guitar", "Art", "Dancing"],
-    occupation: "Music Teacher",
-    education: "Berklee College of Music",
+    interests: ["Indie Music", "Ceramics", "Concerts", "Street Food", "Dance"],
+    occupation: "Audio Engineer & Producer",
+    education: "UT Austin",
     distance: 12,
-    verified: true,
+    verified: false,
+    dalBhatFrequency: "Occasional (Samay Baji fan)",
+    musicRepeat: "Sajjan Raj Vaidya - Hataarindai Bataasindai",
+    gotra: "Open / Skip",
+    caste: "Newar",
+    relationshipIntent: "Dating to explore",
+    dietary: "Foodie / Open",
+    promptQuestion: "A non-negotiable for me...",
+    promptAnswer: "You must be able to laugh at awkward silences and love momos.",
   },
   {
     id: "4",
-    name: "Michael",
+    name: "Suman",
     age: 28,
-    location: "Seattle, WA",
-    bio: "Fitness enthusiast and nature photographer. When I'm not at the gym, you'll find me capturing the beauty of the Pacific Northwest. 📸💪",
+    location: "Seattle, WA (Dharan)",
+    bio: "Environmental scientist & amateur trail runner. Weekends are reserved for Mt. Rainier trails and experimenting with homemade hot sauces! 🌲🏃",
     images: [
-      getDiceBearUrl("Michael", "initial-face"),
-      getDiceBearUrl("Michael-Trek", "adventurer"),
-      getDiceBearUrl("Michael-Fit", "personas"),
+      getDiceBearUrl("Suman-Dharan", "personas"),
+      getDiceBearUrl("Suman-Trail", "adventurer"),
+      getDiceBearUrl("Suman-Coffee", "lorelei"),
     ],
-    interests: ["Fitness", "Photography", "Hiking", "Rock Climbing", "Travel"],
-    occupation: "Personal Trainer",
+    interests: ["Trail Running", "Sustainability", "Documentaries", "Coffee"],
+    occupation: "Environmental Scientist",
     education: "University of Washington",
     distance: 5,
-    verified: false,
+    verified: true,
+    dalBhatFrequency: "Standard (Once a day)",
+    musicRepeat: "Bipul Chettri - Syndicate",
+    gotra: "Bharadwaj",
+    caste: "Rai",
+    relationshipIntent: "Long-term relationship",
+    dietary: "Flexitarian",
+    promptQuestion: "My greatest adventure so far...",
+    promptAnswer: "Solo backpacking across the Langtang Valley after a sudden snowfall.",
   },
   {
     id: "5",
-    name: "Jessica",
-    age: 26,
-    location: "Miami, FL",
-    bio: "Beach lover and yoga instructor. I believe in living life to the fullest and spreading positive vibes wherever I go. Namaste! 🧘‍♀️🌊",
+    name: "Shraddha",
+    age: 27,
+    location: "Toronto, Canada (Bhaktapur)",
+    bio: "Sustainable architect & tea connoisseur. Passionate about revitalizing heritage aesthetics with modern timber design. 🏛️🌿",
     images: [
-      getDiceBearUrl("Jessica", "initial-face"),
-      getDiceBearUrl("Jessica-Yoga", "lorelei"),
-      getDiceBearUrl("Jessica-Zen", "personas"),
+      getDiceBearUrl("Shraddha-Heritage", "lorelei"),
+      getDiceBearUrl("Shraddha-Design", "personas"),
+      getDiceBearUrl("Shraddha-Cafe", "notionists"),
     ],
-    interests: ["Yoga", "Meditation", "Beach", "Wellness", "Surfing"],
-    occupation: "Yoga Instructor",
-    education: "Florida International University",
+    interests: ["Architecture", "Pottery", "Literature", "Travel", "Plants"],
+    occupation: "Architectural Designer",
+    education: "University of Toronto",
     distance: 8,
     verified: true,
+    dalBhatFrequency: "Twice a day",
+    musicRepeat: "Tribal Rain - Bhanai",
+    gotra: "Gautam",
+    caste: "Brahmin",
+    relationshipIntent: "Marriage / Matrimonial",
+    dietary: "Vegetarian",
+    promptQuestion: "We'll get along if...",
+    promptAnswer: "You appreciate thoughtful design, warm conversations, and good tea.",
   },
 ];
 
 export default function DashboardPage() {
   const { userLevel, addXp } = useUserLevel();
   const [useMatrimonialMode, setUseMatrimonialMode] = useState(false);
-  const [currentProfiles, setCurrentProfiles] = useState(mockProfiles);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentProfiles, setCurrentProfiles] = useState<Profile[]>(mockProfiles);
   const [matches, setMatches] = useState<string[]>([]);
-  const [superLikes, setSuperLikes] = useState(3); // Daily super likes
+  const [superLikes, setSuperLikes] = useState(3);
 
-  const handleSwipe = (direction: 'left' | 'right', profileId: string) => {
-    if (direction === 'right') {
-      setMatches(prev => [...prev, profileId]);
-      addXp(10);
-      // toast({
-      //   title: "It's a match! 💕",
-      //   message: "+10 XP earned",
-      // });
-    }
-    
-    // Move to next profile
-    setCurrentIndex(prev => prev + 1);
-    
-    // Add XP for swiping
+  const handleSwipeRight = (profile: Profile) => {
+    setMatches((prev) => [...prev, profile.id]);
+    addXp(10);
+    toast.success(`Subhakamana! 💘 Connected with ${profile.name}!`, {
+      description: "Chat unlocked in Kura-Kani.",
+    });
+  };
+
+  const handleSwipeLeft = (_profile: Profile) => {
     addXp(2);
   };
 
-  const handleSuperLike = (profileId: string) => {
+  const handleSuperLike = (profile: Profile) => {
     if (superLikes > 0) {
-      setSuperLikes(prev => prev - 1);
-      setMatches(prev => [...prev, profileId]);
-      addXp(20);
-      // toast({
-      //   title: "Super Like sent! ⭐",
-      //   description: "+20 XP earned",
-      // });
-      setCurrentIndex(prev => prev + 1);
+      setSuperLikes((prev) => prev - 1);
+      setMatches((prev) => [...prev, profile.id]);
+      addXp(25);
+      toast.success(`Kura-Kani Sparked! 💫 Super Like sent to ${profile.name}!`, {
+        description: "Your Chino was placed at the top of their inbox.",
+      });
     } else {
-      // toast({
-      //   variant: "destructive",
-      //   title: "No Super Likes left",
-      //   description: "You'll get more tomorrow!",
-      // });
+      toast.error("No Super Likes remaining today", {
+        description: "Daily super likes reset at midnight.",
+      });
     }
   };
 
   const resetStack = () => {
-    setCurrentIndex(0);
     setCurrentProfiles([...mockProfiles]);
+    toast.info("Stack reset with fresh profiles ✨");
   };
-
-  const currentProfile = currentProfiles[currentIndex];
-  const hasMoreProfiles = currentIndex < currentProfiles.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-md">
+      <main className="container mx-auto px-4 py-6 max-w-md">
         {/* Mayalu Dhukuti Photo & Verification Status Card */}
-        <div className="rounded-2xl border border-rose-500/25 bg-gradient-to-r from-rose-500/10 via-pink-500/5 to-violet-500/10 p-3.5 mb-5 shadow-sm space-y-2">
+        <div className="rounded-2xl border border-rose-500/25 bg-gradient-to-r from-rose-500/10 via-pink-500/5 to-violet-500/10 p-3.5 mb-4 shadow-sm space-y-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-bold text-rose-500">
               <Lock className="w-3.5 h-3.5" />
-              <span>Dhukuti Photo Guarantee</span>
+              <span>Dhukuti Privacy Vault</span>
             </div>
             <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-none text-[10px] px-2 py-0 flex items-center gap-1">
               <ShieldCheck className="w-3 h-3" />
-              <span>Selfie Verified by Admin</span>
+              <span>Maya Verified</span>
             </Badge>
           </div>
           <p className="text-[11px] text-muted-foreground leading-snug">
@@ -179,14 +205,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Mode Toggle */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 mb-6 shadow-lg">
+        <div className="bg-card/80 backdrop-blur-md border border-border/60 rounded-2xl p-3.5 mb-4 shadow-xs">
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-base font-medium">
-                {useMatrimonialMode ? "Matrimonial Mode" : "Dating Mode"}
+              <Label className="text-xs font-semibold">
+                {useMatrimonialMode ? "💍 Matrimonial Mode" : "🔥 Dating Mode"}
               </Label>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {useMatrimonialMode ? "Find your life partner" : "Discover connections"}
+              <p className="text-[11px] text-muted-foreground">
+                {useMatrimonialMode ? "Kundali, Gotra & life partner discovery" : "Casual, connection & chemistry discovery"}
               </p>
             </div>
             <Switch
@@ -197,74 +223,42 @@ export default function DashboardPage() {
         </div>
 
         {/* Level Progress */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 mb-6 shadow-lg">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Level {userLevel.level}</span>
-            <span className="text-sm text-gray-500">{userLevel.xp}/{userLevel.requiredXp} XP</span>
+        <div className="bg-card/80 backdrop-blur-md border border-border/60 rounded-2xl p-3 mb-5 shadow-xs">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-semibold">Level {userLevel.level} Explorer</span>
+            <span className="text-[11px] text-muted-foreground">{userLevel.xp}/{userLevel.requiredXp} XP</span>
           </div>
           <Progress
             value={(userLevel.xp / userLevel.requiredXp) * 100}
-            className="h-2"
+            className="h-1.5"
           />
         </div>
 
-        {/* Swipe Cards */}
-        <div className="relative h-[600px] mb-6">
-          {!hasMoreProfiles ? (
-            <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
-              <div className="text-6xl mb-4">🎉</div>
-              <h3 className="text-xl font-bold mb-2">You're all caught up!</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-center mb-6">
-                No more profiles to show. Check back later for new matches!
-              </p>
-              <Button onClick={resetStack} className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600">
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Reset Stack
-              </Button>
-            </div>
-          ) : (
-            <>
-              {/* Next card (behind) */}
-              {currentIndex + 1 < currentProfiles.length && (
-                <SwipeCard
-                  key={currentProfiles[currentIndex + 1].id}
-                  profile={currentProfiles[currentIndex + 1]}
-                  onSwipe={() => {}}
-                  onSuperLike={() => {}}
-                  style={{
-                    scale: 0.95,
-                    zIndex: 1,
-                  }}
-                />
-              )}
-              
-              {/* Current card (front) */}
-              <SwipeCard
-                key={currentProfile.id}
-                profile={currentProfile}
-                onSwipe={handleSwipe}
-                onSuperLike={handleSuperLike}
-                style={{
-                  zIndex: 2,
-                }}
-              />
-            </>
-          )}
+        {/* IN-HOUSE TINDER SWIPE DECK */}
+        <div className="mb-6">
+          <TinderSwipeDeck
+            profiles={currentProfiles}
+            isMatrimonialMode={useMatrimonialMode}
+            onSwipeRight={handleSwipeRight}
+            onSwipeLeft={handleSwipeLeft}
+            onSuperLike={handleSuperLike}
+            onResetStack={resetStack}
+          />
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center shadow-lg">
-            <div className="text-2xl font-bold text-pink-500">{matches.length}</div>
-            <div className="text-sm text-gray-500">Matches</div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-card/80 backdrop-blur-md border border-border/60 rounded-2xl p-3 text-center shadow-xs">
+            <div className="text-xl font-bold text-rose-500">{matches.length}</div>
+            <div className="text-[11px] text-muted-foreground font-medium">Matches</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center shadow-lg">
-            <div className="text-2xl font-bold text-blue-500">{superLikes}</div>
-            <div className="text-sm text-gray-500">Super Likes</div>
+          <div className="bg-card/80 backdrop-blur-md border border-border/60 rounded-2xl p-3 text-center shadow-xs">
+            <div className="text-xl font-bold text-violet-500">{superLikes}</div>
+            <div className="text-[11px] text-muted-foreground font-medium">Super Likes</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center shadow-lg">
-            <div className="text-2xl font-bold text-purple-500">{userLevel.level}</div>
-            <div className="text-sm text-gray-500">Level</div>
+          <div className="bg-card/80 backdrop-blur-md border border-border/60 rounded-2xl p-3 text-center shadow-xs">
+            <div className="text-xl font-bold text-amber-500">{userLevel.level}</div>
+            <div className="text-[11px] text-muted-foreground font-medium">XP Level</div>
           </div>
         </div>
       </main>

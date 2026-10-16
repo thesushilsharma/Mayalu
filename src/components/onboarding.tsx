@@ -11,15 +11,18 @@ import {
   ChevronDown,
   ChevronRight,
   ExternalLink,
+  EyeOff,
   Heart,
   Lock,
   Mail,
   MapPin,
   ShieldCheck,
+  Smile,
   Sparkles,
   Volume2,
   VolumeX,
   Zap,
+  Ghost,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -43,6 +46,7 @@ import {
 } from "@/components/ui/questionnaire";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useUserLevel } from "@/contexts/userContext";
 import {
   formatBirthdateToISO,
@@ -987,12 +991,33 @@ export default function OnboardingComponent() {
       await saveOnboardingProfile(payload);
       awardStepXp(100);
       if (soundEnabled) playCelebrateSound();
-      toast.success("Subhakamana! 🌟 Your Chino is live!");
+
+      const photoCount = payload.additionalPhotos?.length || 0;
+      const hasThreePhotos = photoCount >= 3;
+      const hasSelfie = Boolean(payload.privateCorner?.verificationSelfie);
+
+      if (hasThreePhotos && hasSelfie) {
+        toast.success("Subhakamana! 🌟 Your Chino is saved, Hallway ready, and selfie submitted for verification!");
+      } else {
+        toast.success("Subhakamana! 🌟 Your Chino has been saved!");
+        if (!hasThreePhotos) {
+          toast.info(
+            `Dhukuti: ${photoCount}/3 showcase photos uploaded. Submit all 3 photos to be available in the Hallway.`,
+            { duration: 5500 }
+          );
+        }
+        if (!hasSelfie) {
+          toast.warning(
+            "👻 You're entering in Ghost Spectator Mode! Send Maya your selfie so matching and Kura-Kani unlock.",
+            { duration: 6000 }
+          );
+        }
+      }
 
       setTimeout(() => {
         router.push("/account/dashboard");
         router.refresh();
-      }, 1000);
+      }, 1200);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to save profile";
       toast.error(msg);
@@ -1244,7 +1269,11 @@ export default function OnboardingComponent() {
       {/* Main Focus Area (Strictly zero outer window scroll) */}
       <main className="flex-1 min-h-0 w-full overflow-hidden flex flex-col items-center justify-center p-2 sm:px-4 sm:py-2">
         {/* The Central Onboarding Glass Card */}
-        <Card className="w-full max-w-2xl h-full max-h-[min(650px,calc(100dvh-5.25rem))] flex flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-2xl shadow-2xl overflow-hidden relative p-0 gap-0">
+        <Card className={`w-full h-full flex flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-2xl shadow-2xl overflow-hidden relative p-0 gap-0 transition-all duration-300 ${
+          step === 15
+            ? "max-w-4xl lg:max-w-5xl max-h-[min(760px,calc(100dvh-4.5rem))]"
+            : "max-w-2xl max-h-[min(650px,calc(100dvh-5.25rem))]"
+        }`}>
           {/* Card Top: Maya's Guidance Section (Compact & sleek) */}
           <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-border/30 bg-muted/20 shrink-0">
             <div className="flex items-start gap-2.5 sm:gap-3">
@@ -2309,11 +2338,7 @@ export default function OnboardingComponent() {
                           </label>
                           <div className="relative">
                             <select
-                              value={
-                                formData.privateCorner?.caste === "Open / No preference"
-                                  ? "Other / Open to all"
-                                  : formData.privateCorner?.caste || "Brahmin"
-                              }
+                              value={formData.privateCorner?.caste || "Brahmin"}
                               onChange={(e) => {
                                 setIsPrivateCornerLocked(false);
                                 setFormData({
@@ -2371,7 +2396,7 @@ export default function OnboardingComponent() {
                       <div className="flex items-center justify-between pt-0.5">
                         <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                           <Lock className="w-3 h-3 text-muted-foreground shrink-0" />
-                          <span>Optional & confidential</span>
+                          <span>Sealed & private in your Dhukuti 🔒</span>
                         </span>
                         <div className="flex items-center gap-2">
                           <button
@@ -2838,128 +2863,68 @@ export default function OnboardingComponent() {
                 )}
 
                 {/* ================= STEP 15: CHINO REVEAL ================= */}
-                {step === 15 && (
-                  <div className="space-y-3 max-w-lg mx-auto pt-1">
-                    {/* Mayalu's Privacy Dhukuti Guarantee */}
-                    <div className="rounded-2xl border border-rose-500/25 bg-rose-500/5 p-3 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-rose-500">
-                        <Mail className="w-4 h-4" />
-                        <span>Mayalu&apos;s Privacy Dhukuti Guarantee</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Your real photos & verification selfie stay locked in my dhukuti until you say so. Only your public DiceBear avatar, nickname, age, city and answers are shown to others. Nobody sees your photos until you both match and say yes 💘.
-                      </p>
-                    </div>
-
-                    {/* 1. Public DiceBear Avatar Studio */}
-                    <DiceBearAvatarStudio
-                      selectedAvatarUrl={formData.profilePhoto || AVATAR_OPTIONS[0]}
-                      onSelectAvatar={(url) =>
-                        setFormData({
-                          ...formData,
-                          profilePhoto: url,
-                        })
-                      }
-                      userFirstName={formData.firstName}
-                    />
-
-                    {/* 2. Private Dhukuti Photo Vault (Max 3 Pics) & Admin Verification Selfie */}
-                    <DhukutiPhotoVault
-                      photos={formData.additionalPhotos || []}
-                      onChangePhotos={(photos) =>
-                        setFormData({
-                          ...formData,
-                          additionalPhotos: photos,
-                        })
-                      }
-                      verificationSelfie={formData.privateCorner?.verificationSelfie || ""}
-                      onChangeSelfie={(selfieUrl) =>
-                        setFormData({
-                          ...formData,
-                          privateCorner: {
-                            ...formData.privateCorner,
-                            verificationSelfie: selfieUrl,
-                            verificationStatus: selfieUrl ? "pending_review" : "unsubmitted",
-                          },
-                        })
-                      }
-                    />
-
-                    {/* 3. Bio weaver */}
-                    <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/70 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-muted-foreground">
-                          Chino Bio:
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={generateMayaBio}
-                          className="text-amber-500 hover:text-amber-600 text-xs h-6 px-2 gap-1"
-                        >
-                          <Sparkles className="w-3 h-3" />
-                          <span>✨ Craft with Maya</span>
-                        </Button>
-                      </div>
-                      <Textarea
-                        rows={2}
-                        value={formData.bio || ""}
-                        onChange={(e) =>
-                          setFormData({ ...formData, bio: e.target.value })
-                        }
-                        placeholder="Write a bio or tap '✨ Craft with Maya'..."
-                        className="text-xs bg-background/80 border-input resize-none rounded-xl"
-                      />
-                    </div>
-
-                    {/* 4. The Chino Card Preview */}
-                    <div className="relative rounded-3xl p-0.5 bg-gradient-to-br from-rose-500 via-purple-500 to-amber-400 shadow-xl shadow-rose-500/15">
-                      <div className="bg-card/95 backdrop-blur-xl rounded-[22px] p-3.5 space-y-2.5">
+                {step === 15 && (() => {
+                  const renderChinoCard = () => (
+                    <div className="relative rounded-3xl p-0.5 bg-gradient-to-br from-rose-500/80 via-purple-500/80 to-amber-400/80 shadow-xl shadow-rose-500/10">
+                      <div className="bg-card/95 backdrop-blur-xl rounded-[22px] p-3.5 sm:p-4 flex flex-col gap-2.5">
                         <div className="flex items-center gap-3">
-                          <Image
-                            src={formData.profilePhoto || AVATAR_OPTIONS[0]}
-                            alt={formData.firstName || "Profile"}
-                            width={54}
-                            height={54}
-                            className="w-12 h-12 rounded-2xl object-cover ring-2 ring-rose-500/50 shrink-0 bg-muted/50"
-                            unoptimized
-                          />
+                          <div className="relative size-12 rounded-2xl overflow-hidden ring-2 ring-rose-500/50 shrink-0 bg-muted/50">
+                            <Image
+                              src={formData.profilePhoto || AVATAR_OPTIONS[0]}
+                              alt={formData.firstName || "Profile"}
+                              fill
+                              className="object-cover transition-all duration-200"
+                              unoptimized
+                            />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 font-bold text-sm sm:text-base">
                               <span>{formData.firstName}</span>
                               <span className="text-rose-500 font-semibold text-xs sm:text-sm">
                                 {formData.age}
                               </span>
-                              <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto" />
+                              {formData.privateCorner?.verificationSelfie ? (
+                                <div
+                                  className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20"
+                                  title="Selfie submitted — Maya is reviewing"
+                                >
+                                  <ShieldCheck className="size-3 text-emerald-500" />
+                                  <span className="text-[10px]">Maya Checking</span>
+                                </div>
+                              ) : (
+                                <div
+                                  className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-500/15 px-2 py-0.5 rounded-full border border-purple-500/30"
+                                  title="Unverified profiles remain in Ghost Spectator mode"
+                                >
+                                  <Ghost className="size-3 text-purple-500" />
+                                  <span className="text-[10px]">Ghost Mode 👻</span>
+                                </div>
+                              )}
                             </div>
                             <p className="text-xs text-muted-foreground flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
-                              <span className="truncate">
-                                {formData.location}
-                              </span>
+                              <MapPin className="size-3 text-rose-500 shrink-0" />
+                              <span className="truncate">{formData.location}</span>
                               <span>•</span>
-                              <span className="truncate">
-                                {formData.occupation}
-                              </span>
+                              <span className="truncate">{formData.occupation}</span>
                             </p>
                             <div className="flex flex-wrap gap-1.5 pt-0.5">
-                              <Badge className="bg-rose-500/15 text-rose-500 text-[10px] px-2 py-0 border-none">
+                              <Badge className="bg-rose-500/15 text-rose-500 text-[10px] px-2 py-0 border-none font-medium">
                                 {formData.relationshipIntent}
                               </Badge>
                               {formData.privateCorner?.dietary && (
-                                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] px-2 py-0 border-none">
+                                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] px-2 py-0 border-none font-medium">
                                   {formData.privateCorner.dietary}
                                 </Badge>
                               )}
-                              <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] px-2 py-0 border-none flex items-center gap-0.5">
-                                <Lock className="w-2.5 h-2.5" />
-                                <span>{(formData.additionalPhotos?.length || 0)}/3 Dhukuti Photos</span>
-                              </Badge>
-                              {formData.privateCorner?.verificationSelfie && (
-                                <Badge className="bg-violet-500/10 text-violet-600 dark:text-violet-400 text-[10px] px-2 py-0 border-none flex items-center gap-0.5">
-                                  <ShieldCheck className="w-2.5 h-2.5" />
-                                  <span>Selfie in Review</span>
+                              {(formData.additionalPhotos?.length || 0) >= 3 ? (
+                                <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] px-2 py-0.5 flex items-center gap-1 font-medium">
+                                  <CheckCircle2 className="size-2.5" />
+                                  <span>Hallway Ready</span>
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] px-2 py-0.5 flex items-center gap-1 font-medium">
+                                  <AlertCircle className="size-2.5" />
+                                  <span>{formData.additionalPhotos?.length || 0}/3 Photos</span>
                                 </Badge>
                               )}
                             </div>
@@ -2967,60 +2932,213 @@ export default function OnboardingComponent() {
                         </div>
 
                         {formData.bio && (
-                          <p className="text-xs text-muted-foreground italic bg-muted/40 p-2 rounded-xl">
+                          <p className="text-xs text-muted-foreground italic bg-muted/40 p-2 rounded-xl border border-border/30">
                             "{formData.bio}"
                           </p>
                         )}
 
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="bg-muted/40 p-2 rounded-xl">
-                            <span className="text-[10px] text-muted-foreground block">
-                              Dal Bhat
-                            </span>
+                          <div className="bg-muted/40 p-2 rounded-xl border border-border/30">
+                            <span className="text-[10px] text-muted-foreground block">Dal Bhat</span>
                             <span className="font-semibold text-amber-500 text-xs">
                               {formData.dalBhatFrequency}
                             </span>
                           </div>
-                          <div className="bg-muted/40 p-2 rounded-xl">
-                            <span className="text-[10px] text-muted-foreground block">
-                              On Repeat
-                            </span>
+                          <div className="bg-muted/40 p-2 rounded-xl border border-border/30">
+                            <span className="text-[10px] text-muted-foreground block">On Repeat</span>
                             <span className="font-semibold text-violet-500 text-xs truncate block">
                               {formData.musicRepeat}
                             </span>
                           </div>
                         </div>
 
-                        {formData.interests &&
-                          formData.interests.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {formData.interests.map((int) => (
-                                <Badge
-                                  key={int}
-                                  variant="secondary"
-                                  className="text-[10px] px-2 py-0.5"
-                                >
-                                  {int}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
+                        {formData.interests && formData.interests.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {formData.interests.map((int) => (
+                              <Badge
+                                key={int}
+                                variant="secondary"
+                                className="text-[10px] px-2 py-0.5"
+                              >
+                                {int}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
 
-                        <div className="bg-slate-900/40 p-2.5 rounded-xl text-xs space-y-0.5 border border-border/40">
+                        <div className="bg-muted/50 dark:bg-slate-900/40 p-2.5 rounded-xl text-xs space-y-0.5 border border-border/40">
                           <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-semibold">
                             मयालु प्रसङ्ग
                           </span>
                           <p className="text-[10px] text-rose-500 font-semibold italic">
                             "{activePrompt}"
                           </p>
-                          <p className="text-xs leading-relaxed">
+                          <p className="text-xs leading-relaxed text-foreground/90">
                             "{activePromptText}"
                           </p>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  );
+
+                  return (
+                    <div className="w-full pt-1">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                        {/* Left Pane (Desktop): Hero Pinned Chino Card */}
+                        <div className="hidden md:flex md:col-span-5 flex-col gap-2.5">
+                          <div className="flex items-center justify-between px-1">
+                            <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                              <Sparkles className="size-3.5 text-rose-500" />
+                              <span>Your Chino Identity Card</span>
+                            </span>
+                            <Badge variant="outline" className="text-[10px] bg-rose-500/10 text-rose-500 border-rose-500/20 py-0 font-medium">
+                              Live Preview
+                            </Badge>
+                          </div>
+                          {renderChinoCard()}
+                        </div>
+
+                        {/* Right Pane (Desktop) / Full Pane (Mobile): Studio Tabs */}
+                        <div className="col-span-1 md:col-span-7 flex flex-col gap-3 min-h-0">
+                          <Tabs defaultValue="avatar" className="w-full flex flex-col gap-3">
+                            <TabsList className="grid w-full grid-cols-4 md:grid-cols-3 bg-muted/80 dark:bg-muted/50 p-1 rounded-2xl h-11 border border-border/70 shadow-xs">
+                              {/* Mobile Only: Preview Card Tab */}
+                              <TabsTrigger
+                                value="preview"
+                                className="md:hidden rounded-xl text-xs font-medium gap-1.5 transition-all text-muted-foreground hover:text-foreground data-active:bg-background data-active:text-rose-600 dark:data-active:text-rose-400 data-active:font-bold data-active:shadow-md data-active:shadow-black/5 data-active:ring-1.5 data-active:ring-rose-500/40 active:scale-[0.98]"
+                              >
+                                <Sparkles className="size-3.5 text-muted-foreground/70 group-data-active/tab:text-rose-500 group-data-active/tab:scale-110 transition-all" />
+                                <span>Card</span>
+                              </TabsTrigger>
+
+                              {/* Tab 1: Face & Bio */}
+                              <TabsTrigger
+                                value="avatar"
+                                className="rounded-xl text-xs font-medium gap-1.5 transition-all text-muted-foreground hover:text-foreground data-active:bg-background data-active:text-rose-600 dark:data-active:text-rose-400 data-active:font-bold data-active:shadow-md data-active:shadow-black/5 data-active:ring-1.5 data-active:ring-rose-500/40 active:scale-[0.98]"
+                              >
+                                <Smile className="size-3.5 text-muted-foreground/70 group-data-active/tab:text-rose-500 group-data-active/tab:scale-110 transition-all" />
+                                <span>Face & Bio</span>
+                              </TabsTrigger>
+
+                              {/* Tab 2: Dhukuti Showcase Photos */}
+                              <TabsTrigger
+                                value="photos"
+                                className="rounded-xl text-xs font-medium gap-1.5 transition-all text-muted-foreground hover:text-foreground data-active:bg-background data-active:text-amber-600 dark:data-active:text-amber-400 data-active:font-bold data-active:shadow-md data-active:shadow-black/5 data-active:ring-1.5 data-active:ring-amber-500/40 active:scale-[0.98]"
+                              >
+                                <Lock className="size-3.5 text-muted-foreground/70 group-data-active/tab:text-amber-500 group-data-active/tab:scale-110 transition-all" />
+                                <span>Dhukuti ({formData.additionalPhotos?.length || 0}/3)</span>
+                              </TabsTrigger>
+
+                              {/* Tab 3: Verification */}
+                              <TabsTrigger
+                                value="verify"
+                                className="rounded-xl text-xs font-medium gap-1.5 transition-all text-muted-foreground hover:text-foreground data-active:bg-background data-active:text-violet-600 dark:data-active:text-violet-400 data-active:font-bold data-active:shadow-md data-active:shadow-black/5 data-active:ring-1.5 data-active:ring-violet-500/40 active:scale-[0.98]"
+                              >
+                                {formData.privateCorner?.verificationSelfie ? (
+                                  <>
+                                    <ShieldCheck className="size-3.5 text-muted-foreground/70 group-data-active/tab:text-emerald-500 group-data-active/tab:scale-110 transition-all" />
+                                    <span>Verified 🔑</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Ghost className="size-3.5 text-muted-foreground/70 group-data-active/tab:text-violet-500 group-data-active/tab:scale-110 transition-all" />
+                                    <span>Exit Ghost Mode 👻</span>
+                                  </>
+                                )}
+                              </TabsTrigger>
+                            </TabsList>
+
+                            {/* Mobile Preview Content */}
+                            <TabsContent value="preview" className="md:hidden flex flex-col gap-2">
+                              <div className="flex items-center justify-between px-1">
+                                <span className="text-xs font-medium text-muted-foreground">Chino Profile Card</span>
+                                <Badge variant="outline" className="text-[10px] text-rose-500 border-rose-500/20 py-0">Live Preview</Badge>
+                              </div>
+                              {renderChinoCard()}
+                            </TabsContent>
+
+                            {/* Tab Content: Face & Bio */}
+                            <TabsContent value="avatar" className="flex flex-col gap-3">
+                              <DiceBearAvatarStudio
+                                variant="plain"
+                                selectedAvatarUrl={formData.profilePhoto || AVATAR_OPTIONS[0]}
+                                onSelectAvatar={(url) =>
+                                  setFormData({
+                                    ...formData,
+                                    profilePhoto: url,
+                                  })
+                                }
+                                userFirstName={formData.firstName}
+                              />
+
+                              {/* Chino Bio */}
+                              <div className="p-3.5 rounded-2xl bg-card/60 backdrop-blur-md border border-border/60 flex flex-col gap-2 shadow-xs">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                                    <span>Chino Bio</span>
+                                  </span>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={generateMayaBio}
+                                    className="text-amber-500 hover:text-amber-600 text-xs h-6 px-2 gap-1 active:scale-[0.96] transition-transform"
+                                  >
+                                    <Sparkles className="size-3" />
+                                    <span>✨ Craft with Maya</span>
+                                  </Button>
+                                </div>
+                                <Textarea
+                                  rows={2}
+                                  value={formData.bio || ""}
+                                  onChange={(e) =>
+                                    setFormData({ ...formData, bio: e.target.value })
+                                  }
+                                  placeholder="Write a bio or tap '✨ Craft with Maya'..."
+                                  className="text-xs bg-background/80 border-input resize-none rounded-xl"
+                                />
+                              </div>
+                            </TabsContent>
+
+                            {/* Tab Content: Dhukuti Showcase Photos */}
+                            <TabsContent value="photos" className="flex flex-col gap-3">
+                              <DhukutiPhotoVault
+                                mode="photos"
+                                photos={formData.additionalPhotos || []}
+                                onChangePhotos={(photos) =>
+                                  setFormData({
+                                    ...formData,
+                                    additionalPhotos: photos,
+                                  })
+                                }
+                              />
+                            </TabsContent>
+
+                            {/* Tab Content: Admin Verification Selfie */}
+                            <TabsContent value="verify" className="flex flex-col gap-3">
+                              <DhukutiPhotoVault
+                                mode="selfie"
+                                photos={formData.additionalPhotos || []}
+                                onChangePhotos={() => {}}
+                                verificationSelfie={formData.privateCorner?.verificationSelfie || ""}
+                                onChangeSelfie={(selfieUrl) =>
+                                  setFormData({
+                                    ...formData,
+                                    privateCorner: {
+                                      ...formData.privateCorner,
+                                      verificationSelfie: selfieUrl,
+                                      verificationStatus: selfieUrl ? "pending_review" : "unsubmitted",
+                                    },
+                                  })
+                                }
+                              />
+                            </TabsContent>
+                          </Tabs>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </motion.div>
             </AnimatePresence>
           </div>

@@ -17,6 +17,7 @@ import {
   Mail,
   MapPin,
   ShieldCheck,
+  ShieldAlert,
   Smile,
   Sparkles,
   Volume2,
@@ -47,7 +48,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useUserLevel } from "@/contexts/userContext";
+import { useUser } from "@/contexts/userContext";
 import {
   formatBirthdateToISO,
   calculateAgeFromBirthdate,
@@ -57,6 +58,7 @@ import {
   type OnboardingData,
   saveOnboardingProfile,
 } from "@/lib/neonDB/onboarding-actions";
+import { cn } from "@/lib/utils";
 
 import {
   DICEBEAR_AVATAR_OPTIONS,
@@ -348,12 +350,55 @@ const NEPALI_GOTRAS = [
   "Open / Skip",
 ] as const;
 
-export default function OnboardingComponent() {
+export const STEP_NAV_ITEMS = [
+  { step: 0, label: "Name", emoji: "✍️" },
+  { step: 1, label: "Age", emoji: "🎂" },
+  { step: 2, label: "Gender", emoji: "⚧️", isGender: true },
+  { step: 3, label: "Location", emoji: "📍" },
+  { step: 4, label: "Intent", emoji: "💍" },
+  { step: 5, label: "Dal Bhat", emoji: "🍛" },
+  { step: 6, label: "Chiya", emoji: "☕" },
+  { step: 7, label: "Music", emoji: "🎶" },
+  { step: 8, label: "Green Flag", emoji: "💚" },
+  { step: 9, label: "Occupation", emoji: "💼" },
+  { step: 10, label: "Passions", emoji: "🌟" },
+  { step: 11, label: "Values", emoji: "🔒" },
+  { step: 12, label: "Criteria", emoji: "🎯" },
+  { step: 13, label: "Story", emoji: "💌" },
+  { step: 14, label: "Speed", emoji: "⚡" },
+  { step: 15, label: "Chino & Photos", emoji: "📸" },
+];
+
+export interface OnboardingComponentProps {
+  mode?: "initial" | "redo";
+  initialStep?: number;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+  className?: string;
+}
+
+export default function OnboardingComponent({
+  mode = "initial",
+  initialStep = 0,
+  onSuccess,
+  onCancel,
+  className = "",
+}: OnboardingComponentProps = {}) {
   const router = useRouter();
-  const { addXp } = useUserLevel();
+  const { addXp, updateUserProfile } = useUser();
 
   // Onboarding conversational steps: 0 to 15 (16 total steps)
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialStep);
+
+  // Sync step if initialStep prop changes
+  useEffect(() => {
+    if (typeof initialStep === "number") {
+      setStep(initialStep);
+    }
+  }, [initialStep]);
+  const [step15Tab, setStep15Tab] = useState<string>("avatar");
+  const [initialGender, setInitialGender] = useState<string | null>(null);
+  const [initialSelfie, setInitialSelfie] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -438,6 +483,12 @@ export default function OnboardingComponent() {
   const [isChecking, setIsChecking] = useState(true);
   const [isAlreadyOnboarded, setIsAlreadyOnboarded] = useState(false);
 
+  const isGenderChanged = Boolean(
+    initialGender &&
+    formData.gender &&
+    initialGender.trim().toLowerCase() !== formData.gender.trim().toLowerCase()
+  );
+
   // Check if user is already onboarded
   useEffect(() => {
     async function checkStatus() {
@@ -452,6 +503,13 @@ export default function OnboardingComponent() {
         }
         if (status.profile) {
           const p = status.profile as Record<string, unknown>;
+          if (p.gender) {
+            setInitialGender(p.gender as string);
+          }
+          const pc = p.private_corner as Record<string, unknown> | undefined;
+          if (pc?.verificationSelfie) {
+            setInitialSelfie(pc.verificationSelfie as string);
+          }
           const loadedBirthdate =
             formatBirthdateToISO(p.birthdate) || "2000-01-01";
           const loadedAge =
@@ -517,7 +575,6 @@ export default function OnboardingComponent() {
               setIsOtherDalBhat(true);
             }
           }
-          const pc = p.private_corner as Record<string, unknown> | undefined;
           if (pc?.chiyaPreference) {
             const cp = pc.chiyaPreference as string;
             if (!CHIYA_PRESETS.some((c) => c.id === cp)) {
@@ -966,6 +1023,20 @@ export default function OnboardingComponent() {
         }
       }
 
+      if (isGenderChanged) {
+        const currentSelfie = formData.privateCorner?.verificationSelfie?.trim();
+        if (!currentSelfie) {
+          setStep(15);
+          setStep15Tab("verify");
+          toast.error(
+            "Gender change detected! Maya requires a fresh verification selfie before saving your updated Chino.",
+            { duration: 6000 }
+          );
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const cleanBirthdate =
         formatBirthdateToISO(formData.birthdate) || "2000-01-01";
       const cleanAge =
@@ -992,11 +1063,32 @@ export default function OnboardingComponent() {
       awardStepXp(100);
       if (soundEnabled) playCelebrateSound();
 
+      // Immediately synchronize live UserProfile state across dashboard & layout
+      updateUserProfile({
+        firstName: payload.firstName,
+        profilePhoto: payload.profilePhoto,
+        age: payload.age,
+        location: payload.location,
+        occupation: payload.occupation,
+        gender: payload.gender,
+        relationshipIntent: payload.relationshipIntent,
+        verificationStatus: payload.privateCorner?.verificationSelfie
+          ? "pending_review"
+          : "unsubmitted",
+        onboardingCompleted: true,
+      });
+
       const photoCount = payload.additionalPhotos?.length || 0;
       const hasThreePhotos = photoCount >= 3;
       const hasSelfie = Boolean(payload.privateCorner?.verificationSelfie);
 
-      if (hasThreePhotos && hasSelfie) {
+      if (isGenderChanged) {
+        toast.success("Subhakamana! 🌟 Your Chino has been updated!");
+        toast.info(
+          "🛡️ Gender updated! Your verification selfie has been submitted to Maya for 1-on-1 review.",
+          { duration: 6000 }
+        );
+      } else if (hasThreePhotos && hasSelfie) {
         toast.success("Subhakamana! 🌟 Your Chino is saved, Hallway ready, and selfie submitted for verification!");
       } else {
         toast.success("Subhakamana! 🌟 Your Chino has been saved!");
@@ -1014,10 +1106,14 @@ export default function OnboardingComponent() {
         }
       }
 
-      setTimeout(() => {
-        router.push("/account/dashboard");
-        router.refresh();
-      }, 1200);
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        setTimeout(() => {
+          router.push("/account/profile");
+          router.refresh();
+        }, 1200);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to save profile";
       toast.error(msg);
@@ -1180,7 +1276,7 @@ export default function OnboardingComponent() {
   const currentValidation = getStepValidation(step);
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] w-full overflow-hidden flex flex-col bg-background text-foreground relative selection:bg-rose-500 selection:text-white">
+    <div className={cn("h-[100dvh] max-h-[100dvh] w-full overflow-hidden flex flex-col bg-background text-foreground relative selection:bg-rose-500 selection:text-white", className)}>
       {/* Landing page ethereal ambient cloud lighting */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[450px] bg-gradient-to-b from-rose-500/15 via-pink-500/10 to-transparent blur-3xl opacity-75" />
@@ -1230,18 +1326,28 @@ export default function OnboardingComponent() {
 
         {/* Right Action buttons */}
         <div className="flex items-center gap-2 shrink-0">
-          {isAlreadyOnboarded && (
-            <Link href="/account/dashboard">
+          {mode === "redo" && onCancel ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onCancel}
+              className="text-xs h-8 px-3 rounded-full border-rose-500/30 text-rose-500 hover:bg-rose-500/10 gap-1"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              <span>Back to Chino</span>
+            </Button>
+          ) : isAlreadyOnboarded ? (
+            <Link href="/account/profile">
               <Button
                 variant="outline"
                 size="sm"
-                className="hidden sm:inline-flex text-xs h-8 px-2.5 rounded-full border-rose-500/30 text-rose-500 hover:bg-rose-500/10 gap-1"
+                className="inline-flex text-xs h-8 px-2.5 rounded-full border-rose-500/30 text-rose-500 hover:bg-rose-500/10 gap-1"
               >
-                <span>Dashboard</span>
+                <span>Chino Profile</span>
                 <ExternalLink className="w-3 h-3" />
               </Button>
             </Link>
-          )}
+          ) : null}
 
           <Badge className="bg-amber-500/10 border-amber-500/30 text-amber-500 gap-1 text-xs px-2.5 py-1 rounded-full font-medium">
             <Zap className="w-3 h-3 fill-amber-500 text-amber-500" />
@@ -1269,11 +1375,43 @@ export default function OnboardingComponent() {
       {/* Main Focus Area (Strictly zero outer window scroll) */}
       <main className="flex-1 min-h-0 w-full overflow-hidden flex flex-col items-center justify-center p-2 sm:px-4 sm:py-2">
         {/* The Central Onboarding Glass Card */}
-        <Card className={`w-full h-full flex flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-2xl shadow-2xl overflow-hidden relative p-0 gap-0 transition-all duration-300 ${
-          step === 15
+        <Card className={`w-full h-full flex flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-2xl shadow-2xl overflow-hidden relative p-0 gap-0 transition-all duration-300 ${step === 15
             ? "max-w-4xl lg:max-w-5xl max-h-[min(760px,calc(100dvh-4.5rem))]"
             : "max-w-2xl max-h-[min(650px,calc(100dvh-5.25rem))]"
-        }`}>
+          }`}>
+          {/* Quick Step Navigator (Jump to any step to redo or edit) */}
+          <div className="px-3 sm:px-4 py-2 border-b border-border/30 bg-muted/30 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shrink-0 flex items-center gap-1.5">
+            <span className="text-[10px] uppercase font-bold text-muted-foreground/80 tracking-wider shrink-0 mr-1 hidden sm:inline">
+              Jump:
+            </span>
+            {STEP_NAV_ITEMS.map((item) => {
+              const isActive = step === item.step;
+              const isGenderAlert = item.isGender && isGenderChanged;
+              return (
+                <button
+                  key={item.step}
+                  type="button"
+                  onClick={() => setStep(item.step)}
+                  className={cn(
+                    "shrink-0 text-[11px] font-medium px-2 sm:px-2.5 py-1 rounded-full border transition-all flex items-center gap-1 select-none active:scale-95",
+                    isActive
+                      ? "bg-rose-500 text-white border-rose-500 shadow-sm shadow-rose-500/20"
+                      : "bg-background/80 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60",
+                    isGenderAlert && !isActive && "border-amber-500/70 bg-amber-500/15 text-amber-600 dark:text-amber-400 font-semibold"
+                  )}
+                  title={`Step ${item.step + 1}: ${item.label}`}
+                >
+                  <span className="text-[11px]">{item.emoji}</span>
+                  <span className="hidden md:inline">{item.label}</span>
+                  <span className="md:hidden">{item.step + 1}</span>
+                  {isGenderAlert && (
+                    <span className="size-1.5 rounded-full bg-amber-500 animate-ping ml-0.5" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
           {/* Card Top: Maya's Guidance Section (Compact & sleek) */}
           <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-border/30 bg-muted/20 shrink-0">
             <div className="flex items-start gap-2.5 sm:gap-3">
@@ -1458,14 +1596,53 @@ export default function OnboardingComponent() {
                               })
                             }
                             className={`p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all border text-center ${formData.gender === opt.id
-                                ? "bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/25"
-                                : "bg-card border-border/80 text-foreground hover:bg-muted/80"
+                              ? "bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/25"
+                              : "bg-card border-border/80 text-foreground hover:bg-muted/80"
                               }`}
                           >
                             {opt.label}
                           </button>
                         ))}
                       </div>
+
+                      {isGenderChanged && (
+                        <div className="p-3 sm:p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 mt-1">
+                          <div className="p-1 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">
+                            <Camera className="size-3.5" />
+                          </div>
+                          <div className="space-y-1.5 flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-xs text-amber-700 dark:text-amber-300">
+                                Gender Update Requires Selfie Verification
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 font-medium py-0"
+                              >
+                                Mandatory
+                              </Badge>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                              Changing your gender from <strong className="capitalize text-foreground font-semibold">{initialGender}</strong> to <strong className="capitalize text-foreground font-semibold">{formData.gender}</strong> requires a fresh selfie. Maya verifies every change to protect you and prevent impersonation.
+                            </p>
+                            <div className="pt-0.5">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setStep(15);
+                                  setStep15Tab("verify");
+                                }}
+                                className="h-7 text-[11px] rounded-full gap-1.5 border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/15 hover:text-amber-700 dark:hover:text-amber-300"
+                              >
+                                <Camera className="size-3" />
+                                <span>Upload / Snap Verification Selfie 🤳</span>
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <Separator className="my-1.5" />
@@ -1497,8 +1674,8 @@ export default function OnboardingComponent() {
                               })
                             }
                             className={`p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all border text-center ${formData.interestedIn === opt.id
-                                ? "bg-gradient-to-r from-amber-500 to-rose-500 text-white border-transparent shadow-md shadow-amber-500/20"
-                                : "bg-card border-border/80 text-foreground hover:bg-muted/80"
+                              ? "bg-gradient-to-r from-amber-500 to-rose-500 text-white border-transparent shadow-md shadow-amber-500/20"
+                              : "bg-card border-border/80 text-foreground hover:bg-muted/80"
                               }`}
                           >
                             {opt.label}
@@ -1543,8 +1720,8 @@ export default function OnboardingComponent() {
                               })
                             }
                             className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${formData.location === loc
-                                ? "bg-rose-500 text-white border-rose-500 shadow-sm"
-                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                              ? "bg-rose-500 text-white border-rose-500 shadow-sm"
+                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                               }`}
                           >
                             {loc}
@@ -1620,8 +1797,8 @@ export default function OnboardingComponent() {
                               })
                             }
                             className={`p-3.5 rounded-2xl cursor-pointer transition-all ${formData.relationshipIntent === item.id
-                                ? "bg-rose-500/10 border-rose-500 text-foreground shadow-lg shadow-rose-500/10 ring-1 ring-rose-500"
-                                : "bg-card border-border/70 text-foreground hover:border-border"
+                              ? "bg-rose-500/10 border-rose-500 text-foreground shadow-lg shadow-rose-500/10 ring-1 ring-rose-500"
+                              : "bg-card border-border/70 text-foreground hover:border-border"
                               }`}
                           >
                             <div className="flex flex-col">
@@ -1677,9 +1854,9 @@ export default function OnboardingComponent() {
                               setCustomDalBhat("");
                             }}
                             className={`p-2.5 sm:p-3 rounded-2xl text-left border transition-all ${formData.dalBhatFrequency === item.id &&
-                                !isOtherDalBhat
-                                ? "bg-amber-500/15 border-amber-500 text-foreground shadow-sm ring-1 ring-amber-500"
-                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                              !isOtherDalBhat
+                              ? "bg-amber-500/15 border-amber-500 text-foreground shadow-sm ring-1 ring-amber-500"
+                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                               }`}
                           >
                             <div className="flex flex-col">
@@ -1705,8 +1882,8 @@ export default function OnboardingComponent() {
                             });
                           }}
                           className={`p-2.5 sm:p-3 rounded-2xl text-left border transition-all ${isOtherDalBhat
-                              ? "bg-amber-500/15 border-amber-500 text-foreground shadow-sm ring-1 ring-amber-500"
-                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                            ? "bg-amber-500/15 border-amber-500 text-foreground shadow-sm ring-1 ring-amber-500"
+                            : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                             }`}
                         >
                           <div className="flex items-center justify-between w-full">
@@ -1756,8 +1933,8 @@ export default function OnboardingComponent() {
                             });
                           }}
                           className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${isOtherDalBhat
-                              ? "border-amber-500 ring-1 ring-amber-500"
-                              : "border-input"
+                            ? "border-amber-500 ring-1 ring-amber-500"
+                            : "border-input"
                             }`}
                         />
                       </div>
@@ -1806,9 +1983,9 @@ export default function OnboardingComponent() {
                               setCustomChiya("");
                             }}
                             className={`w-full p-2 sm:p-2.5 rounded-xl border text-left transition-all ${formData.privateCorner?.chiyaPreference ===
-                                ch.id && !isOtherChiya
-                                ? "bg-rose-500/15 border-rose-500 text-foreground shadow-sm ring-1 ring-rose-500"
-                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                              ch.id && !isOtherChiya
+                              ? "bg-rose-500/15 border-rose-500 text-foreground shadow-sm ring-1 ring-rose-500"
+                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                               }`}
                           >
                             <div className="flex flex-col">
@@ -1837,8 +2014,8 @@ export default function OnboardingComponent() {
                             });
                           }}
                           className={`w-full p-2 sm:p-2.5 rounded-xl border text-left transition-all ${isOtherChiya
-                              ? "bg-rose-500/15 border-rose-500 text-foreground shadow-sm ring-1 ring-rose-500"
-                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                            ? "bg-rose-500/15 border-rose-500 text-foreground shadow-sm ring-1 ring-rose-500"
+                            : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                             }`}
                         >
                           <div className="flex items-center justify-between w-full">
@@ -1894,8 +2071,8 @@ export default function OnboardingComponent() {
                             });
                           }}
                           className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${isOtherChiya
-                              ? "border-rose-500 ring-1 ring-rose-500"
-                              : "border-input"
+                            ? "border-rose-500 ring-1 ring-rose-500"
+                            : "border-input"
                             }`}
                         />
                       </div>
@@ -1937,8 +2114,8 @@ export default function OnboardingComponent() {
                               setCustomMusic("");
                             }}
                             className={`p-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${formData.musicRepeat === art && !isOtherMusic
-                                ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
-                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                              ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
+                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                               }`}
                           >
                             <span className="leading-snug">{art}</span>
@@ -1957,8 +2134,8 @@ export default function OnboardingComponent() {
                             });
                           }}
                           className={`p-2 rounded-xl text-xs sm:text-sm font-medium transition-all col-span-2 sm:col-span-3 ${isOtherMusic
-                              ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
-                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                            ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
+                            : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                             }`}
                         >
                           <div className="flex items-center justify-between w-full">
@@ -1999,8 +2176,8 @@ export default function OnboardingComponent() {
                             });
                           }}
                           className={`h-9 sm:h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${isOtherMusic
-                              ? "border-rose-500 ring-1 ring-rose-500"
-                              : "border-input"
+                            ? "border-rose-500 ring-1 ring-rose-500"
+                            : "border-input"
                             }`}
                         />
                         {isOtherMusic && customMusic.trim() && (
@@ -2048,8 +2225,8 @@ export default function OnboardingComponent() {
                               setCustomGreenFlag("");
                             }}
                             className={`rounded-2xl p-2.5 sm:p-3 text-xs sm:text-[13px] font-medium transition-all ${formData.greenFlag === flag && !isOtherGreenFlag
-                                ? "border-emerald-500 bg-emerald-500/15 text-foreground ring-1 ring-emerald-500 font-semibold"
-                                : "border-border/70 hover:bg-muted/50"
+                              ? "border-emerald-500 bg-emerald-500/15 text-foreground ring-1 ring-emerald-500 font-semibold"
+                              : "border-border/70 hover:bg-muted/50"
                               }`}
                           >
                             <span className="leading-snug break-words">
@@ -2070,8 +2247,8 @@ export default function OnboardingComponent() {
                             });
                           }}
                           className={`rounded-2xl p-2.5 sm:p-3 text-xs sm:text-[13px] font-medium transition-all col-span-1 sm:col-span-2 ${isOtherGreenFlag
-                              ? "border-emerald-500 bg-emerald-500/15 text-foreground ring-1 ring-emerald-500 font-semibold"
-                              : "border-border/70 hover:bg-muted/50"
+                            ? "border-emerald-500 bg-emerald-500/15 text-foreground ring-1 ring-emerald-500 font-semibold"
+                            : "border-border/70 hover:bg-muted/50"
                             }`}
                         >
                           <div className="flex items-center justify-between w-full">
@@ -2116,8 +2293,8 @@ export default function OnboardingComponent() {
                             setFormData({ ...formData, greenFlag: val.trim() });
                           }}
                           className={`h-10 text-xs sm:text-sm bg-background/80 rounded-xl px-3 border transition-all ${isOtherGreenFlag
-                              ? "border-emerald-500 ring-1 ring-emerald-500"
-                              : "border-input"
+                            ? "border-emerald-500 ring-1 ring-emerald-500"
+                            : "border-input"
                             }`}
                         />
                         {isOtherGreenFlag && customGreenFlag.trim() && (
@@ -2166,8 +2343,8 @@ export default function OnboardingComponent() {
                             })
                           }
                           className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all border ${formData.occupation === occ
-                              ? "bg-rose-500 text-white border-rose-500 shadow-sm"
-                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                            ? "bg-rose-500 text-white border-rose-500 shadow-sm"
+                            : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                             }`}
                         >
                           {occ}
@@ -2228,8 +2405,8 @@ export default function OnboardingComponent() {
                                 type="button"
                                 onClick={() => toggleInterest(item)}
                                 className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-all border flex items-center gap-1.5 ${isSelected
-                                    ? "bg-rose-500 text-white border-rose-500 shadow-sm ring-1 ring-rose-400"
-                                    : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                                  ? "bg-rose-500 text-white border-rose-500 shadow-sm ring-1 ring-rose-400"
+                                  : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                                   }`}
                               >
                                 <span>{item}</span>
@@ -2426,11 +2603,10 @@ export default function OnboardingComponent() {
                                 description: `${formData.privateCorner?.religion || "Hindu"} • ${formData.privateCorner?.caste || "Brahmin"} • ${formData.privateCorner?.gotra || "Mudgal"} sealed securely.`,
                               });
                             }}
-                            className={`px-4 py-1 text-xs font-semibold rounded-full transition-transform duration-150 ease-out active:scale-95 flex items-center gap-1.5 shadow-sm ${
-                              isPrivateCornerLocked
+                            className={`px-4 py-1 text-xs font-semibold rounded-full transition-transform duration-150 ease-out active:scale-95 flex items-center gap-1.5 shadow-sm ${isPrivateCornerLocked
                                 ? "bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30"
                                 : "bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 text-white shadow-rose-500/25 hover:shadow-rose-500/35 hover:scale-[1.02]"
-                            }`}
+                              }`}
                           >
                             <span>{isPrivateCornerLocked ? "Locked in" : "Lock it in"}</span>
                             <span>🔒</span>
@@ -2471,11 +2647,10 @@ export default function OnboardingComponent() {
                                 },
                               })
                             }
-                            className={`py-1.5 px-2 rounded-xl text-xs font-medium text-center border transition-all duration-150 active:scale-[0.98] ${
-                              formData.privateCorner?.dietary === d
+                            className={`py-1.5 px-2 rounded-xl text-xs font-medium text-center border transition-all duration-150 active:scale-[0.98] ${formData.privateCorner?.dietary === d
                                 ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold shadow-xs"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             {d}
                           </button>
@@ -2526,11 +2701,10 @@ export default function OnboardingComponent() {
                                 },
                               })
                             }
-                            className={`py-1.5 px-2.5 rounded-xl text-left border transition-all duration-150 active:scale-[0.98] flex flex-col justify-between ${
-                              formData.privateCorner?.astrologyOpenness === a.id
+                            className={`py-1.5 px-2.5 rounded-xl text-left border transition-all duration-150 active:scale-[0.98] flex flex-col justify-between ${formData.privateCorner?.astrologyOpenness === a.id
                                 ? "bg-amber-500/15 border-amber-500 text-foreground ring-1 ring-amber-500 font-semibold shadow-xs"
                                 : "bg-card border-border/70 text-foreground hover:bg-muted/60"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center justify-between w-full">
                               <span className="text-xs font-semibold">{a.title}</span>
@@ -2657,8 +2831,8 @@ export default function OnboardingComponent() {
                               })
                             }
                             className={`py-2 px-3 rounded-xl text-xs font-medium text-left border transition-all ${formData.dealbreakers?.distance === dist
-                                ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
-                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                              ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500 font-semibold"
+                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                               }`}
                           >
                             {dist}
@@ -2688,8 +2862,8 @@ export default function OnboardingComponent() {
                               }
                             }}
                             className={`text-xs px-2.5 py-1 rounded-xl border transition-all ${activePrompt === pObj.prompt
-                                ? "bg-rose-500 text-white border-rose-500 shadow-sm"
-                                : "bg-card border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                              ? "bg-rose-500 text-white border-rose-500 shadow-sm"
+                              : "bg-card border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60"
                               }`}
                           >
                             {pObj.prompt}
@@ -2776,8 +2950,8 @@ export default function OnboardingComponent() {
                               })
                             }
                             className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all border ${formData.speedRound?.drinking === v
-                                ? "bg-rose-500 text-white border-rose-500 shadow-sm"
-                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                              ? "bg-rose-500 text-white border-rose-500 shadow-sm"
+                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                               }`}
                           >
                             {v}
@@ -2812,8 +2986,8 @@ export default function OnboardingComponent() {
                               })
                             }
                             className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all border ${formData.speedRound?.smoking === v
-                                ? "bg-rose-500 text-white border-rose-500 shadow-sm"
-                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                              ? "bg-rose-500 text-white border-rose-500 shadow-sm"
+                              : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                               }`}
                           >
                             {v}
@@ -2849,8 +3023,8 @@ export default function OnboardingComponent() {
                                 })
                               }
                               className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all border ${formData.speedRound?.kids === v
-                                  ? "bg-rose-500 text-white border-rose-500 shadow-sm"
-                                  : "bg-card border-border/70 text-foreground hover:bg-muted/60"
+                                ? "bg-rose-500 text-white border-rose-500 shadow-sm"
+                                : "bg-card border-border/70 text-foreground hover:bg-muted/60"
                                 }`}
                             >
                               {v}
@@ -3000,7 +3174,7 @@ export default function OnboardingComponent() {
 
                         {/* Right Pane (Desktop) / Full Pane (Mobile): Studio Tabs */}
                         <div className="col-span-1 md:col-span-7 flex flex-col gap-3 min-h-0">
-                          <Tabs defaultValue="avatar" className="w-full flex flex-col gap-3">
+                          <Tabs value={step15Tab} onValueChange={setStep15Tab} className="w-full flex flex-col gap-3">
                             <TabsList className="grid w-full grid-cols-4 md:grid-cols-3 bg-muted/80 dark:bg-muted/50 p-1 rounded-2xl h-11 border border-border/70 shadow-xs">
                               {/* Mobile Only: Preview Card Tab */}
                               <TabsTrigger
@@ -3032,9 +3206,19 @@ export default function OnboardingComponent() {
                               {/* Tab 3: Verification */}
                               <TabsTrigger
                                 value="verify"
-                                className="rounded-xl text-xs font-medium gap-1.5 transition-all text-muted-foreground hover:text-foreground data-active:bg-background data-active:text-violet-600 dark:data-active:text-violet-400 data-active:font-bold data-active:shadow-md data-active:shadow-black/5 data-active:ring-1.5 data-active:ring-violet-500/40 active:scale-[0.98]"
+                                className={cn(
+                                  "rounded-xl text-xs font-medium gap-1.5 transition-all text-muted-foreground hover:text-foreground data-active:bg-background data-active:font-bold data-active:shadow-md data-active:shadow-black/5 data-active:ring-1.5 active:scale-[0.98]",
+                                  isGenderChanged
+                                    ? "text-amber-600 dark:text-amber-400 data-active:text-amber-600 dark:data-active:text-amber-400 data-active:ring-amber-500/50"
+                                    : "data-active:text-violet-600 dark:data-active:text-violet-400 data-active:ring-violet-500/40"
+                                )}
                               >
-                                {formData.privateCorner?.verificationSelfie ? (
+                                {isGenderChanged ? (
+                                  <>
+                                    <Camera className="size-3.5 text-amber-500 animate-pulse" />
+                                    <span>Selfie Required ⚠️</span>
+                                  </>
+                                ) : formData.privateCorner?.verificationSelfie ? (
                                   <>
                                     <ShieldCheck className="size-3.5 text-muted-foreground/70 group-data-active/tab:text-emerald-500 group-data-active/tab:scale-110 transition-all" />
                                     <span>Verified 🔑</span>
@@ -3119,7 +3303,7 @@ export default function OnboardingComponent() {
                               <DhukutiPhotoVault
                                 mode="selfie"
                                 photos={formData.additionalPhotos || []}
-                                onChangePhotos={() => {}}
+                                onChangePhotos={() => { }}
                                 verificationSelfie={formData.privateCorner?.verificationSelfie || ""}
                                 onChangeSelfie={(selfieUrl) =>
                                   setFormData({

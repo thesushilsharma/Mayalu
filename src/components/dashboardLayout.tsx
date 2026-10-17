@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  Camera,
+  ChevronRight,
   CircleUser,
   Flame,
   HeartIcon,
@@ -9,6 +11,7 @@ import {
   MessageCircle,
   Settings,
   ShieldCheck,
+  Sparkles,
   Users,
   Zap,
 } from "lucide-react";
@@ -25,6 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUser } from "@/contexts/userContext";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "./auth/logout-button";
 
@@ -39,14 +43,38 @@ const navItems = [
 
 function DashboardUserLayout() {
   const pathname = usePathname();
-
-  // Mock user data - replace with actual user context
-  const userLevel = { level: 5, xp: 250, requiredXp: 300 };
-  const superLikes = 3;
+  const { userLevel, userProfile, superLikes } = useUser();
 
   const isOnboardingRoute =
     pathname === "/account/onboarding" ||
     pathname.startsWith("/account/onboarding");
+
+  // Derive display values from live user context
+  const displayName =
+    userProfile?.firstName ||
+    userProfile?.name ||
+    (userProfile?.email ? userProfile.email.split("@")[0] : "Mayalu Member");
+
+  const displayInitials = (displayName || "M")
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const displayAvatar =
+    userProfile?.profilePhoto ||
+    userProfile?.image ||
+    `https://api.dicebear.com/10.x/personas/svg?seed=${encodeURIComponent(
+      displayName || "Mayalu"
+    )}`;
+
+  const isVerified = userProfile?.verificationStatus === "verified";
+  const isReview = userProfile?.verificationStatus === "pending_review";
+  const isOnboarded = Boolean(userProfile?.onboardingCompleted);
+  const isAdmin = userProfile?.role === "admin";
+  const isProfileActive =
+    pathname === "/account/profile" || pathname.startsWith("/account/profile/");
 
   // Memoize navigation items for bottom nav (first 4 items)
   const bottomNavItems = useMemo(() => {
@@ -152,42 +180,102 @@ function DashboardUserLayout() {
         </div>
 
         {/* User Info Card */}
-        <div className="mx-4 my-5">
-          <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20 rounded-2xl p-4 border border-pink-100 dark:border-pink-900/30 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <Avatar className="h-12 w-12 ring-2 ring-pink-200 dark:ring-pink-800">
-                <AvatarImage src="https://api.dicebear.com/10.x/initial-face/svg?seed=Sushi" alt="User Avatar" />
-                <AvatarFallback className="bg-gradient-to-br from-pink-400 to-rose-400 text-white">
-                  JD
-                </AvatarFallback>
-              </Avatar>
+        <div className="mx-4 my-4">
+          <Link
+            href="/account/profile"
+            className={cn(
+              "group block p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden",
+              "bg-gradient-to-br from-pink-50/90 via-rose-50/70 to-purple-50/40 dark:from-pink-950/30 dark:via-rose-950/20 dark:to-purple-950/20",
+              "border border-pink-200/70 dark:border-pink-900/40 shadow-xs",
+              "hover:border-rose-400/60 dark:hover:border-rose-500/50 hover:shadow-md hover:shadow-pink-500/10 hover:scale-[1.01] active:scale-[0.99]",
+              isProfileActive &&
+                "ring-2 ring-rose-500/50 border-rose-400 bg-pink-100/40 dark:bg-pink-950/40"
+            )}
+            title="View & manage your authentic Chino profile"
+          >
+            <div className="flex items-center gap-3 mb-2.5">
+              <div className="relative shrink-0">
+                <Avatar className="h-12 w-12 ring-2 ring-pink-300 dark:ring-pink-700 group-hover:ring-rose-500 transition-all shadow-sm">
+                  <AvatarImage
+                    src={displayAvatar}
+                    alt={displayName}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white font-bold text-sm">
+                    {displayInitials}
+                  </AvatarFallback>
+                </Avatar>
+                {isVerified && (
+                  <span
+                    className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] font-bold border-2 border-background shadow-xs"
+                    title="Maya Verified"
+                  >
+                    ✓
+                  </span>
+                )}
+              </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate text-gray-900 dark:text-gray-100">
-                  John Doe
-                </p>
-                <p className="text-xs text-pink-600 dark:text-pink-400 font-medium">
-                  Premium Member
-                </p>
+                <div className="flex items-center justify-between gap-1">
+                  <p className="text-sm font-bold truncate text-gray-900 dark:text-gray-100 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                    {displayName}
+                  </p>
+                  <ChevronRight className="h-3.5 w-3.5 text-gray-400 group-hover:text-rose-500 group-hover:translate-x-0.5 transition-all shrink-0" />
+                </div>
+                <div className="text-xs font-medium truncate flex items-center gap-1 mt-0.5">
+                  {isVerified ? (
+                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <ShieldCheck className="h-3 w-3 shrink-0" />
+                      <span>Maya Verified</span>
+                    </span>
+                  ) : isReview ? (
+                    <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                      <Camera className="h-3 w-3 shrink-0 animate-pulse" />
+                      <span>In Review</span>
+                    </span>
+                  ) : isAdmin ? (
+                    <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1">
+                      <ShieldCheck className="h-3 w-3 shrink-0" />
+                      <span>Admin Member</span>
+                    </span>
+                  ) : isOnboarded ? (
+                    <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1 truncate">
+                      <Sparkles className="h-3 w-3 shrink-0" />
+                      <span className="truncate">
+                        {userProfile?.location || "Chino Active"}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
+                      <Sparkles className="h-3 w-3 shrink-0 animate-pulse" />
+                      <span>Weave Chino →</span>
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pt-2 border-t border-pink-200/50 dark:border-pink-900/30">
               <Badge
                 variant="secondary"
-                className="bg-white/80 dark:bg-gray-800/80 text-pink-600 dark:text-pink-400 border-pink-200 dark:border-pink-800 font-semibold"
+                className="bg-white/80 dark:bg-gray-800/80 text-pink-600 dark:text-pink-400 border-pink-200/80 dark:border-pink-800/80 font-semibold text-xs py-0.5 px-2"
+                title={`Level ${userLevel.level} (${userLevel.xp}/${userLevel.requiredXp} XP)`}
               >
-                <Zap className="h-3 w-3 mr-1" />
+                <Zap className="h-3 w-3 mr-1 fill-pink-500 text-pink-500" />
                 Level {userLevel.level}
               </Badge>
               <Badge
                 variant="secondary"
-                className="bg-white/80 dark:bg-gray-800/80 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 font-semibold"
+                className="bg-white/80 dark:bg-gray-800/80 text-blue-600 dark:text-blue-400 border-blue-200/80 dark:border-blue-800/80 font-semibold text-xs py-0.5 px-2"
+                title={`${superLikes} Super Likes`}
               >
-                <Zap className="h-3 w-3 mr-1 text-blue-500" />
+                <Zap className="h-3 w-3 mr-1 text-blue-500 fill-blue-500" />
                 {superLikes} Super
               </Badge>
+              <span className="ml-auto text-[10px] text-muted-foreground group-hover:text-rose-500 transition-colors font-medium">
+                Chino →
+              </span>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Desktop Navigation */}
@@ -220,7 +308,11 @@ function DashboardUserLayout() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 px-2.5 py-1.5 rounded-lg border border-pink-200 dark:border-pink-900/30">
+            <Link
+              href="/account/profile"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 px-2.5 py-1.5 rounded-lg border border-pink-200 dark:border-pink-900/30 hover:border-pink-400 transition-colors"
+              title="View your Level & Chino"
+            >
               <Badge
                 variant="secondary"
                 className="text-xs font-semibold bg-white/80 dark:bg-gray-800/80 border-0"
@@ -228,18 +320,30 @@ function DashboardUserLayout() {
                 Lv.{userLevel.level}
               </Badge>
               <div className="flex items-center gap-1 px-1.5">
-                <Zap className="h-3.5 w-3.5 text-blue-500" />
+                <Zap className="h-3.5 w-3.5 text-blue-500 fill-blue-500" />
                 <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
                   {superLikes}
                 </span>
               </div>
-            </div>
-              <Avatar className="h-9 w-9 ring-2 ring-pink-200 dark:ring-pink-800">
-                <AvatarImage src="https://api.dicebear.com/10.x/initial-face/svg?seed=Sushi" alt="User Avatar" />
-              <AvatarFallback className="bg-gradient-to-br from-pink-400 to-rose-400 text-white text-xs">
-                JD
-              </AvatarFallback>
-            </Avatar>
+            </Link>
+
+            <Link
+              href="/account/profile"
+              title="View Chino Profile"
+              className="transition-transform active:scale-95"
+            >
+              <Avatar className="h-9 w-9 ring-2 ring-pink-300 dark:ring-pink-700 hover:ring-rose-500 transition-all shadow-xs">
+                <AvatarImage
+                  src={displayAvatar}
+                  alt={displayName}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white text-xs font-semibold">
+                  {displayInitials}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+
             <ModeToggle />
           </div>
         </div>

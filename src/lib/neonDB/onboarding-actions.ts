@@ -235,6 +235,37 @@ export async function saveOnboardingProfile(data: OnboardingData) {
   if (!ageVal && birthdateVal) {
     ageVal = calculateAgeFromBirthdate(birthdateVal);
   }
+  // Check if gender is changing on an existing profile
+  const existingRows = await sql`
+    SELECT gender, private_corner
+    FROM public.user_profiles
+    WHERE user_id = ${userId}
+    LIMIT 1
+  `;
+  const existingProfile = existingRows[0];
+  const oldGender = existingProfile?.gender;
+  const newGender = data.gender;
+  const isGenderChange = Boolean(
+    oldGender &&
+    newGender &&
+    oldGender.trim().toLowerCase() !== newGender.trim().toLowerCase()
+  );
+
+  if (isGenderChange) {
+    const newSelfie = data.privateCorner?.verificationSelfie?.trim();
+    if (!newSelfie) {
+      throw new Error(
+        "Gender change detected: You must upload a fresh verification selfie so Maya can verify your identity."
+      );
+    }
+    if (!data.privateCorner) {
+      data.privateCorner = {};
+    }
+    data.privateCorner.verificationStatus = "pending_review";
+    data.privateCorner.genderChangedAt = new Date().toISOString();
+    data.privateCorner.previousGender = oldGender;
+  }
+
   const interestsVal = Array.isArray(data.interests) ? data.interests : [];
   const promptAnswersVal = JSON.stringify(data.promptAnswers || {});
   const speedRoundVal = JSON.stringify(data.speedRound || {});
@@ -363,5 +394,51 @@ export async function saveOnboardingProfile(data: OnboardingData) {
         ? err.message
         : "Failed to save profile. Please try again.";
     throw new Error(message);
+  }
+}
+
+/**
+ * Fetch complete user profile joined with auth information for the Chino profile page.
+ */
+export async function getFullUserProfile(userId?: string) {
+  try {
+    let targetUserId = userId;
+    if (!targetUserId) {
+      const sessionUser = await getSessionUser();
+      if (!sessionUser) return null;
+      targetUserId = sessionUser.uid;
+    }
+
+    const sql = getDb();
+    const rows = await sql`
+      SELECT 
+        p.*,
+        u.email,
+        u.name AS auth_name,
+        u.image AS auth_image,
+        u.role AS auth_role,
+        u."emailVerified" AS auth_email_verified,
+        u.banned AS auth_banned
+      FROM public.user_profiles p
+      JOIN neon_auth."user" u ON p.user_id = u.id
+      WHERE p.user_id = ${targetUserId}::uuid
+      LIMIT 1
+    `;
+
+    if (rows.length === 0) return null;
+    const row = { ...rows[0] };
+    if (row.birthdate) {
+      row.birthdate = formatBirthdateToISO(row.birthdate);
+    }
+    if (row.created_at && row.created_at instanceof Date) {
+      row.created_at = row.created_at.toISOString();
+    }
+    if (row.updated_at && row.updated_at instanceof Date) {
+      row.updated_at = row.updated_at.toISOString();
+    }
+    return row;
+  } catch (err) {
+    console.error("Error in getFullUserProfile:", err);
+    return null;
   }
 }

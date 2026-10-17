@@ -1,272 +1,101 @@
-import { CalendarDays, Clock, Mail, Phone, Shield, User } from "lucide-react";
 import { Suspense } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Sparkles, ArrowRight } from "lucide-react";
+import { verifySession } from "@/lib/auth/dal";
+import { getFullUserProfile } from "@/lib/neonDB/onboarding-actions";
+import { ProfileChinoView } from "@/components/profile-chino-view";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getUserProfile, requireAuth } from "@/lib/neonDB/auth-server";
+import { Button } from "@/components/ui/button";
 
 function ProfileSkeleton() {
   return (
-    <Card className="animate-pulse">
-      <CardHeader>
-        <div className="flex items-start gap-4">
-          <Skeleton className="size-20 rounded-full" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-4 w-60" />
-          </div>
+    <div className="space-y-6 max-w-6xl mx-auto animate-pulse">
+      <Skeleton className="h-28 w-full rounded-3xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <Skeleton className="lg:col-span-5 h-[500px] rounded-3xl" />
+        <div className="lg:col-span-7 space-y-6">
+          <Skeleton className="h-48 rounded-3xl" />
+          <Skeleton className="h-48 rounded-3xl" />
+          <Skeleton className="h-48 rounded-3xl" />
         </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <Separator />
-        <div className="space-y-4">
-          <Skeleton className="h-4 w-32" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Skeleton className="h-12 w-full rounded-lg" />
-            <Skeleton className="h-12 w-full rounded-lg" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
 async function ProfileContent() {
-  const sessionUser = await requireAuth();
-  const profile = await getUserProfile(sessionUser.uid);
+  const { isAuth, user, role } = await verifySession();
+  if (!isAuth || !user) {
+    redirect("/auth/login");
+  }
 
-  if (!profile) {
+  const profile = await getFullUserProfile(user.id);
+
+  if (!profile || !profile.onboarding_completed) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle>Error Loading Profile</CardTitle>
-            <CardDescription>Unable to fetch user profile data</CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="flex flex-col items-center justify-center min-h-[520px] text-center p-6 sm:p-10 max-w-lg mx-auto space-y-6 rounded-3xl bg-card/60 backdrop-blur-xl border border-rose-500/20 shadow-xl shadow-rose-500/5 my-8">
+        <div className="relative">
+          <div className="size-20 rounded-3xl bg-gradient-to-tr from-rose-500/20 to-purple-500/20 border border-rose-500/30 flex items-center justify-center text-rose-500 shadow-md">
+            <Sparkles className="size-10" />
+          </div>
+          <span className="absolute -bottom-1 -right-1 size-5 rounded-full bg-emerald-500 border-2 border-background animate-pulse" />
+        </div>
+
+        <div className="space-y-2">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-rose-600 via-pink-600 to-violet-600 bg-clip-text text-transparent">
+            Weave Your Authentic Chino
+          </h2>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
+            Namaste{user.name ? ` ${user.name}` : ""}! 🙏 You haven't woven your authentic Nepali Chino with Maya yet. Complete onboarding to create your profile and unlock Mayalu matching.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2.5 w-full text-xs text-muted-foreground pt-1">
+          <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/40 text-center space-y-1">
+            <span className="text-lg block">🪪</span>
+            <span className="font-semibold block text-foreground">1. Chino Card</span>
+            <span className="text-[10px] text-muted-foreground">Identity &amp; vibe</span>
+          </div>
+          <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/40 text-center space-y-1">
+            <span className="text-lg block">🔒</span>
+            <span className="font-semibold block text-foreground">2. Dhukuti</span>
+            <span className="text-[10px] text-muted-foreground">3 photo vault</span>
+          </div>
+          <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/40 text-center space-y-1">
+            <span className="text-lg block">🛡️</span>
+            <span className="font-semibold block text-foreground">3. Verified</span>
+            <span className="text-[10px] text-muted-foreground">Maya verification</span>
+          </div>
+        </div>
+
+        <Link href="/account/onboarding" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-violet-600 hover:from-rose-600 hover:to-violet-700 text-white font-semibold gap-2 text-sm shadow-lg shadow-rose-500/25 px-8 h-11 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <span>Start Onboarding with Maya</span>
+            <ArrowRight className="size-4" />
+          </Button>
+        </Link>
       </div>
     );
   }
 
-  const getInitials = (
-    email: string | undefined,
-    displayName: string | null | undefined,
-  ) => {
-    if (displayName) {
-      return displayName
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    return email?.charAt(0).toUpperCase() || "U";
-  };
-
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   return (
-    <>
-      {/* Profile Overview Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start gap-4">
-            <Avatar className="size-20">
-              <AvatarImage
-                src={profile.photoURL || undefined}
-                alt={profile.displayName || "User"}
-              />
-              <AvatarFallback className="text-lg">
-                {getInitials(profile.email, profile.displayName)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="flex items-center gap-3 flex-wrap">
-                <CardTitle className="text-2xl">
-                  {profile.displayName || "User Profile"}
-                </CardTitle>
-                {profile.emailVerified ? (
-                  <Badge variant="default" className="gap-1.5">
-                    <Shield className="size-3" />
-                    Verified
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="gap-1.5">
-                    <Shield className="size-3" />
-                    Unverified
-                  </Badge>
-                )}
-                {profile.disabled && (
-                  <Badge variant="destructive">Disabled</Badge>
-                )}
-              </div>
-              <CardDescription className="mt-2">
-                Member since {formatDate(profile.metadata.creationTime)}
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Separator />
-
-          {/* Contact Information */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Contact Information
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <Mail className="size-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Email
-                  </p>
-                  <p className="text-sm font-mono truncate">
-                    {profile.email || "Not provided"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <Phone className="size-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Phone
-                  </p>
-                  <p className="text-sm">
-                    {profile.phoneNumber || "Not provided"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Account Details */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Account Details
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <User className="size-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    User ID
-                  </p>
-                  <p className="text-xs font-mono truncate">{profile.uid}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <CalendarDays className="size-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Last Sign In
-                  </p>
-                  <p className="text-xs">
-                    {formatDate(profile.metadata.lastSignInTime)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {profile.metadata.lastRefreshTime && (
-            <>
-              <Separator />
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="size-3" />
-                <span>
-                  Last token refresh:{" "}
-                  {formatDate(profile.metadata.lastRefreshTime)}
-                </span>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Provider Information */}
-      {profile.providerData && profile.providerData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">
-              Sign-in Methods
-            </CardTitle>
-            <CardDescription>
-              Authentication providers linked to your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {profile.providerData.map((provider) => (
-                <div
-                  key={provider.uid || provider.providerId}
-                  className="flex items-center justify-between p-3 rounded-lg border"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-primary/10 p-2">
-                      <Shield className="size-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium capitalize">
-                        {provider.providerId.replace(".com", "")}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {provider.email}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant="outline">Active</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </>
+    <ProfileChinoView
+      profile={profile}
+      user={{
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+        role,
+      }}
+    />
   );
 }
 
 export default function ProfilePage() {
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Header - Instant Shell */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your account information and preferences
-        </p>
-      </div>
-
-      {/* Content - Streamed behind Suspense */}
+    <div className="flex-1 p-4 sm:p-6 lg:p-8 pt-4 sm:pt-6 max-w-7xl mx-auto">
       <Suspense fallback={<ProfileSkeleton />}>
         <ProfileContent />
       </Suspense>

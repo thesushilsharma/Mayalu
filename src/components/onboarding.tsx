@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { BrandLogo } from "@/components/landing/brand-logo";
@@ -385,6 +385,7 @@ export default function OnboardingComponent({
   className = "",
 }: OnboardingComponentProps = {}) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addXp, updateUserProfile } = useUser();
 
   // Onboarding conversational steps: 0 to 15 (16 total steps)
@@ -396,6 +397,24 @@ export default function OnboardingComponent({
       setStep(initialStep);
     }
   }, [initialStep]);
+
+  // Read URL search params: ?step=X and ?tab=Y
+  useEffect(() => {
+    if (searchParams) {
+      const stepParam = searchParams.get("step");
+      if (stepParam !== null && stepParam !== undefined) {
+        const parsed = parseInt(stepParam, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed <= 15) {
+          setStep(parsed);
+        }
+      }
+      const tabParam = searchParams.get("tab");
+      if (tabParam === "avatar" || tabParam === "vault" || tabParam === "verify" || tabParam === "bio") {
+        setStep15Tab(tabParam);
+      }
+    }
+  }, [searchParams]);
+
   const [step15Tab, setStep15Tab] = useState<string>("avatar");
   const [initialGender, setInitialGender] = useState<string | null>(null);
   const [initialSelfie, setInitialSelfie] = useState<string | null>(null);
@@ -1285,7 +1304,7 @@ export default function OnboardingComponent({
       </div>
 
       {/* Sticky Glass Navbar (Mirrors landing page Header) */}
-      <header className="h-16 shrink-0 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 z-30 px-4 sm:px-8 flex items-center justify-between">
+      <header className="h-16 shrink-0 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 z-30 px-4 sm:px-8 flex items-center justify-between relative">
         {/* Brand identity */}
         <Link
           href="/"
@@ -1305,23 +1324,32 @@ export default function OnboardingComponent({
           </div>
         </Link>
 
-        {/* Center Progress Pill & Narrative Chapter */}
-        <div className="flex flex-col items-center gap-1 w-48 sm:w-64">
-          <div className="flex justify-between w-full text-xs">
-            <span className="font-medium text-foreground truncate max-w-[140px] sm:max-w-[180px]">
+        {/* Center Progress Pill & Narrative Chapter (Full length size, no truncation, plenty of headroom for Devanagari) */}
+        <div className="flex-1 mx-3 sm:mx-6 md:mx-8 max-w-2xl lg:max-w-3xl flex flex-col gap-1.5 justify-center">
+          <div className="flex justify-between items-baseline w-full pt-1.5 pb-0.5 overflow-visible">
+            <span className="text-foreground font-semibold text-xs sm:text-sm whitespace-nowrap leading-relaxed overflow-visible tracking-tight select-none">
               {getChapterName()}
             </span>
-            <span className="text-rose-500 font-semibold">
+            <span className="text-rose-500 font-bold ml-4 shrink-0 text-xs sm:text-sm leading-relaxed tabular-nums">
               {progressPercent}%
             </span>
           </div>
-          <div className="w-full bg-muted/80 h-1.5 rounded-full overflow-hidden">
+          <div className="w-full bg-muted/80 h-2 sm:h-2.5 rounded-full overflow-hidden shadow-inner">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-violet-500"
+              className="h-full rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-violet-500 shadow-sm shadow-rose-500/30"
               animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 0.3 }}
             />
           </div>
+        </div>
+
+        {/* Full-width bottom edge progress line */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-muted/30">
+          <motion.div
+            className="h-full bg-gradient-to-r from-rose-500 via-pink-500 to-violet-500"
+            animate={{ width: `${progressPercent}%` }}
+            transition={{ duration: 0.3 }}
+          />
         </div>
 
         {/* Right Action buttons */}
@@ -1331,23 +1359,23 @@ export default function OnboardingComponent({
               variant="outline"
               size="sm"
               onClick={onCancel}
-              className="text-xs h-8 px-3 rounded-full border-rose-500/30 text-rose-500 hover:bg-rose-500/10 gap-1"
+              className="text-xs h-8 px-3 rounded-full border-rose-500/30 text-rose-500 hover:bg-rose-500/10 gap-1.5"
             >
-              <ArrowLeft className="w-3 h-3" />
+              <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Chino</span>
             </Button>
-          ) : isAlreadyOnboarded ? (
+          ) : (
             <Link href="/account/profile">
               <Button
                 variant="outline"
                 size="sm"
-                className="inline-flex text-xs h-8 px-2.5 rounded-full border-rose-500/30 text-rose-500 hover:bg-rose-500/10 gap-1"
+                className="inline-flex text-xs h-8 px-3 rounded-full border-rose-500/30 text-rose-500 hover:bg-rose-500/10 gap-1.5 font-medium"
               >
-                <span>Chino Profile</span>
-                <ExternalLink className="w-3 h-3" />
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Chino</span>
               </Button>
             </Link>
-          ) : null}
+          )}
 
           <Badge className="bg-amber-500/10 border-amber-500/30 text-amber-500 gap-1 text-xs px-2.5 py-1 rounded-full font-medium">
             <Zap className="w-3 h-3 fill-amber-500 text-amber-500" />

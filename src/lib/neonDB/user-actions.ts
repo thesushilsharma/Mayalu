@@ -1,8 +1,13 @@
 "use server";
 
-import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth/server";
+import {
+  findAllAuthUsers,
+  deleteAuthUserById,
+  updateAuthUserRoleQuery,
+  toggleUserBanAndRevokeSessionsTx,
+} from "@/lib/neonDB/queries";
 
 export interface User {
   uid: string;
@@ -19,26 +24,6 @@ export interface User {
   customClaims?: Record<string, unknown>;
 }
 
-interface NeonAuthUserRow {
-  id: string;
-  email: string | null;
-  name: string | null;
-  image: string | null;
-  emailVerified: boolean | null;
-  role: string | null;
-  banned: boolean | null;
-  createdAt: string | Date | null;
-  updatedAt: string | Date | null;
-}
-
-function getDb() {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error("DATABASE_URL environment variable is not set");
-  }
-  return neon(url);
-}
-
 /**
  * Fetch all users from Neon Auth (neon_auth."user").
  * Security: Requires an active authenticated session.
@@ -51,26 +36,9 @@ export async function getAllUsers(maxResults = 1000): Promise<User[]> {
       return [];
     }
 
-    const sql = getDb();
+    const users = await findAllAuthUsers(maxResults);
 
-    // Query Neon Auth managed table in the neon_auth schema
-    const users = await sql`
-      SELECT 
-        id, 
-        email, 
-        name, 
-        image, 
-        "emailVerified",
-        role,
-        banned,
-        "createdAt",
-        "updatedAt"
-      FROM neon_auth."user"
-      ORDER BY "createdAt" DESC
-      LIMIT ${maxResults}
-    `;
-
-    return (users as unknown as NeonAuthUserRow[]).map((u) => ({
+    return users.map((u) => ({
       uid: u.id,
       email: u.email || undefined,
       displayName: u.name || undefined,
@@ -110,7 +78,7 @@ export async function getAllUsers(maxResults = 1000): Promise<User[]> {
  */
 export async function updateUserStatus(
   uid: string,
-  disabled: boolean,
+  disabled: boolean
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { data: session } = await auth.getSession();
@@ -118,19 +86,7 @@ export async function updateUserStatus(
       return { success: false, error: "Unauthorized" };
     }
 
-    const sql = getDb();
-
-    await sql`
-      UPDATE neon_auth."user"
-      SET banned = ${disabled},
-          "updatedAt" = CURRENT_TIMESTAMP
-      WHERE id = ${uid}::uuid
-    `;
-
-    // Revoke active sessions if user is disabled/banned
-    if (disabled) {
-      await sql`DELETE FROM neon_auth."session" WHERE "userId" = ${uid}::uuid`;
-    }
+    await toggleUserBanAndRevokeSessionsTx(uid, disabled);
 
     revalidatePath("/account/users");
     return { success: true };
@@ -145,7 +101,7 @@ export async function updateUserStatus(
  * Cascades to sessions, accounts, and memberships in neon_auth.
  */
 export async function deleteUser(
-  uid: string,
+  uid: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { data: session } = await auth.getSession();
@@ -162,8 +118,7 @@ export async function deleteUser(
       };
     }
 
-    const sql = getDb();
-    await sql`DELETE FROM neon_auth."user" WHERE id = ${uid}::uuid`;
+    await deleteAuthUserById(uid);
 
     revalidatePath("/account/users");
     return { success: true };
@@ -178,7 +133,7 @@ export async function deleteUser(
  */
 export async function setUserClaims(
   uid: string,
-  claims: Record<string, unknown>,
+  claims: Record<string, unknown>
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { data: session } = await auth.getSession();
@@ -186,20 +141,14 @@ export async function setUserClaims(
       return { success: false, error: "Unauthorized" };
     }
 
-    const sql = getDb();
     if (typeof claims.role === "string") {
-      await sql`
-        UPDATE neon_auth."user"
-        SET role = ${claims.role},
-            "updatedAt" = CURRENT_TIMESTAMP
-        WHERE id = ${uid}::uuid
-      `;
+      await updateAuthUserRoleQuery(uid, claims.role);
     }
 
     revalidatePath("/account/users");
     return { success: true };
   } catch (error) {
-    console.error("Error setting user role in neon_auth:", error);
-    return { success: false, error: "Failed to update user role" };
+    console.error("Error setting user claims:", error);
+    return { success: false, error: "Failed to set user claims" };
   }
 }

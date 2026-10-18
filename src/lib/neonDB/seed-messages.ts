@@ -1,5 +1,9 @@
-import { neon } from "@neondatabase/serverless";
+import { randomUUID } from "crypto";
 import { type User } from "./messages";
+import {
+  checkMessagesTableExists,
+  seedMessagesTx,
+} from "@/lib/neonDB/queries";
 
 const users: User[] = [
   {
@@ -26,29 +30,40 @@ const users: User[] = [
 
 export async function seedMessages() {
   try {
-    const sql = neon(process.env.DATABASE_URL!);
-    
-    // Check if table exists
-    const tables = await sql`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'messages'`;
-    if (tables.length === 0) {
-      throw new Error("Messages table does not exist. Please run the database setup.");
+    const exists = await checkMessagesTableExists();
+    if (!exists) {
+      throw new Error(
+        "Messages table does not exist. Please run the database setup."
+      );
     }
-    
-    const crypto = require("crypto");
-    
-    const createMessage = async (sender: User, recipient: User, content: string) => {
-      const id = crypto.randomUUID();
-      await sql`
-        INSERT INTO messages (id, sender_id, recipient_id, content, status)
-        VALUES (${id}, ${sender.uid}, ${recipient.uid}, ${content}, 'delivered')
-      `;
-    };
 
-    await createMessage(users[0], users[1], "Hey, how are you doing today?");
-    await createMessage(users[2], users[3], "Would you like to meet for coffee this weekend?");
-    await createMessage(users[1], users[0], "Thanks for the recommendation!");
-    
-    console.log("✅ Messages seeded successfully to Neon!");
+    const messagesToSeed = [
+      {
+        id: randomUUID(),
+        senderId: users[0].uid || "user1",
+        recipientId: users[1].uid || "user2",
+        content: "Hey, how are you doing today?",
+      },
+      {
+        id: randomUUID(),
+        senderId: users[2].uid || "user3",
+        recipientId: users[3].uid || "user4",
+        content: "Would you like to meet for coffee this weekend?",
+      },
+      {
+        id: randomUUID(),
+        senderId: users[1].uid || "user2",
+        recipientId: users[0].uid || "user1",
+        content: "Thanks for the recommendation!",
+      },
+    ];
+
+    const success = await seedMessagesTx(messagesToSeed);
+    if (!success) {
+      throw new Error("Transaction failed to seed messages");
+    }
+
+    console.log("✅ Messages seeded successfully to Neon using transaction!");
     return { success: true };
   } catch (error) {
     console.error("❌ Error seeding messages:", error);

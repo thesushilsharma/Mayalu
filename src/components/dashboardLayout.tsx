@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState, useEffect } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -44,35 +44,42 @@ const navItems = [
 function DashboardUserLayout() {
   const pathname = usePathname();
   const { userLevel, userProfile, superLikes } = useUser();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isOnboardingRoute =
     pathname === "/account/onboarding" ||
     pathname.startsWith("/account/onboarding");
 
-  // Derive display values from live user context
-  const displayName =
-    userProfile?.firstName ||
-    userProfile?.name ||
-    (userProfile?.email ? userProfile.email.split("@")[0] : "Mayalu Member");
+  // Derive display values from live user context (guarded by mounted state to ensure exact match with SSR static shell)
+  const displayName = mounted
+    ? userProfile?.firstName ||
+      userProfile?.name ||
+      (userProfile?.email ? userProfile.email.split("@")[0] : "Mayalu Member")
+    : "Mayalu Member";
 
-  const displayInitials = (displayName || "M")
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const displayInitials = mounted
+    ? (displayName || "M")
+        .split(" ")
+        .map((part) => part[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "MM";
 
   const displayAvatar =
-    userProfile?.profilePhoto ||
-    userProfile?.image ||
-    `https://api.dicebear.com/10.x/personas/svg?seed=${encodeURIComponent(
-      displayName || "Mayalu"
-    )}`;
+    (mounted && (userProfile?.profilePhoto || userProfile?.image)) ||
+    `https://api.dicebear.com/10.x/personas/svg?seed=Mayalu`;
 
-  const isVerified = userProfile?.verificationStatus === "verified";
-  const isReview = userProfile?.verificationStatus === "pending_review";
-  const isOnboarded = Boolean(userProfile?.onboardingCompleted);
-  const isAdmin = userProfile?.role === "admin";
+  const isVerified = mounted && userProfile?.verificationStatus === "verified";
+  const isReview = mounted && userProfile?.verificationStatus === "pending_review";
+  const isOnboarded = mounted && Boolean(userProfile?.onboardingCompleted);
+  const isAdmin = mounted && userProfile?.role === "admin";
+  const displayLevel = mounted ? userLevel.level : 1;
+  const displaySuperLikes = mounted ? superLikes : 3;
   const isProfileActive =
     pathname === "/account/profile" || pathname.startsWith("/account/profile/");
 
@@ -201,7 +208,7 @@ function DashboardUserLayout() {
                     alt={displayName}
                     className="object-cover"
                   />
-                  <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white font-bold text-sm">
+                  <AvatarFallback suppressHydrationWarning className="bg-gradient-to-br from-pink-500 to-rose-500 text-white font-bold text-sm">
                     {displayInitials}
                   </AvatarFallback>
                 </Avatar>
@@ -216,7 +223,7 @@ function DashboardUserLayout() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1">
-                  <p className="text-sm font-bold truncate text-gray-900 dark:text-gray-100 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                  <p suppressHydrationWarning className="text-sm font-bold truncate text-gray-900 dark:text-gray-100 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
                     {displayName}
                   </p>
                   <ChevronRight className="h-3.5 w-3.5 text-gray-400 group-hover:text-rose-500 group-hover:translate-x-0.5 transition-all shrink-0" />
@@ -256,20 +263,22 @@ function DashboardUserLayout() {
 
             <div className="flex items-center gap-2 pt-2 border-t border-pink-200/50 dark:border-pink-900/30">
               <Badge
+                suppressHydrationWarning
                 variant="secondary"
                 className="bg-white/80 dark:bg-gray-800/80 text-pink-600 dark:text-pink-400 border-pink-200/80 dark:border-pink-800/80 font-semibold text-xs py-0.5 px-2"
-                title={`Level ${userLevel.level} (${userLevel.xp}/${userLevel.requiredXp} XP)`}
+                title={`Level ${displayLevel} (${userLevel.xp}/${userLevel.requiredXp} XP)`}
               >
                 <Zap className="h-3 w-3 mr-1 fill-pink-500 text-pink-500" />
-                Level {userLevel.level}
+                Level {displayLevel}
               </Badge>
               <Badge
+                suppressHydrationWarning
                 variant="secondary"
                 className="bg-white/80 dark:bg-gray-800/80 text-blue-600 dark:text-blue-400 border-blue-200/80 dark:border-blue-800/80 font-semibold text-xs py-0.5 px-2"
-                title={`${superLikes} Super Likes`}
+                title={`${displaySuperLikes} Super Likes`}
               >
                 <Zap className="h-3 w-3 mr-1 text-blue-500 fill-blue-500" />
-                {superLikes} Super
+                {displaySuperLikes} Super
               </Badge>
               <span className="ml-auto text-[10px] text-muted-foreground group-hover:text-rose-500 transition-colors font-medium">
                 Chino →
@@ -314,15 +323,16 @@ function DashboardUserLayout() {
               title="View your Level & Chino"
             >
               <Badge
+                suppressHydrationWarning
                 variant="secondary"
                 className="text-xs font-semibold bg-white/80 dark:bg-gray-800/80 border-0"
               >
-                Lv.{userLevel.level}
+                Lv.{displayLevel}
               </Badge>
               <div className="flex items-center gap-1 px-1.5">
                 <Zap className="h-3.5 w-3.5 text-blue-500 fill-blue-500" />
-                <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                  {superLikes}
+                <span suppressHydrationWarning className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                  {displaySuperLikes}
                 </span>
               </div>
             </Link>
@@ -338,7 +348,7 @@ function DashboardUserLayout() {
                   alt={displayName}
                   className="object-cover"
                 />
-                <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white text-xs font-semibold">
+                <AvatarFallback suppressHydrationWarning className="bg-gradient-to-br from-pink-500 to-rose-500 text-white text-xs font-semibold">
                   {displayInitials}
                 </AvatarFallback>
               </Avatar>

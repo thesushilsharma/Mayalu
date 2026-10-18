@@ -39,11 +39,13 @@ function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
 
 function AvatarFallback({
   className,
+  suppressHydrationWarning = true,
   ...props
-}: AvatarPrimitive.Fallback.Props) {
+}: AvatarPrimitive.Fallback.Props & { suppressHydrationWarning?: boolean }) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
+      suppressHydrationWarning={suppressHydrationWarning}
       className={cn(
         "flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs",
         className

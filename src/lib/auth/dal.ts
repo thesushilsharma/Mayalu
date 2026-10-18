@@ -2,8 +2,11 @@ import "server-only";
 
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { neon } from "@neondatabase/serverless";
 import { auth } from "@/lib/auth/server";
+import {
+  findAuthUserById,
+  promoteAuthUserToAdmin,
+} from "@/lib/neonDB/queries";
 
 export type UserRole = "admin" | "moderator" | "user";
 
@@ -21,14 +24,6 @@ export interface AuthSessionDTO {
   isAuth: boolean;
   user: SessionUserDTO | null;
   role: UserRole;
-}
-
-function getDb() {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error("DATABASE_URL environment variable is not set");
-  }
-  return neon(url);
 }
 
 /**
@@ -57,15 +52,8 @@ export const verifySession = cache(async (): Promise<AuthSessionDTO> => {
       return { isAuth: false, user: null, role: "user" };
     }
 
-    const sql = getDb();
-    const dbUsers = await sql`
-      SELECT id, email, name, image, "emailVerified", role, banned
-      FROM neon_auth."user"
-      WHERE id = ${session.user.id}::uuid
-      LIMIT 1
-    `;
+    const dbUser = await findAuthUserById(session.user.id);
 
-    const dbUser = dbUsers[0];
     const email = (dbUser?.email || session.user.email || "").toLowerCase();
     const adminEmails = getAdminEmails();
 
@@ -76,11 +64,7 @@ export const verifySession = cache(async (): Promise<AuthSessionDTO> => {
     // If email is in admin list but DB role is not updated, auto-sync DB role to admin
     if (isExplicitAdmin && dbUser?.role !== "admin") {
       try {
-        await sql`
-          UPDATE neon_auth."user"
-          SET role = 'admin', "updatedAt" = CURRENT_TIMESTAMP
-          WHERE id = ${session.user.id}::uuid
-        `;
+        await promoteAuthUserToAdmin(session.user.id);
       } catch (e) {
         console.warn("Could not auto-promote admin in neon_auth:", e);
       }

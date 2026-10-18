@@ -1,8 +1,14 @@
 "use server";
 
-import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, type UserRole } from "@/lib/auth/dal";
+import {
+  findVerificationCandidates,
+  approveVerificationSelfieQuery,
+  rejectVerificationSelfieQuery,
+  updateAuthUserRoleQuery,
+  toggleUserBanAndRevokeSessionsTx,
+} from "@/lib/neonDB/queries";
 
 export interface VerificationCandidate {
   userId: string;
@@ -19,50 +25,17 @@ export interface VerificationCandidate {
   updatedAt: string | null;
 }
 
-function getDb() {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error("DATABASE_URL environment variable is not set");
-  }
-  return neon(url);
-}
-
 /**
  * Fetch all candidate profiles that have submitted or attempted verification.
  * Protected by Next.js RBAC DAL (requireAdmin).
  */
 export async function getVerificationCandidates(): Promise<VerificationCandidate[]> {
   await requireAdmin();
-  const sql = getDb();
 
   try {
-    const rows = await sql`
-      SELECT 
-        u.id AS user_id,
-        COALESCE(p.first_name, u.name, 'Candidate') AS name,
-        COALESCE(u.email, 'unknown@mayalu.app') AS email,
-        p.age,
-        p.location,
-        p.gender,
-        p.profile_photo,
-        p.private_corner->>'verificationSelfie' AS verification_selfie,
-        COALESCE(p.private_corner->>'verificationStatus', 'unsubmitted') AS verification_status,
-        COALESCE(array_length(p.additional_photos, 1), 0) AS additional_photos_count,
-        p.bio,
-        p.updated_at
-      FROM public.user_profiles p
-      JOIN neon_auth."user" u ON p.user_id = u.id
-      ORDER BY 
-        CASE 
-          WHEN p.private_corner->>'verificationStatus' = 'pending_review' THEN 1
-          WHEN p.private_corner->>'verificationSelfie' IS NOT NULL THEN 2
-          ELSE 3
-        END,
-        p.updated_at DESC
-      LIMIT 100
-    `;
+    const rows = await findVerificationCandidates(100);
 
-    return rows.map((r: any) => ({
+    return rows.map((r) => ({
       userId: r.user_id,
       name: r.name,
       email: r.email,
@@ -86,22 +59,13 @@ export async function getVerificationCandidates(): Promise<VerificationCandidate
  * Admin Action: Approve verification selfie.
  * Lifts user out of Ghost Spectator mode into Maya Verified.
  */
-export async function approveVerification(userId: string): Promise<{ success: boolean; error?: string }> {
+export async function approveVerification(
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
   await requireAdmin();
-  const sql = getDb();
 
   try {
-    await sql`
-      UPDATE public.user_profiles
-      SET 
-        private_corner = jsonb_set(
-          COALESCE(private_corner, '{}'::jsonb), 
-          '{verificationStatus}', 
-          '"verified"'
-        ),
-        updated_at = CURRENT_TIMESTAMP
-      WHERE user_id = ${userId}::uuid
-    `;
+    await approveVerificationSelfieQuery(userId);
 
     revalidatePath("/account/users");
     revalidatePath("/account/dashboard");
@@ -118,27 +82,12 @@ export async function approveVerification(userId: string): Promise<{ success: bo
  */
 export async function rejectVerification(
   userId: string,
-  reason = "Selfie was unclear or did not match avatar",
+  _reason = "Selfie was unclear or did not match avatar"
 ): Promise<{ success: boolean; error?: string }> {
   await requireAdmin();
-  const sql = getDb();
 
   try {
-    await sql`
-      UPDATE public.user_profiles
-      SET 
-        private_corner = jsonb_set(
-          jsonb_set(
-            COALESCE(private_corner, '{}'::jsonb), 
-            '{verificationStatus}', 
-            '"rejected"'
-          ),
-          '{verificationSelfie}',
-          '""'
-        ),
-        updated_at = CURRENT_TIMESTAMP
-      WHERE user_id = ${userId}::uuid
-    `;
+    await rejectVerificationSelfieQuery(userId);
 
     revalidatePath("/account/users");
     revalidatePath("/account/dashboard");
@@ -155,7 +104,7 @@ export async function rejectVerification(
  */
 export async function updateUserRole(
   userId: string,
-  newRole: UserRole,
+  newRole: UserRole
 ): Promise<{ success: boolean; error?: string }> {
   const currentAdmin = await requireAdmin();
 
@@ -164,14 +113,8 @@ export async function updateUserRole(
     return { success: false, error: "You cannot demote yourself from admin." };
   }
 
-  const sql = getDb();
-
   try {
-    await sql`
-      UPDATE neon_auth."user"
-      SET role = ${newRole}, "updatedAt" = CURRENT_TIMESTAMP
-      WHERE id = ${userId}::uuid
-    `;
+    await updateAuthUserRoleQuery(userId, newRole);
 
     revalidatePath("/account/users");
     return { success: true };
@@ -182,12 +125,12 @@ export async function updateUserRole(
 }
 
 /**
- * Admin Action: Ban or Unban user account and revoke active sessions.
+ * Admin Action: Ban or Unban user account and atomically revoke active sessions.
  */
 export async function toggleUserBan(
   userId: string,
   banned: boolean,
-  banReason?: string,
+  banReason?: string
 ): Promise<{ success: boolean; error?: string }> {
   const currentAdmin = await requireAdmin();
 
@@ -195,22 +138,8 @@ export async function toggleUserBan(
     return { success: false, error: "You cannot ban your own account." };
   }
 
-  const sql = getDb();
-
   try {
-    await sql`
-      UPDATE neon_auth."user"
-      SET 
-        banned = ${banned},
-        "banReason" = ${banReason || (banned ? "Violation of community standards" : null)},
-        "updatedAt" = CURRENT_TIMESTAMP
-      WHERE id = ${userId}::uuid
-    `;
-
-    // Invalidate sessions immediately if banned
-    if (banned) {
-      await sql`DELETE FROM neon_auth."session" WHERE "userId" = ${userId}::uuid`;
-    }
+    await toggleUserBanAndRevokeSessionsTx(userId, banned, banReason);
 
     revalidatePath("/account/users");
     return { success: true };

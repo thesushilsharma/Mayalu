@@ -225,7 +225,7 @@ export default function DashboardPage() {
             <CardTitle className="text-base font-semibold">Recent Connections & Visitors</CardTitle>
             <CardDescription className="text-xs">People who recently interacted with or viewed your Chino</CardDescription>
           </div>
-          <Link href="/account/users">
+          <Link href="/account/hallway">
             <Button variant="ghost" size="sm" className="text-xs text-rose-500 hover:text-rose-600 gap-1 h-8">
               <span>View All</span>
               <ChevronRight className="size-3.5" />

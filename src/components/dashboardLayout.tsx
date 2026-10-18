@@ -37,7 +37,6 @@ const navItems = [
   { name: "Dashboard", href: "/account/dashboard", icon: Home },
   { name: "Kura-Kani", href: "/account/chats", icon: MessageCircle },
   { name: "Chino", href: "/account/profile", icon: CircleUser },
-  { name: "Moderation", href: "/account/users", icon: ShieldCheck },
   { name: "Settings", href: "/account/settings", icon: Settings },
 ];
 
@@ -50,9 +49,9 @@ function DashboardUserLayout() {
     setMounted(true);
   }, []);
 
-  const isOnboardingRoute =
-    pathname === "/account/onboarding" ||
-    pathname.startsWith("/account/onboarding");
+  const isStandaloneRoute =
+    pathname.startsWith("/account/onboarding") ||
+    pathname.startsWith("/account/users");
 
   // Derive display values from live user context (guarded by mounted state to ensure exact match with SSR static shell)
   const displayName = mounted
@@ -83,9 +82,12 @@ function DashboardUserLayout() {
   const isProfileActive =
     pathname === "/account/profile" || pathname.startsWith("/account/profile/");
 
+  // Navigation items for the user dashboard
+  const activeNavItems = navItems;
+
   // Memoize navigation items for bottom nav (first 4 items)
   const bottomNavItems = useMemo(() => {
-    return navItems.slice(0, 4).map((item) => {
+    return activeNavItems.slice(0, 4).map((item) => {
       const isActive =
         pathname === item.href || pathname.startsWith(`${item.href}/`);
       return (
@@ -107,11 +109,11 @@ function DashboardUserLayout() {
         </Link>
       );
     });
-  }, [pathname]);
+  }, [activeNavItems, pathname]);
 
   // Remaining nav items for dropdown
   const dropdownNavItems = useMemo(() => {
-    return navItems.slice(4).map((item) => {
+    return activeNavItems.slice(4).map((item) => {
       const isActive =
         pathname === item.href || pathname.startsWith(`${item.href}/`);
       return (
@@ -129,11 +131,11 @@ function DashboardUserLayout() {
         </DropdownMenuItem>
       );
     });
-  }, [pathname]);
+  }, [activeNavItems, pathname]);
 
   // Desktop sidebar nav items
   const sidebarNavItems = useMemo(() => {
-    return navItems.map((item) => {
+    return activeNavItems.map((item) => {
       const isActive =
         pathname === item.href || pathname.startsWith(`${item.href}/`);
       return (
@@ -163,10 +165,11 @@ function DashboardUserLayout() {
         </Link>
       );
     });
-  }, [pathname]);
+  }, [activeNavItems, pathname]);
 
-  // Hide all dashboard chrome during onboarding Kura-Kani
-  if (isOnboardingRoute) {
+
+  // Hide all dashboard chrome during onboarding or admin moderation console
+  if (isStandaloneRoute) {
     return null;
   }
 

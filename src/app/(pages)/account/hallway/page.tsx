@@ -143,10 +143,18 @@ const mockProfiles: Profile[] = [
 
 export default function HallwayPage() {
   const { userLevel, addXp } = useUserLevel();
+  const [mounted, setMounted] = React.useState(false);
   const [useMatrimonialMode, setUseMatrimonialMode] = React.useState(false);
   const [currentProfiles, setCurrentProfiles] = React.useState<Profile[]>(mockProfiles);
   const [matches, setMatches] = React.useState<string[]>([]);
   const [superLikes, setSuperLikes] = React.useState(3);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const displayLevel = mounted ? userLevel.level : 1;
+  const displaySuperLikes = mounted ? superLikes : 3;
 
   const handleSwipeRight = (profile: Profile) => {
     setMatches((prev) => [...prev, profile.id]);
@@ -210,9 +218,19 @@ export default function HallwayPage() {
         {/* Level / Super Like Pill */}
         <div className="flex items-center gap-1.5 bg-muted/50 dark:bg-slate-900/40 border border-border/60 px-2.5 py-1 rounded-full text-xs shadow-2xs">
           <Sparkles className="size-3 text-amber-500" />
-          <span className="font-semibold text-foreground text-[11px]">Lvl {userLevel.level}</span>
+          <span
+            suppressHydrationWarning
+            className="font-semibold text-foreground text-[11px]"
+          >
+            Lvl {displayLevel}
+          </span>
           <span className="text-muted-foreground text-[10px]">•</span>
-          <span className="text-violet-500 font-semibold text-[11px]">{superLikes} ★</span>
+          <span
+            suppressHydrationWarning
+            className="text-violet-500 font-semibold text-[11px]"
+          >
+            {displaySuperLikes} ★
+          </span>
         </div>
       </div>
 

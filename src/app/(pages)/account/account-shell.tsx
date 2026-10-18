@@ -20,9 +20,9 @@ interface AccountShellProps {
 
 function AccountShellBody({ children }: { children: React.ReactNode }) {
   const segment = useSelectedLayoutSegment();
-  const isOnboarding = segment === "onboarding";
+  const isStandalone = segment === "onboarding" || segment === "users";
 
-  if (isOnboarding) {
+  if (isStandalone) {
     return <>{children}</>;
   }
 

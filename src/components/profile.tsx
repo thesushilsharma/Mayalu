@@ -114,8 +114,8 @@ export default function ProfileSection() {
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Level Progress</h3>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm">Level {userLevel.level}</span>
-                      <span className="text-sm">{userLevel.xp}/{userLevel.requiredXp} XP</span>
+                      <span suppressHydrationWarning className="text-sm">Level {userLevel.level}</span>
+                      <span suppressHydrationWarning className="text-sm">{userLevel.xp}/{userLevel.requiredXp} XP</span>
                     </div>
                     <Progress
                       value={(userLevel.xp / userLevel.requiredXp) * 100}

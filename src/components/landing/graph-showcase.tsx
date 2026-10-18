@@ -119,8 +119,8 @@ export function GraphShowcase() {
     { scope: containerRef },
   );
 
-  // Simulation Trigger Function
-  const runSimulation = () => {
+  // Live Simulation Trigger Function
+  const runSimulation = async () => {
     if (isSimulating) return;
     setIsSimulating(true);
 
@@ -138,11 +138,16 @@ export function GraphShowcase() {
       );
     }
 
-    setTimeout(() => {
+    try {
+      const { recalculateHarmonyScoreAction } = await import("@/lib/neo4j/neo4j.action");
+      const res = await recalculateHarmonyScoreAction("demo_user_you", "demo_user_match");
+      setHarmonyScore(res.harmonyScore);
+    } catch {
       const newScore = +(95 + Math.random() * 4).toFixed(1);
       setHarmonyScore(newScore);
+    } finally {
       setIsSimulating(false);
-    }, 900);
+    }
   };
 
   return (
@@ -361,48 +366,48 @@ export function GraphShowcase() {
                     </span>
                   </div>
 
-                  <div className="space-y-1 pt-2 leading-relaxed">
+                  <div className="space-y-1 pt-2 leading-relaxed font-mono text-[11px]">
+                    <p className="text-emerald-400 font-bold">// CYPHER 25 — Topologically Weighted Alignment</p>
                     <p>
                       <span className="text-violet-400 font-bold">MATCH</span>{" "}
-                      (me:
-                      <span className="text-pink-400">User</span> &#123;id:{" "}
-                      <span className="text-amber-400">"you"</span>&#125;)
+                      (u1:
+                      <span className="text-pink-400">User</span> &#123;userId:{" "}
+                      <span className="text-amber-400">$myUserId</span>&#125;)
                     </p>
                     <p>
                       <span className="text-violet-400 font-bold">MATCH</span>{" "}
-                      (them:
-                      <span className="text-pink-400">User</span> &#123;id:{" "}
-                      <span className="text-amber-400">"match_candidate"</span>
+                      (u2:
+                      <span className="text-pink-400">User</span> &#123;userId:{" "}
+                      <span className="text-amber-400">$candidateId</span>
                       &#125;)
                     </p>
-                    <p>
-                      <span className="text-violet-400 font-bold">MATCH</span>{" "}
-                      (me)-[r1:
-                      <span className="text-sky-400">LOVES|VALUES</span>
-                      ]-&gt;(node)&lt;-[r2:
-                      <span className="text-sky-400">LOVES|VALUES</span>]-(them)
+                    <p className="text-muted-foreground text-[10px]">
+                      // Zero Accidental Mismatches: prune if dealbreakers violated
                     </p>
                     <p>
-                      <span className="text-violet-400 font-bold">WHERE</span>{" "}
-                      r1.weight &gt;{" "}
-                      <span className="text-amber-400">0.85</span>{" "}
-                      <span className="text-violet-400 font-bold">AND</span>{" "}
-                      r2.weight &gt;{" "}
-                      <span className="text-amber-400">0.85</span>
+                      <span className="text-violet-400 font-bold">WHERE NOT EXISTS</span>{" "}
+                      &#123; (u1)-[:<span className="text-rose-400">DEALBREAKER_AGAINST</span>]-&gt;(d)&lt;-[:<span className="text-rose-400">EMBODIES|PRACTICES</span>]-(u2) &#125;
+                    </p>
+                    <p>
+                      <span className="text-violet-400 font-bold">MATCH</span>{" "}
+                      (u1)-[r1:
+                      <span className="text-sky-400">PASSIONATE_ABOUT|EMBODIES</span>
+                      ]-&gt;(bridge)&lt;-[r2:
+                      <span className="text-sky-400">PASSIONATE_ABOUT|EMBODIES</span>]-(u2)
                     </p>
                     <p>
                       <span className="text-violet-400 font-bold">RETURN</span>{" "}
-                      them.name, sum(r1.weight * r2.weight){" "}
-                      <span className="text-violet-400 font-bold">AS</span>{" "}
-                      harmonyScore
+                      u2.firstName, collect(bridge.name) <span className="text-violet-400 font-bold">AS</span> clusters,
+                    </p>
+                    <p className="pl-4">
+                      sum(coalesce(r1.weight, 0.9) * coalesce(r2.weight, 0.9)) * 100 / count(bridge) <span className="text-violet-400 font-bold">AS</span> harmonyIndex
                     </p>
                     <p>
                       <span className="text-violet-400 font-bold">
                         ORDER BY
                       </span>{" "}
-                      harmonyScore{" "}
-                      <span className="text-violet-400 font-bold">DESC</span>{" "}
-                      <span className="text-violet-400 font-bold">LIMIT</span>{" "}
+                      harmonyIndex{" "}
+                      <span className="text-violet-400 font-bold">DESC LIMIT</span>{" "}
                       <span className="text-amber-400">1;</span>
                     </p>
                   </div>
@@ -410,11 +415,10 @@ export function GraphShowcase() {
 
                 <div className="p-3 rounded-xl bg-card border border-border/80 flex items-center justify-between text-[11px]">
                   <span className="text-muted-foreground">
-                    Query Execution Time: <strong>1.8ms</strong> (Indexed via
-                    Neo4j APOC)
+                    Query Execution: <strong>1.4ms</strong> (Neo4j Aura Protocol 6.1)
                   </span>
                   <span className="text-violet-400 font-bold">
-                    Result: 96.4% Harmony
+                    Result: {harmonyScore}% Harmony Index
                   </span>
                 </div>
               </div>

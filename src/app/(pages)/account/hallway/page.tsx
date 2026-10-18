@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, Flame, Lock, ShieldCheck, Sparkles, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, Flame, Lock, ShieldCheck, Sparkles, SlidersHorizontal, GitFork } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -12,6 +12,8 @@ import { useUserLevel } from "@/contexts/userContext";
 import { TinderSwipeDeck, type Profile } from "@/components/tinder-swipe-deck";
 import { getDiceBearUrl } from "@/lib/dicebear";
 import { toast } from "sonner";
+import { Neo4jCompatibilityModal } from "@/components/graph/neo4j-compatibility-modal";
+import { recordGraphInteractionAction } from "@/lib/neo4j/neo4j.action";
 
 const mockProfiles: Profile[] = [
   {
@@ -148,6 +150,7 @@ export default function HallwayPage() {
   const [currentProfiles, setCurrentProfiles] = React.useState<Profile[]>(mockProfiles);
   const [matches, setMatches] = React.useState<string[]>([]);
   const [superLikes, setSuperLikes] = React.useState(3);
+  const [showGraphModal, setShowGraphModal] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
@@ -159,13 +162,17 @@ export default function HallwayPage() {
   const handleSwipeRight = (profile: Profile) => {
     setMatches((prev) => [...prev, profile.id]);
     addXp(10);
+    // Continuous Graph Learning: Record positive affinity in Neo4j Knowledge Graph
+    recordGraphInteractionAction("demo_user_you", profile.id, "like").catch(() => {});
     toast.success(`Subhakamana! 💘 Connected with ${profile.name}!`, {
       description: "Chat unlocked in Kura-Kani.",
     });
   };
 
-  const handleSwipeLeft = (_profile: Profile) => {
+  const handleSwipeLeft = (profile: Profile) => {
     addXp(2);
+    // Continuous Graph Learning: Record pass to calibrate dynamic recommendation weights
+    recordGraphInteractionAction("demo_user_you", profile.id, "pass").catch(() => {});
   };
 
   const handleSuperLike = (profile: Profile) => {
@@ -173,6 +180,8 @@ export default function HallwayPage() {
       setSuperLikes((prev) => prev - 1);
       setMatches((prev) => [...prev, profile.id]);
       addXp(25);
+      // Continuous Graph Learning: High affinity weight boost in Neo4j
+      recordGraphInteractionAction("demo_user_you", profile.id, "superlike").catch(() => {});
       toast.success(`Kura-Kani Sparked! 💫 Super Like sent to ${profile.name}!`, {
         description: "Your Chino was placed at the top of their inbox.",
       });
@@ -234,7 +243,7 @@ export default function HallwayPage() {
         </div>
       </div>
 
-      {/* Mode Switch & Dhukuti Info (Compact pill row) */}
+      {/* Mode Switch, Dhukuti Info & Neo4j Graph Button (Compact pill row) */}
       <div className="w-full flex items-center justify-between gap-2 p-2 rounded-2xl bg-card/60 backdrop-blur-md border border-border/50 shadow-2xs mb-3 text-xs">
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-medium text-muted-foreground">Mode:</span>
@@ -246,14 +255,27 @@ export default function HallwayPage() {
               className="scale-90"
             />
             <Label htmlFor="mode-toggle" className="text-xs font-semibold cursor-pointer">
-              {useMatrimonialMode ? "💍 Matrimonial Chino" : "🔥 Dating"}
+              {useMatrimonialMode ? "💍 Matrimonial" : "🔥 Dating"}
             </Label>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-          <Lock className="size-3 text-rose-500 shrink-0" />
-          <span>Dhukuti Sealed 🔒</span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowGraphModal(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 text-violet-500 border border-violet-500/25 text-[11px] font-semibold transition-all cursor-pointer active:scale-95"
+            title="Inspect Neo4j compatibility topology"
+          >
+            <GitFork className="size-3 text-violet-500" />
+            <span className="hidden sm:inline">Neo4j</span>
+            <span>Graph</span>
+          </button>
+
+          <div className="hidden xs:flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Lock className="size-3 text-rose-500 shrink-0" />
+            <span>Dhukuti 🔒</span>
+          </div>
         </div>
       </div>
 
@@ -268,6 +290,14 @@ export default function HallwayPage() {
           onResetStack={resetStack}
         />
       </div>
+
+      {/* Live Neo4j Graph Inspection Modal */}
+      <Neo4jCompatibilityModal
+        open={showGraphModal}
+        onOpenChange={setShowGraphModal}
+        candidateName={currentProfiles[0]?.name || "Your Match"}
+        candidateId={currentProfiles[0]?.id || "demo_user_match"}
+      />
     </div>
   );
 }

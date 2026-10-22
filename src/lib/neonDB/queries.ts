@@ -27,6 +27,7 @@ import type {
   SaveOnboardingProfileInput,
   MessageAggregates,
   UserProfileOrAuthFallback,
+  CandidateProfile,
 } from "./types";
 
 // Re-export pool, drizzle db, schema, and query primitives
@@ -719,3 +720,118 @@ export async function seedMessagesTx(
 
   return queryTransactions({ queries, values });
 }
+
+/**
+ * Fetch candidate profiles for the Hallway swipe deck.
+ * Queries public.user_profiles joined with neon_auth."user".
+ * Formats images (profile_photo + additional_photos), Chino attributes, and prompts.
+ */
+export async function findHallwayCandidateProfiles(
+  excludeUserId?: string,
+  limit: number = 50
+): Promise<CandidateProfile[]> {
+  const rows = await query<{
+    user_id: string;
+    first_name: string | null;
+    auth_name: string | null;
+    email: string | null;
+    age: number | null;
+    location: string | null;
+    bio: string | null;
+    profile_photo: string | null;
+    additional_photos: string[] | null;
+    interests: string[] | null;
+    occupation: string | null;
+    education: string | null;
+    dal_bhat_frequency: string | null;
+    music_repeat: string | null;
+    relationship_intent: string | null;
+    private_corner: any;
+    prompt_answers: any;
+    emailVerified: boolean | null;
+  }>({
+    query: `
+      SELECT 
+        p.user_id,
+        p.first_name,
+        u.name AS auth_name,
+        u.email,
+        p.age,
+        p.location,
+        p.bio,
+        p.profile_photo,
+        p.additional_photos,
+        p.interests,
+        p.occupation,
+        p.education,
+        p.dal_bhat_frequency,
+        p.music_repeat,
+        p.relationship_intent,
+        p.private_corner,
+        p.prompt_answers,
+        u."emailVerified"
+      FROM public.user_profiles p
+      JOIN neon_auth."user" u ON p.user_id = u.id
+      WHERE p.onboarding_completed = true
+        AND (u.banned IS NOT TRUE)
+        AND ($1::uuid IS NULL OR p.user_id <> $1::uuid)
+      ORDER BY p.updated_at DESC
+      LIMIT $2
+    `,
+    values: [excludeUserId || null, limit],
+  });
+
+  return rows.map((r, idx) => {
+    const privateCorner =
+      (typeof r.private_corner === "string"
+        ? JSON.parse(r.private_corner)
+        : r.private_corner) || {};
+    const promptAnswers =
+      (typeof r.prompt_answers === "string"
+        ? JSON.parse(r.prompt_answers)
+        : r.prompt_answers) || {};
+    const promptEntries = Object.entries(promptAnswers);
+
+    // Dhukuti showcase photos + main profile photo
+    const additional = Array.isArray(r.additional_photos)
+      ? r.additional_photos
+      : [];
+    const images: string[] = [r.profile_photo, ...additional].filter(
+      (img): img is string => typeof img === "string" && img.length > 0
+    );
+
+    // Fallback if no images found
+    if (images.length === 0) {
+      images.push(
+        `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(
+          r.first_name || r.auth_name || "Mayalu"
+        )}`
+      );
+    }
+
+    return {
+      id: r.user_id,
+      name: r.first_name || r.auth_name || "Mayalu Member",
+      age: r.age || 25,
+      location: r.location || "Nepal",
+      bio: r.bio || "",
+      images,
+      interests: Array.isArray(r.interests) ? r.interests : [],
+      occupation: r.occupation || undefined,
+      education: r.education || undefined,
+      distance: (idx % 12) + 3,
+      verified: Boolean(
+        r.emailVerified || privateCorner.verificationStatus === "verified"
+      ),
+      dalBhatFrequency: r.dal_bhat_frequency || undefined,
+      musicRepeat: r.music_repeat || undefined,
+      gotra: privateCorner.gotra || undefined,
+      caste: privateCorner.caste || undefined,
+      relationshipIntent: r.relationship_intent || undefined,
+      dietary: privateCorner.dietary || undefined,
+      promptQuestion: promptEntries[0]?.[0] as string | undefined,
+      promptAnswer: promptEntries[0]?.[1] as string | undefined,
+    };
+  });
+}
+

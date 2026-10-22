@@ -128,6 +128,31 @@ export interface SeedMessageItem {
   status?: "delivered" | "read" | "pending";
 }
 
+/**
+ * Candidate Profile for Hallway & Tinder Swipe Deck
+ */
+export interface CandidateProfile {
+  id: string;
+  name: string;
+  age: number;
+  location: string;
+  bio: string;
+  images: string[];
+  interests: string[];
+  occupation?: string;
+  education?: string;
+  distance: number;
+  verified: boolean;
+  dalBhatFrequency?: string;
+  musicRepeat?: string;
+  gotra?: string;
+  caste?: string;
+  relationshipIntent?: string;
+  dietary?: string;
+  promptQuestion?: string;
+  promptAnswer?: string;
+}
+
 /* ==========================================================================
  * 4. RAW & TRANSACTION QUERY OPTIONS
  * ========================================================================== */

@@ -2,158 +2,65 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, Flame, Lock, ShieldCheck, Sparkles, SlidersHorizontal, GitFork } from "lucide-react";
+import { ArrowLeft, Lock, Sparkles, GitFork, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { useUserLevel } from "@/contexts/userContext";
 import { TinderSwipeDeck, type Profile } from "@/components/tinder-swipe-deck";
-import { getDiceBearUrl } from "@/lib/dicebear";
 import { toast } from "sonner";
 import { Neo4jCompatibilityModal } from "@/components/graph/neo4j-compatibility-modal";
 import { recordGraphInteractionAction } from "@/lib/neo4j/neo4j.action";
-
-const mockProfiles: Profile[] = [
-  {
-    id: "1",
-    name: "Aastha",
-    age: 26,
-    location: "San Francisco, CA (Kathmandu)",
-    bio: "UX Designer by day, amateur momo chef by weekend. Always up for misty hikes in Marin and hunting for genuine Nepali chiya spots! 🏔️☕",
-    images: [
-      getDiceBearUrl("Aastha-Nepali", "lorelei"),
-      getDiceBearUrl("Aastha-Trek", "personas"),
-      getDiceBearUrl("Aastha-Chai", "notionists"),
-    ],
-    interests: ["Hiking", "Momo Crawls", "Acoustic Pop", "Photography", "Yoga"],
-    occupation: "UX Designer",
-    education: "Stanford University",
-    distance: 3,
-    verified: true,
-    dalBhatFrequency: "Every single day (Rice is life)",
-    musicRepeat: "Albatross - Kalo Kesh",
-    gotra: "Kashyap",
-    caste: "Brahmin",
-    relationshipIntent: "Long-term relationship",
-    dietary: "Vegetarian",
-    promptQuestion: "The secret to my heart...",
-    promptAnswer: "Properly spiced timur ko jhol achar and a good road-trip playlist.",
-  },
-  {
-    id: "2",
-    name: "Bikram",
-    age: 29,
-    location: "New York, NY (Pokhara)",
-    bio: "Fintech engineer, avid trekker, and rooftop acoustic guitarist. Can cook dal bhat in under 25 minutes. Let's debate old Nepali rock bands! 🎸👨‍🍳",
-    images: [
-      getDiceBearUrl("Bikram-Pokhara", "personas"),
-      getDiceBearUrl("Bikram-Guitar", "adventurer"),
-      getDiceBearUrl("Bikram-Tech", "notionists"),
-    ],
-    interests: ["Guitar", "Annapurna Treks", "Cooking", "Chess", "Indie Rock"],
-    occupation: "Senior Software Engineer",
-    education: "Columbia University",
-    distance: 6,
-    verified: true,
-    dalBhatFrequency: "Twice a day",
-    musicRepeat: "1974 AD - Mayalu",
-    gotra: "Vashistha",
-    caste: "Chhetri",
-    relationshipIntent: "Marriage / Matrimonial",
-    dietary: "Non-Vegetarian",
-    promptQuestion: "Ideal Sunday morning...",
-    promptAnswer: "Reading with black coffee, followed by an impromptu bike ride.",
-  },
-  {
-    id: "3",
-    name: "Pooja",
-    age: 25,
-    location: "Austin, TX (Lalitpur)",
-    bio: "Music producer & podcast host. Deeply in love with traditional Newari architecture, indie music, and street photography. 🎨🎵",
-    images: [
-      getDiceBearUrl("Pooja-Newar", "lorelei"),
-      getDiceBearUrl("Pooja-Music", "personas"),
-      getDiceBearUrl("Pooja-Art", "adventurer"),
-    ],
-    interests: ["Indie Music", "Ceramics", "Concerts", "Street Food", "Dance"],
-    occupation: "Audio Engineer & Producer",
-    education: "UT Austin",
-    distance: 12,
-    verified: false,
-    dalBhatFrequency: "Occasional (Samay Baji fan)",
-    musicRepeat: "Sajjan Raj Vaidya - Hataarindai Bataasindai",
-    gotra: "Open / Skip",
-    caste: "Newar",
-    relationshipIntent: "Dating to explore",
-    dietary: "Foodie / Open",
-    promptQuestion: "A non-negotiable for me...",
-    promptAnswer: "You must be able to laugh at awkward silences and love momos.",
-  },
-  {
-    id: "4",
-    name: "Suman",
-    age: 28,
-    location: "Seattle, WA (Dharan)",
-    bio: "Environmental scientist & amateur trail runner. Weekends are reserved for Mt. Rainier trails and experimenting with homemade hot sauces! 🌲🏃",
-    images: [
-      getDiceBearUrl("Suman-Dharan", "personas"),
-      getDiceBearUrl("Suman-Trail", "adventurer"),
-      getDiceBearUrl("Suman-Coffee", "lorelei"),
-    ],
-    interests: ["Trail Running", "Sustainability", "Documentaries", "Coffee"],
-    occupation: "Environmental Scientist",
-    education: "University of Washington",
-    distance: 5,
-    verified: true,
-    dalBhatFrequency: "Standard (Once a day)",
-    musicRepeat: "Bipul Chettri - Syndicate",
-    gotra: "Bharadwaj",
-    caste: "Rai",
-    relationshipIntent: "Long-term relationship",
-    dietary: "Flexitarian",
-    promptQuestion: "My greatest adventure so far...",
-    promptAnswer: "Solo backpacking across the Langtang Valley after a sudden snowfall.",
-  },
-  {
-    id: "5",
-    name: "Shraddha",
-    age: 27,
-    location: "Toronto, Canada (Bhaktapur)",
-    bio: "Sustainable architect & tea connoisseur. Passionate about revitalizing heritage aesthetics with modern timber design. 🏛️🌿",
-    images: [
-      getDiceBearUrl("Shraddha-Heritage", "lorelei"),
-      getDiceBearUrl("Shraddha-Design", "personas"),
-      getDiceBearUrl("Shraddha-Cafe", "notionists"),
-    ],
-    interests: ["Architecture", "Pottery", "Literature", "Travel", "Plants"],
-    occupation: "Architectural Designer",
-    education: "University of Toronto",
-    distance: 8,
-    verified: true,
-    dalBhatFrequency: "Twice a day",
-    musicRepeat: "Tribal Rain - Bhanai",
-    gotra: "Gautam",
-    caste: "Brahmin",
-    relationshipIntent: "Marriage / Matrimonial",
-    dietary: "Vegetarian",
-    promptQuestion: "We'll get along if...",
-    promptAnswer: "You appreciate thoughtful design, warm conversations, and good tea.",
-  },
-];
+import { getHallwayCandidatesAction } from "@/app/actions/hallway";
 
 export default function HallwayPage() {
   const { userLevel, addXp } = useUserLevel();
   const [mounted, setMounted] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [useMatrimonialMode, setUseMatrimonialMode] = React.useState(false);
-  const [currentProfiles, setCurrentProfiles] = React.useState<Profile[]>(mockProfiles);
+  const [currentProfiles, setCurrentProfiles] = React.useState<Profile[]>([]);
+  const [currentUserId, setCurrentUserId] = React.useState<string>("demo_user_you");
   const [matches, setMatches] = React.useState<string[]>([]);
   const [superLikes, setSuperLikes] = React.useState(3);
   const [showGraphModal, setShowGraphModal] = React.useState(false);
+  const [deckKey, setDeckKey] = React.useState(0);
 
+  // Load candidate profiles from Neon PostgreSQL (seeded & live data)
   React.useEffect(() => {
     setMounted(true);
+    let isSubscribed = true;
+
+    async function fetchProfiles() {
+      setIsLoading(true);
+      try {
+        const res = await getHallwayCandidatesAction();
+        if (isSubscribed) {
+          if (res.success && res.profiles.length > 0) {
+            setCurrentProfiles(res.profiles);
+          } else {
+            setCurrentProfiles([]);
+          }
+          if (res.currentUserId) {
+            setCurrentUserId(res.currentUserId);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load hallway candidates:", err);
+        if (isSubscribed) {
+          toast.error("Could not load candidate Chinos. Please try refreshing.");
+        }
+      } finally {
+        if (isSubscribed) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    fetchProfiles();
+
+    return () => {
+      isSubscribed = false;
+    };
   }, []);
 
   const displayLevel = mounted ? userLevel.level : 1;
@@ -163,7 +70,7 @@ export default function HallwayPage() {
     setMatches((prev) => [...prev, profile.id]);
     addXp(10);
     // Continuous Graph Learning: Record positive affinity in Neo4j Knowledge Graph
-    recordGraphInteractionAction("demo_user_you", profile.id, "like").catch(() => {});
+    recordGraphInteractionAction(currentUserId, profile.id, "like").catch(() => {});
     toast.success(`Subhakamana! 💘 Connected with ${profile.name}!`, {
       description: "Chat unlocked in Kura-Kani.",
     });
@@ -172,7 +79,7 @@ export default function HallwayPage() {
   const handleSwipeLeft = (profile: Profile) => {
     addXp(2);
     // Continuous Graph Learning: Record pass to calibrate dynamic recommendation weights
-    recordGraphInteractionAction("demo_user_you", profile.id, "pass").catch(() => {});
+    recordGraphInteractionAction(currentUserId, profile.id, "pass").catch(() => {});
   };
 
   const handleSuperLike = (profile: Profile) => {
@@ -181,7 +88,7 @@ export default function HallwayPage() {
       setMatches((prev) => [...prev, profile.id]);
       addXp(25);
       // Continuous Graph Learning: High affinity weight boost in Neo4j
-      recordGraphInteractionAction("demo_user_you", profile.id, "superlike").catch(() => {});
+      recordGraphInteractionAction(currentUserId, profile.id, "superlike").catch(() => {});
       toast.success(`Kura-Kani Sparked! 💫 Super Like sent to ${profile.name}!`, {
         description: "Your Chino was placed at the top of their inbox.",
       });
@@ -192,9 +99,22 @@ export default function HallwayPage() {
     }
   };
 
-  const resetStack = () => {
-    setCurrentProfiles([...mockProfiles]);
-    toast.info("Hallway refreshed with candidate Chinos ✨");
+  const resetStack = async () => {
+    setIsLoading(true);
+    try {
+      const res = await getHallwayCandidatesAction();
+      if (res.success && res.profiles.length > 0) {
+        setCurrentProfiles(res.profiles);
+        setDeckKey((k) => k + 1);
+        toast.info("Hallway refreshed with candidate Chinos ✨");
+      } else {
+        toast.info("No candidates available right now.");
+      }
+    } catch {
+      toast.error("Failed to refresh candidate profiles.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -279,16 +199,37 @@ export default function HallwayPage() {
         </div>
       </div>
 
-      {/* DEDICATED TINDER SWIPE DECK */}
+      {/* DEDICATED TINDER SWIPE DECK OR SKELETON */}
       <div className="w-full flex justify-center">
-        <TinderSwipeDeck
-          profiles={currentProfiles}
-          isMatrimonialMode={useMatrimonialMode}
-          onSwipeRight={handleSwipeRight}
-          onSwipeLeft={handleSwipeLeft}
-          onSuperLike={handleSuperLike}
-          onResetStack={resetStack}
-        />
+        {isLoading ? (
+          <div className="w-full max-w-[420px] h-[540px] sm:h-[580px] rounded-3xl border border-border/60 bg-card/70 backdrop-blur-md p-6 flex flex-col justify-end animate-pulse shadow-xl relative overflow-hidden">
+            <div className="absolute top-5 inset-x-5 flex items-center justify-between z-10">
+              <div className="h-6 w-24 rounded-full bg-muted/80" />
+              <div className="h-6 w-16 rounded-full bg-muted/80" />
+            </div>
+            <div className="space-y-3 z-10">
+              <div className="h-8 w-44 rounded-lg bg-muted/80" />
+              <div className="h-4 w-60 rounded-md bg-muted/60" />
+              <div className="h-10 w-full rounded-lg bg-muted/40" />
+              <div className="flex gap-2 pt-1">
+                <div className="h-6 w-20 rounded-md bg-muted/60" />
+                <div className="h-6 w-24 rounded-md bg-muted/60" />
+                <div className="h-6 w-20 rounded-md bg-muted/60" />
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+          </div>
+        ) : (
+          <TinderSwipeDeck
+            key={deckKey}
+            profiles={currentProfiles}
+            isMatrimonialMode={useMatrimonialMode}
+            onSwipeRight={handleSwipeRight}
+            onSwipeLeft={handleSwipeLeft}
+            onSuperLike={handleSuperLike}
+            onResetStack={resetStack}
+          />
+        )}
       </div>
 
       {/* Live Neo4j Graph Inspection Modal */}

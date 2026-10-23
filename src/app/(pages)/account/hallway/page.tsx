@@ -2,129 +2,134 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, Lock, Sparkles, GitFork, RotateCcw } from "lucide-react";
+import {
+  ArrowLeft,
+  Sparkles,
+  GitFork,
+  LayoutList,
+  Layers,
+  Users,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserLevel } from "@/contexts/userContext";
 import { TinderSwipeDeck, type Profile } from "@/components/tinder-swipe-deck";
+import { HallwayScrollFeed } from "@/components/hallway/hallway-scroll-feed";
 import { toast } from "sonner";
 import { Neo4jCompatibilityModal } from "@/components/graph/neo4j-compatibility-modal";
 import { recordGraphInteractionAction } from "@/lib/neo4j/neo4j.action";
 import { getHallwayCandidatesAction } from "@/app/actions/hallway";
+import type { CandidateProfile } from "@/lib/neonDB/types";
 
 export default function HallwayPage() {
   const { userLevel, addXp } = useUserLevel();
   const [mounted, setMounted] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [useMatrimonialMode, setUseMatrimonialMode] = React.useState(false);
-  const [currentProfiles, setCurrentProfiles] = React.useState<Profile[]>([]);
+
+  // View Mode: 'feed' (Instagram/Twitter scroll based - DEFAULT) or 'deck' (Tinder swipe)
+  const [viewMode, setViewMode] = React.useState<"feed" | "deck">("feed");
+
+  // Gender Selection for candidate discovery: 'Female' | 'Male' | 'All'
+  const [selectedGender, setSelectedGender] = React.useState<string>("All");
+
+  const [currentProfiles, setCurrentProfiles] = React.useState<CandidateProfile[]>([]);
   const [currentUserId, setCurrentUserId] = React.useState<string>("demo_user_you");
-  const [matches, setMatches] = React.useState<string[]>([]);
-  const [superLikes, setSuperLikes] = React.useState(3);
+  const [userGender, setUserGender] = React.useState<string | undefined>();
+  const [userInterestedIn, setUserInterestedIn] = React.useState<string | undefined>();
+
+  const [selectedCandidateForGraph, setSelectedCandidateForGraph] = React.useState<CandidateProfile | null>(null);
   const [showGraphModal, setShowGraphModal] = React.useState(false);
   const [deckKey, setDeckKey] = React.useState(0);
 
-  // Load candidate profiles from Neon PostgreSQL (seeded & live data)
-  React.useEffect(() => {
-    setMounted(true);
-    let isSubscribed = true;
-
-    async function fetchProfiles() {
-      setIsLoading(true);
-      try {
-        const res = await getHallwayCandidatesAction();
-        if (isSubscribed) {
-          if (res.success && res.profiles.length > 0) {
-            setCurrentProfiles(res.profiles);
-          } else {
-            setCurrentProfiles([]);
-          }
-          if (res.currentUserId) {
-            setCurrentUserId(res.currentUserId);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to load hallway candidates:", err);
-        if (isSubscribed) {
-          toast.error("Could not load candidate Chinos. Please try refreshing.");
-        }
-      } finally {
-        if (isSubscribed) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    fetchProfiles();
-
-    return () => {
-      isSubscribed = false;
-    };
-  }, []);
-
-  const displayLevel = mounted ? userLevel.level : 1;
-  const displaySuperLikes = mounted ? superLikes : 3;
-
-  const handleSwipeRight = (profile: Profile) => {
-    setMatches((prev) => [...prev, profile.id]);
-    addXp(10);
-    // Continuous Graph Learning: Record positive affinity in Neo4j Knowledge Graph
-    recordGraphInteractionAction(currentUserId, profile.id, "like").catch(() => {});
-    toast.success(`Subhakamana! 💘 Connected with ${profile.name}!`, {
-      description: "Chat unlocked in Kura-Kani.",
-    });
-  };
-
-  const handleSwipeLeft = (profile: Profile) => {
-    addXp(2);
-    // Continuous Graph Learning: Record pass to calibrate dynamic recommendation weights
-    recordGraphInteractionAction(currentUserId, profile.id, "pass").catch(() => {});
-  };
-
-  const handleSuperLike = (profile: Profile) => {
-    if (superLikes > 0) {
-      setSuperLikes((prev) => prev - 1);
-      setMatches((prev) => [...prev, profile.id]);
-      addXp(25);
-      // Continuous Graph Learning: High affinity weight boost in Neo4j
-      recordGraphInteractionAction(currentUserId, profile.id, "superlike").catch(() => {});
-      toast.success(`Kura-Kani Sparked! 💫 Super Like sent to ${profile.name}!`, {
-        description: "Your Chino was placed at the top of their inbox.",
-      });
-    } else {
-      toast.error("No Super Likes remaining today", {
-        description: "Daily super likes reset at midnight.",
-      });
-    }
-  };
-
-  const resetStack = async () => {
+  // Fetch candidate profiles based on active gender filter
+  const fetchProfiles = React.useCallback(async (gender: string) => {
     setIsLoading(true);
     try {
-      const res = await getHallwayCandidatesAction();
-      if (res.success && res.profiles.length > 0) {
+      const res = await getHallwayCandidatesAction(gender);
+      if (res.success) {
         setCurrentProfiles(res.profiles);
-        setDeckKey((k) => k + 1);
-        toast.info("Hallway refreshed with candidate Chinos ✨");
+        if (res.currentUserId) setCurrentUserId(res.currentUserId);
+        if (res.userGender) setUserGender(res.userGender);
+        if (res.userInterestedIn) setUserInterestedIn(res.userInterestedIn);
       } else {
-        toast.info("No candidates available right now.");
+        setCurrentProfiles([]);
       }
-    } catch {
-      toast.error("Failed to refresh candidate profiles.");
+    } catch (err) {
+      console.error("Failed to load hallway candidates:", err);
+      toast.error("Could not load candidate Chinos. Please try refreshing.");
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  // Initial load
+  React.useEffect(() => {
+    setMounted(true);
+    // Initially query with "default" which allows server action to pick user preference or "All"
+    getHallwayCandidatesAction().then((res) => {
+      if (res.success) {
+        setCurrentProfiles(res.profiles);
+        if (res.currentUserId) setCurrentUserId(res.currentUserId);
+        if (res.userGender) setUserGender(res.userGender);
+        if (res.userInterestedIn) {
+          setUserInterestedIn(res.userInterestedIn);
+          if (res.activeGenderFilter) {
+            setSelectedGender(res.activeGenderFilter);
+          }
+        }
+      }
+      setIsLoading(false);
+    }).catch(() => {
+      setIsLoading(false);
+    });
+  }, []);
+
+  // Handle Gender filter tab change
+  const handleGenderChange = (newGender: string) => {
+    setSelectedGender(newGender);
+    setDeckKey((k) => k + 1);
+    fetchProfiles(newGender);
+  };
+
+  const displayLevel = mounted ? userLevel.level : 1;
+
+  const handleOpenGraphModal = (profile: CandidateProfile) => {
+    setSelectedCandidateForGraph(profile);
+    setShowGraphModal(true);
+  };
+
+  const handleLike = (profile: CandidateProfile) => {
+    addXp(10);
+    recordGraphInteractionAction(currentUserId, profile.id, "like").catch(() => {});
+  };
+
+  const handleSuperLike = (profile: CandidateProfile) => {
+    addXp(25);
+    recordGraphInteractionAction(currentUserId, profile.id, "superlike").catch(() => {});
+  };
+
+  const handleSwipeLeft = (profile: CandidateProfile) => {
+    addXp(2);
+    recordGraphInteractionAction(currentUserId, profile.id, "pass").catch(() => {});
+  };
+
+  const resetStack = () => {
+    fetchProfiles(selectedGender);
+    setDeckKey((k) => k + 1);
+    toast.info("Hallway refreshed with candidate Chinos ✨");
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start max-w-lg mx-auto w-full py-2 sm:py-4">
-      {/* Hallway Top Bar */}
-      <div className="w-full flex items-center justify-between mb-3 px-2">
-        <div className="flex items-center gap-2">
+    <div className="flex-1 flex flex-col items-center justify-start max-w-2xl mx-auto w-full py-2 sm:py-5 px-3 sm:px-4">
+      {/* 1. HALLWAY TOP BAR */}
+      <header className="w-full flex items-center justify-between mb-3.5 px-1">
+        <div className="flex items-center gap-2.5">
           <Link
             href="/account/dashboard"
-            className="size-8 rounded-full bg-muted/60 hover:bg-muted border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-transform"
+            className="size-8.5 rounded-full bg-muted/60 hover:bg-muted border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-transform"
             title="Back to Dashboard"
           >
             <ArrowLeft className="size-4" />
@@ -139,105 +144,150 @@ export default function HallwayPage() {
               </Badge>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Review candidate Chinos curated by Maya
+              Explore candidate Chinos powered by Neo4j graph intelligence
             </p>
           </div>
         </div>
 
-        {/* Level / Super Like Pill */}
-        <div className="flex items-center gap-1.5 bg-muted/50 dark:bg-slate-900/40 border border-border/60 px-2.5 py-1 rounded-full text-xs shadow-2xs">
-          <Sparkles className="size-3 text-amber-500" />
-          <span
-            suppressHydrationWarning
-            className="font-semibold text-foreground text-[11px]"
-          >
-            Lvl {displayLevel}
-          </span>
-          <span className="text-muted-foreground text-[10px]">•</span>
-          <span
-            suppressHydrationWarning
-            className="text-violet-500 font-semibold text-[11px]"
-          >
-            {displaySuperLikes} ★
-          </span>
-        </div>
-      </div>
-
-      {/* Mode Switch, Dhukuti Info & Neo4j Graph Button (Compact pill row) */}
-      <div className="w-full flex items-center justify-between gap-2 p-2 rounded-2xl bg-card/60 backdrop-blur-md border border-border/50 shadow-2xs mb-3 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-medium text-muted-foreground">Mode:</span>
-          <div className="flex items-center gap-1.5">
-            <Switch
-              id="mode-toggle"
-              checked={useMatrimonialMode}
-              onCheckedChange={setUseMatrimonialMode}
-              className="scale-90"
-            />
-            <Label htmlFor="mode-toggle" className="text-xs font-semibold cursor-pointer">
-              {useMatrimonialMode ? "💍 Matrimonial" : "🔥 Dating"}
-            </Label>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
+        {/* View Mode Toggle (Feed Scroll vs Tinder Deck) */}
+        <div className="flex items-center gap-1 bg-muted/60 dark:bg-slate-900/60 p-1 rounded-2xl border border-border/50 shadow-2xs">
           <button
             type="button"
-            onClick={() => setShowGraphModal(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 text-violet-500 border border-violet-500/25 text-[11px] font-semibold transition-all cursor-pointer active:scale-95"
-            title="Inspect Neo4j compatibility topology"
+            onClick={() => setViewMode("feed")}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
+              viewMode === "feed"
+                ? "bg-background text-foreground shadow-2xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            title="Scroll Feed (Instagram/Twitter style)"
           >
-            <GitFork className="size-3 text-violet-500" />
-            <span className="hidden sm:inline">Neo4j</span>
-            <span>Graph</span>
+            <LayoutList className="size-3.5" />
+            <span className="hidden sm:inline">Feed</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("deck")}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
+              viewMode === "deck"
+                ? "bg-background text-foreground shadow-2xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            title="Swipe Deck (Tinder card style)"
+          >
+            <Layers className="size-3.5" />
+            <span className="hidden sm:inline">Swipe</span>
+          </button>
+        </div>
+      </header>
 
-          <div className="hidden xs:flex items-center gap-1 text-[10px] text-muted-foreground">
-            <Lock className="size-3 text-rose-500 shrink-0" />
-            <span>Dhukuti 🔒</span>
+      {/* 2. GENDER SELECTION & DISCOVERY CONTROLS */}
+      <section className="w-full flex flex-col gap-2.5 p-3 rounded-3xl bg-card/70 backdrop-blur-md border border-border/60 shadow-2xs mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          {/* Gender Selector: Women / Men / Everyone */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0 flex items-center gap-1">
+              <Users className="size-3 text-rose-500" />
+              Seeking:
+            </span>
+            <Tabs
+              value={selectedGender}
+              onValueChange={handleGenderChange}
+              className="w-full sm:w-auto"
+            >
+              <TabsList className="bg-muted/70 p-0.5 rounded-xl h-8">
+                <TabsTrigger
+                  value="Female"
+                  className="text-xs px-3 py-1 rounded-lg font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-2xs active:scale-95 transition-transform"
+                >
+                  👩 Women
+                </TabsTrigger>
+                <TabsTrigger
+                  value="Male"
+                  className="text-xs px-3 py-1 rounded-lg font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-2xs active:scale-95 transition-transform"
+                >
+                  👨 Men
+                </TabsTrigger>
+                <TabsTrigger
+                  value="All"
+                  className="text-xs px-3 py-1 rounded-lg font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-2xs active:scale-95 transition-transform"
+                >
+                  ✨ All (सबै)
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          {/* Mode & Neo4j Graph Button */}
+          <div className="flex items-center justify-between sm:justify-end gap-3 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/40">
+            {/* Matrimonial / Dating Switch */}
+            <div className="flex items-center gap-1.5">
+              <Switch
+                id="mode-toggle"
+                checked={useMatrimonialMode}
+                onCheckedChange={setUseMatrimonialMode}
+                className="scale-85"
+              />
+              <Label htmlFor="mode-toggle" className="text-xs font-semibold cursor-pointer">
+                {useMatrimonialMode ? "💍 Matrimonial" : "🔥 Dating"}
+              </Label>
+            </div>
+
+            {/* Neo4j Graph Topology Trigger */}
+            <button
+              type="button"
+              onClick={() => {
+                if (currentProfiles.length > 0) {
+                  setSelectedCandidateForGraph(currentProfiles[0]);
+                }
+                setShowGraphModal(true);
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/25 text-[11px] font-semibold transition-all cursor-pointer active:scale-95"
+              title="Inspect Neo4j compatibility topology"
+            >
+              <GitFork className="size-3 text-violet-500" />
+              <span>Neo4j Topology</span>
+            </button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* DEDICATED TINDER SWIPE DECK OR SKELETON */}
-      <div className="w-full flex justify-center">
-        {isLoading ? (
-          <div className="w-full max-w-[420px] h-[540px] sm:h-[580px] rounded-3xl border border-border/60 bg-card/70 backdrop-blur-md p-6 flex flex-col justify-end animate-pulse shadow-xl relative overflow-hidden">
-            <div className="absolute top-5 inset-x-5 flex items-center justify-between z-10">
-              <div className="h-6 w-24 rounded-full bg-muted/80" />
-              <div className="h-6 w-16 rounded-full bg-muted/80" />
-            </div>
-            <div className="space-y-3 z-10">
-              <div className="h-8 w-44 rounded-lg bg-muted/80" />
-              <div className="h-4 w-60 rounded-md bg-muted/60" />
-              <div className="h-10 w-full rounded-lg bg-muted/40" />
-              <div className="flex gap-2 pt-1">
-                <div className="h-6 w-20 rounded-md bg-muted/60" />
-                <div className="h-6 w-24 rounded-md bg-muted/60" />
-                <div className="h-6 w-20 rounded-md bg-muted/60" />
-              </div>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-          </div>
-        ) : (
-          <TinderSwipeDeck
-            key={deckKey}
+      {/* 3. MAIN HALLWAY DISPLAY (Feed Scroll or Swipe Deck) */}
+      <main className="w-full flex justify-center">
+        {viewMode === "feed" ? (
+          /* INSTAGRAM / TWITTER VERTICAL SCROLL FEED */
+          <HallwayScrollFeed
             profiles={currentProfiles}
+            currentUserId={currentUserId}
+            isLoading={isLoading}
             isMatrimonialMode={useMatrimonialMode}
-            onSwipeRight={handleSwipeRight}
-            onSwipeLeft={handleSwipeLeft}
+            onOpenGraphModal={handleOpenGraphModal}
+            onRefreshFeed={() => fetchProfiles(selectedGender)}
+            onLike={handleLike}
             onSuperLike={handleSuperLike}
-            onResetStack={resetStack}
+            selectedGenderFilter={selectedGender}
           />
+        ) : (
+          /* TINDER SWIPE DECK VIEW */
+          <div className="w-full flex justify-center">
+            <TinderSwipeDeck
+              key={deckKey}
+              profiles={currentProfiles as Profile[]}
+              isMatrimonialMode={useMatrimonialMode}
+              onSwipeRight={handleLike}
+              onSwipeLeft={handleSwipeLeft}
+              onSuperLike={handleSuperLike}
+              onResetStack={resetStack}
+            />
+          </div>
         )}
-      </div>
+      </main>
 
-      {/* Live Neo4j Graph Inspection Modal */}
+      {/* 4. NEO4J COMPATIBILITY GRAPH MODAL */}
       <Neo4jCompatibilityModal
         open={showGraphModal}
         onOpenChange={setShowGraphModal}
-        candidateName={currentProfiles[0]?.name || "Your Match"}
-        candidateId={currentProfiles[0]?.id || "demo_user_match"}
+        candidateName={selectedCandidateForGraph?.name || currentProfiles[0]?.name || "Your Match"}
+        candidateId={selectedCandidateForGraph?.id || currentProfiles[0]?.id || "demo_user_match"}
       />
     </div>
   );

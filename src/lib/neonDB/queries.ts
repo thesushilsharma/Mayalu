@@ -728,6 +728,7 @@ export async function seedMessagesTx(
  */
 export async function findHallwayCandidateProfiles(
   excludeUserId?: string,
+  genderFilter?: string | null,
   limit: number = 50
 ): Promise<CandidateProfile[]> {
   const rows = await query<{
@@ -736,6 +737,7 @@ export async function findHallwayCandidateProfiles(
     auth_name: string | null;
     email: string | null;
     age: number | null;
+    gender: string | null;
     location: string | null;
     bio: string | null;
     profile_photo: string | null;
@@ -757,6 +759,7 @@ export async function findHallwayCandidateProfiles(
         u.name AS auth_name,
         u.email,
         p.age,
+        p.gender,
         p.location,
         p.bio,
         p.profile_photo,
@@ -775,10 +778,17 @@ export async function findHallwayCandidateProfiles(
       WHERE p.onboarding_completed = true
         AND (u.banned IS NOT TRUE)
         AND ($1::uuid IS NULL OR p.user_id <> $1::uuid)
+        AND (
+          $2::text IS NULL 
+          OR $2 = 'All' 
+          OR LOWER(p.gender) = LOWER($2)
+          OR ($2 = 'Female' AND LOWER(p.gender) LIKE '%female%')
+          OR ($2 = 'Male' AND LOWER(p.gender) LIKE '%male%' AND LOWER(p.gender) NOT LIKE '%female%')
+        )
       ORDER BY p.updated_at DESC
-      LIMIT $2
+      LIMIT $3
     `,
-    values: [excludeUserId || null, limit],
+    values: [excludeUserId || null, genderFilter || null, limit],
   });
 
   return rows.map((r, idx) => {
@@ -813,6 +823,7 @@ export async function findHallwayCandidateProfiles(
       id: r.user_id,
       name: r.first_name || r.auth_name || "Mayalu Member",
       age: r.age || 25,
+      gender: r.gender || undefined,
       location: r.location || "Nepal",
       bio: r.bio || "",
       images,

@@ -135,6 +135,7 @@ export interface CandidateProfile {
   id: string;
   name: string;
   age: number;
+  gender?: string;
   location: string;
   bio: string;
   images: string[];
@@ -151,6 +152,11 @@ export interface CandidateProfile {
   dietary?: string;
   promptQuestion?: string;
   promptAnswer?: string;
+  // Neo4j Knowledge Graph intelligence
+  neo4jHarmonyScore?: number;
+  sharedInterests?: string[];
+  sharedClusters?: string[];
+  zeroAccidentalMismatches?: boolean;
 }
 
 /* ==========================================================================

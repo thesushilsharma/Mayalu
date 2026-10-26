@@ -167,6 +167,8 @@ export interface CandidateProfile {
   sharedInterests?: string[];
   sharedClusters?: string[];
   zeroAccidentalMismatches?: boolean;
+  isMutualMatch?: boolean;
+  hasCandidateLikedYou?: boolean;
 }
 
 /* ==========================================================================

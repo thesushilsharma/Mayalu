@@ -1,4 +1,4 @@
-import { executeCypher, DEFAULT_NEO4J_DATABASE } from "./client";
+import { executeCypher } from "./client";
 
 export interface GraphNode {
   id: string;
@@ -46,13 +46,77 @@ export const DEMO_FALLBACK_GRAPH: CompatibilityGraphData = {
   user1: { id: "demo_user_you", name: "You", label: "You" },
   user2: { id: "demo_user_match", name: "Ananya", label: "Your Match" },
   nodes: [
-    { id: "u1", label: "You", category: "user", x: 16, y: 50, color: "#F43F5E" },
-    { id: "u2", label: "Your Match", category: "user", x: 84, y: 50, color: "#8B5CF6" },
-    { id: "i1", label: "Himalayan Treks", category: "interest", group: "Outdoors & Adventure", x: 38, y: 20, color: "#10B981", weight1: 0.95, weight2: 0.98 },
-    { id: "i2", label: "Specialty Coffee", category: "interest", group: "Culinary & Chai", x: 50, y: 50, color: "#F59E0B", weight1: 0.90, weight2: 0.92 },
-    { id: "i3", label: "Indie Cinema", category: "interest", group: "Arts & Culture", x: 38, y: 80, color: "#3B82F6", weight1: 0.88, weight2: 0.85 },
-    { id: "v1", label: "Mutual Empathy", category: "value", group: "Emotional", x: 62, y: 25, color: "#EC4899", weight1: 0.96, weight2: 0.95 },
-    { id: "v2", label: "Shared Growth", category: "value", group: "Philosophical", x: 62, y: 75, color: "#6366F1", weight1: 0.94, weight2: 0.96 },
+    {
+      id: "u1",
+      label: "You",
+      category: "user",
+      x: 16,
+      y: 50,
+      color: "#F43F5E",
+    },
+    {
+      id: "u2",
+      label: "Your Match",
+      category: "user",
+      x: 84,
+      y: 50,
+      color: "#8B5CF6",
+    },
+    {
+      id: "i1",
+      label: "Himalayan Treks",
+      category: "interest",
+      group: "Outdoors & Adventure",
+      x: 38,
+      y: 20,
+      color: "#10B981",
+      weight1: 0.95,
+      weight2: 0.98,
+    },
+    {
+      id: "i2",
+      label: "Specialty Coffee",
+      category: "interest",
+      group: "Culinary & Chai",
+      x: 50,
+      y: 50,
+      color: "#F59E0B",
+      weight1: 0.9,
+      weight2: 0.92,
+    },
+    {
+      id: "i3",
+      label: "Indie Cinema",
+      category: "interest",
+      group: "Arts & Culture",
+      x: 38,
+      y: 80,
+      color: "#3B82F6",
+      weight1: 0.88,
+      weight2: 0.85,
+    },
+    {
+      id: "v1",
+      label: "Mutual Empathy",
+      category: "value",
+      group: "Emotional",
+      x: 62,
+      y: 25,
+      color: "#EC4899",
+      weight1: 0.96,
+      weight2: 0.95,
+    },
+    {
+      id: "v2",
+      label: "Shared Growth",
+      category: "value",
+      group: "Philosophical",
+      x: 62,
+      y: 75,
+      color: "#6366F1",
+      weight1: 0.94,
+      weight2: 0.96,
+    },
   ],
   edges: [
     { from: "u1", to: "i1", weight: 95 },
@@ -80,7 +144,7 @@ export const DEMO_FALLBACK_GRAPH: CompatibilityGraphData = {
  */
 export async function getCompatibilityGraph(
   userId1: string = "demo_user_you",
-  userId2: string = "demo_user_match"
+  userId2: string = "demo_user_match",
 ): Promise<CompatibilityGraphData> {
   const query = `
     CYPHER 25
@@ -283,7 +347,8 @@ export async function getCompatibilityGraph(
       sharedValuesCount: (row.sharedValues || []).length,
       sharedLifestylesCount: (row.sharedLifestyles || []).length,
       zeroAccidentalMismatches: zeroDealbreakers,
-      graphLearningEvents: Number(row.chatCount || 0) + Number(row.swipedRight || 0),
+      graphLearningEvents:
+        Number(row.chatCount || 0) + Number(row.swipedRight || 0),
       source: "neo4j_live",
     };
   } catch (error) {
@@ -298,7 +363,7 @@ export async function getCompatibilityGraph(
  */
 export async function recalculateDynamicHarmony(
   userId1: string = "demo_user_you",
-  userId2: string = "demo_user_match"
+  userId2: string = "demo_user_match",
 ): Promise<{ harmonyScore: number; delta: number; updatedAt: string }> {
   try {
     // Generate subtle dynamic learning variation (e.g. 96.1% to 98.8%)
@@ -347,7 +412,7 @@ export async function recordGraphInteraction(
   swiperId: string,
   targetId: string,
   action: "like" | "pass" | "superlike" | "chat",
-  details?: Record<string, any>
+  details?: Record<string, any>,
 ) {
   try {
     if (action === "like") {
@@ -444,7 +509,7 @@ export async function syncUserProfileToNeo4j(profile: {
 export async function augmentCandidatesWithNeo4j(
   currentUserId: string,
   currentUserInterests: string[] = [],
-  candidates: any[]
+  candidates: any[],
 ): Promise<any[]> {
   if (!candidates || candidates.length === 0) return [];
 
@@ -457,13 +522,22 @@ export async function augmentCandidatesWithNeo4j(
       UNWIND $candidates AS candidate
       OPTIONAL MATCH (u2:User {userId: candidate.id})
       
+      // Match status in Neo4j
+      OPTIONAL MATCH (activeUser)-[m:MATCHED_WITH]-(u2)
+      OPTIONAL MATCH (u2)-[sw:SWIPED_RIGHT]->(activeUser)
+
       // Common passionate interests
       OPTIONAL MATCH (activeUser)-[r1:PASSIONATE_ABOUT]->(i:Interest)<-[r2:PASSIONATE_ABOUT]-(u2)
-      WITH candidate, collect(DISTINCT i.name) AS neoSharedInterests
+      WITH candidate, 
+           collect(DISTINCT i.name) AS neoSharedInterests,
+           (m IS NOT NULL) AS isMutualMatch,
+           (sw IS NOT NULL) AS hasCandidateLikedYou
       
       RETURN 
         candidate.id AS id,
-        neoSharedInterests
+        neoSharedInterests,
+        isMutualMatch,
+        hasCandidateLikedYou
     `;
 
     const result = await executeCypher(query, {
@@ -471,17 +545,30 @@ export async function augmentCandidatesWithNeo4j(
       candidates: candidateIds.map((id) => ({ id })),
     }).catch(() => null);
 
-    const neoMap = new Map<string, { sharedInterests: string[] }>();
+    const neoMap = new Map<
+      string,
+      {
+        sharedInterests: string[];
+        isMutualMatch: boolean;
+        hasCandidateLikedYou: boolean;
+      }
+    >();
     if (result && result.records) {
       for (const rec of result.records) {
         const id = rec.get("id");
         const shared = rec.get("neoSharedInterests") || [];
-        neoMap.set(id, { sharedInterests: shared.filter(Boolean) });
+        const isMutualMatch = Boolean(rec.get("isMutualMatch"));
+        const hasCandidateLikedYou = Boolean(rec.get("hasCandidateLikedYou"));
+        neoMap.set(id, {
+          sharedInterests: shared.filter(Boolean),
+          isMutualMatch,
+          hasCandidateLikedYou,
+        });
       }
     }
 
     const userInterestSet = new Set(
-      currentUserInterests.map((s) => s.toLowerCase().trim())
+      currentUserInterests.map((s) => s.toLowerCase().trim()),
     );
 
     return candidates.map((cand, idx) => {
@@ -491,20 +578,35 @@ export async function augmentCandidatesWithNeo4j(
       // If Neo4j didn't have explicit edges yet for this user, compute overlapping clusters
       if (shared.length === 0 && Array.isArray(cand.interests)) {
         shared = cand.interests.filter((ci: string) =>
-          userInterestSet.has(ci.toLowerCase().trim())
+          userInterestSet.has(ci.toLowerCase().trim()),
         );
       }
 
       // If still 0 (e.g. user hasn't set interests or new candidate), provide curated Himalayan bridge anchors
       if (shared.length === 0) {
-        const defaultClusters = ["Himalayan Treks", "Specialty Coffee", "Morning Chiya"];
+        const defaultClusters = [
+          "Himalayan Treks",
+          "Specialty Coffee",
+          "Morning Chiya",
+        ];
         shared = [defaultClusters[idx % defaultClusters.length]];
       }
 
       // Deterministic, realistic high-dimension harmony score (94.0% - 98.8%)
-      const idHash = cand.id.split("").reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0);
+      const idHash = cand.id
+        .split("")
+        .reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0);
       const bonus = (idHash % 28) / 10;
-      const harmony = Math.min(98.8, +(94.0 + shared.length * 0.8 + bonus).toFixed(1));
+      const harmony = Math.min(
+        98.8,
+        +(94.0 + shared.length * 0.8 + bonus).toFixed(1),
+      );
+
+      // Mutual match resolution: if Neo4j has MATCHED_WITH, or Priya Sharma seeded match
+      const isPriya = cand.name?.toLowerCase().includes("priya");
+      const isMutualMatch = fromNeo?.isMutualMatch ?? isPriya ?? false;
+      const hasCandidateLikedYou =
+        fromNeo?.hasCandidateLikedYou ?? isPriya ?? false;
 
       return {
         ...cand,
@@ -512,19 +614,37 @@ export async function augmentCandidatesWithNeo4j(
         sharedInterests: shared,
         sharedClusters: shared,
         zeroAccidentalMismatches: true,
+        isMutualMatch,
+        hasCandidateLikedYou,
       };
     });
   } catch (err) {
-    console.warn("Neo4j candidate augmentation fallback to localized graph computation:", err);
+    console.warn(
+      "Neo4j candidate augmentation fallback to localized graph computation:",
+      err,
+    );
     return candidates.map((cand, idx) => {
-      const defaultClusters = ["Himalayan Treks", "Specialty Coffee", "Morning Chiya"];
+      const defaultClusters = [
+        "Himalayan Treks",
+        "Specialty Coffee",
+        "Morning Chiya",
+      ];
       const shared = (cand.interests || []).slice(0, 3);
+      const isPriya = cand.name?.toLowerCase().includes("priya");
       return {
         ...cand,
         neo4jHarmonyScore: +(95.0 + (idx % 4) * 0.9).toFixed(1),
-        sharedInterests: shared.length > 0 ? shared : [defaultClusters[idx % defaultClusters.length]],
-        sharedClusters: shared.length > 0 ? shared : [defaultClusters[idx % defaultClusters.length]],
+        sharedInterests:
+          shared.length > 0
+            ? shared
+            : [defaultClusters[idx % defaultClusters.length]],
+        sharedClusters:
+          shared.length > 0
+            ? shared
+            : [defaultClusters[idx % defaultClusters.length]],
         zeroAccidentalMismatches: true,
+        isMutualMatch: isPriya ?? false,
+        hasCandidateLikedYou: isPriya ?? false,
       };
     });
   }

@@ -50,10 +50,26 @@ export function HallwayPostCard({
   const [isSuperLiked, setIsSuperLiked] = React.useState(false);
   const [isSaved, setIsSaved] = React.useState(false);
   const [showHeartPop, setShowHeartPop] = React.useState(false);
-  const [isManuallyUnblurred, setIsManuallyUnblurred] = React.useState(false);
 
-  // Photos are protected and frosted in Dhukuti until connected (Like / Super Like) or manually unblurred
-  const isPhotoRevealed = isLiked || isSuperLiked || isManuallyUnblurred;
+  // The Mutual Unblur Protocol:
+  // "Nobody sees your face until you both say yes.
+  // Your portrait remains softly frosted and sealed inside our digital Dhukuti until both of you tap 💘.
+  // Then, and only then, does your photo unblur exclusively for the two of you."
+  const [candidateHasSaidYes, setCandidateHasSaidYes] = React.useState<boolean>(
+    Boolean(profile.isMutualMatch || profile.hasCandidateLikedYou),
+  );
+  const [isResealedInDhukuti, setIsResealedInDhukuti] =
+    React.useState<boolean>(false);
+
+  // User has said yes (tapped connect or superlike)
+  const userHasSaidYes = isLiked || isSuperLiked;
+
+  // It's a match when BOTH connect yes (or if profile is already an established mutual match)
+  const isMutualMatch =
+    (userHasSaidYes || Boolean(profile.isMutualMatch)) && candidateHasSaidYes;
+
+  // ONLY unblur if both connect yes (it's a match), and not explicitly re-sealed
+  const isPhotoRevealed = Boolean(isMutualMatch && !isResealedInDhukuti);
 
   // Dedicated public DiceBear avatar URL
   const candidateAvatar =
@@ -97,19 +113,31 @@ export function HallwayPostCard({
   const triggerLike = () => {
     if (!isLiked) {
       setIsLiked(true);
-      setIsManuallyUnblurred(true);
+      setIsResealedInDhukuti(false);
       onLike?.(profile);
       recordGraphInteractionAction(currentUserId, profile.id, "like").catch(
         () => {},
       );
-      toast.success(`Connected with ${profile.name}! 💘`, {
-        description:
-          "Shared affinity recorded in Neo4j • Dhukuti unblurred! 🔓",
-      });
+
+      if (candidateHasSaidYes) {
+        // Both say yes! It's a match!
+        toast.success(`It's a Match with ${profile.name}! 💘`, {
+          description:
+            "Both of you said yes — Dhukuti unblurred exclusively for the two of you! 🔓",
+        });
+      } else {
+        // Only one side has connected yes
+        toast.info(`You said yes to ${profile.name}! 💘`, {
+          description:
+            "Portrait remains sealed in Dhukuti until both connect yes (Mutual Match Required).",
+        });
+      }
     } else {
       setIsLiked(false);
-      setIsManuallyUnblurred(false);
-      toast.info(`Unliked ${profile.name} • Re-sealed in Dhukuti 🔒`);
+      setIsSuperLiked(false);
+      toast.info(
+        `Connection withdrawn • ${profile.name} re-sealed in Dhukuti 🔒`,
+      );
     }
   };
 
@@ -117,16 +145,63 @@ export function HallwayPostCard({
     if (!isSuperLiked) {
       setIsSuperLiked(true);
       setIsLiked(true);
-      setIsManuallyUnblurred(true);
+      setIsResealedInDhukuti(false);
       onSuperLike?.(profile);
       recordGraphInteractionAction(
         currentUserId,
         profile.id,
         "superlike",
       ).catch(() => {});
-      toast.success(`Kura-Kani Sparked with ${profile.name}! 💫`, {
+
+      if (candidateHasSaidYes) {
+        toast.success(
+          `It's a Match! 💫 Kura-Kani Sparked with ${profile.name}!`,
+          {
+            description:
+              "Both of you said yes — Dhukuti unlocked exclusively for the two of you! 🔓",
+          },
+        );
+      } else {
+        toast.info(`High Priority Spark sent to ${profile.name}! 💫`, {
+          description:
+            "Dhukuti keeps portrait frosted until both of you connect yes.",
+        });
+      }
+    }
+  };
+
+  const triggerSimulateCandidateYes = () => {
+    setCandidateHasSaidYes(true);
+    setIsLiked(true);
+    setIsResealedInDhukuti(false);
+    onLike?.(profile);
+    recordGraphInteractionAction(currentUserId, profile.id, "like").catch(
+      () => {},
+    );
+    setShowHeartPop(true);
+    setTimeout(() => setShowHeartPop(false), 900);
+    toast.success(`It's a Match with ${profile.name}! 💘`, {
+      description:
+        "Both of you tapped yes! Dhukuti unblurred exclusively for the two of you. 🔓",
+    });
+  };
+
+  const toggleDhukutiSeal = () => {
+    if (isMutualMatch) {
+      setIsResealedInDhukuti((prev) => !prev);
+      toast.info(
+        !isResealedInDhukuti
+          ? `Portrait re-sealed in Dhukuti for privacy 🔒`
+          : `Dhukuti unlocked • Mutual match restored 🔓`,
+      );
+    } else if (userHasSaidYes) {
+      toast.info("The Mutual Unblur Protocol 🔒", {
+        description: `Waiting for ${profile.name} to tap yes back. Nobody sees your face until you both say yes!`,
+      });
+    } else {
+      toast.info("The Mutual Unblur Protocol 🔒", {
         description:
-          "High topological priority assigned in Neo4j • Dhukuti unlocked! 🔓",
+          "Your portrait remains softly frosted in Dhukuti until both of you tap 💘.",
       });
     }
   };
@@ -264,79 +339,144 @@ export function HallwayPostCard({
           )}
         </AnimatePresence>
 
-        {/* Dhukuti Frosted Glass Privacy Overlay (Sealed by Default) */}
+        {/* The Mutual Unblur Protocol Overlay (Softly frosted in Dhukuti until BOTH connect yes) */}
         {!isPhotoRevealed && (
-          <div className="absolute inset-0 bg-background/25 dark:bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center z-15 select-none pointer-events-auto">
+          <div className="absolute inset-0 bg-background/30 dark:bg-black/50 backdrop-blur-[3px] flex flex-col items-center justify-center p-5 text-center z-15 select-none pointer-events-auto">
             <motion.div
               initial={{ scale: 0.92, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-              className="flex flex-col items-center max-w-[280px] p-5 rounded-3xl bg-card/90 dark:bg-card/95 backdrop-blur-2xl border border-black/[0.08] dark:border-white/[0.12] shadow-2xl space-y-3"
+              className="flex flex-col items-center max-w-[320px] p-5 sm:p-6 rounded-3xl bg-card/92 dark:bg-card/95 backdrop-blur-2xl border border-black/[0.08] dark:border-white/[0.12] shadow-2xl space-y-3.5"
             >
+              {/* Protocol Badge */}
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 dark:text-rose-400 text-[10px] font-bold tracking-wide uppercase">
+                <Lock className="size-3 shrink-0" />
+                <span>The Mutual Unblur Protocol</span>
+                <span className="text-muted-foreground/60">•</span>
+                <span>ढुकुटी 🔒</span>
+              </div>
+
+              {/* Glowing Privacy Vault Icon */}
               <div className="relative">
-                <div className="size-13 rounded-2xl bg-gradient-to-br from-rose-500/20 via-pink-500/15 to-violet-500/20 border border-rose-500/30 flex items-center justify-center shadow-inner">
-                  <Lock className="size-6 text-rose-500" />
+                <div
+                  className={cn(
+                    "size-14 rounded-2xl border flex items-center justify-center shadow-inner transition-colors duration-300",
+                    userHasSaidYes
+                      ? "bg-gradient-to-br from-amber-500/20 via-pink-500/15 to-rose-500/20 border-amber-500/40"
+                      : "bg-gradient-to-br from-rose-500/20 via-pink-500/15 to-violet-500/20 border-rose-500/30",
+                  )}
+                >
+                  {userHasSaidYes ? (
+                    <Heart className="size-7 text-rose-500 fill-rose-500 animate-pulse" />
+                  ) : (
+                    <Lock className="size-7 text-rose-500" />
+                  )}
                 </div>
-                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500" />
+                <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                  <span
+                    className={cn(
+                      "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+                      userHasSaidYes ? "bg-amber-400" : "bg-rose-400",
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "relative inline-flex rounded-full h-3.5 w-3.5",
+                      userHasSaidYes ? "bg-amber-500" : "bg-rose-500",
+                    )}
+                  />
                 </span>
               </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center justify-center gap-1.5">
-                  <span className="text-sm font-bold text-foreground tracking-tight apple-headline">
-                    Photo Sealed in Dhukuti
-                  </span>
-                  <Badge
-                    variant="secondary"
-                    className="text-[9px] px-1.5 py-0 font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border-0 normal-case tracking-normal"
-                  >
-                    ढुकुटी 🔒
-                  </Badge>
-                </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Dhukuti Privacy Vault guards authentic member photos. Tap 💘
-                  to connect and unblur {profile.name}&apos;s photos.
+              {/* Protocol Headline & Copy */}
+              <div className="space-y-1.5">
+                <h4 className="text-base font-bold text-foreground tracking-tight apple-headline leading-snug">
+                  {userHasSaidYes
+                    ? "You said yes! 💘"
+                    : "Nobody sees your face until you both say yes"}
+                </h4>
+                <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
+                  {userHasSaidYes
+                    ? `Connection sent to ${profile.name}. Photos remain sealed inside Dhukuti until ${profile.name} connects back. Dhukuti only unlocks when it's a mutual match!`
+                    : `Your portrait remains softly frosted and sealed inside our digital Dhukuti until both of you tap 💘. Then, and only then, does your photo unblur exclusively for the two of you.`}
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  triggerLike();
-                  setShowHeartPop(true);
-                  setTimeout(() => setShowHeartPop(false), 900);
-                }}
-                className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-rose-500 via-pink-600 to-rose-600 text-white font-semibold text-xs shadow-md shadow-rose-500/25 hover:shadow-rose-500/40 active:scale-[0.97] transition-transform duration-100 ease-out flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation"
-              >
-                <Heart className="size-3.5 fill-white text-white" />
-                <span>Connect 💘 to Reveal</span>
-              </button>
+              {/* Action Buttons */}
+              <div className="w-full space-y-2 pt-1">
+                {!userHasSaidYes ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      triggerLike();
+                      setShowHeartPop(true);
+                      setTimeout(() => setShowHeartPop(false), 900);
+                    }}
+                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-500 via-pink-600 to-rose-600 hover:from-rose-600 hover:to-pink-700 text-white font-semibold text-xs shadow-md shadow-rose-500/25 hover:shadow-rose-500/40 active:scale-[0.97] transition-all duration-100 ease-out flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation"
+                  >
+                    <Heart className="size-4 fill-white text-white" />
+                    <span>Connect 💘 (Say Yes)</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        triggerSimulateCandidateYes();
+                      }}
+                      className="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold text-xs shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/40 active:scale-[0.97] transition-all duration-100 ease-out flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation"
+                    >
+                      <Sparkles className="size-4 fill-white text-white" />
+                      <span>
+                        Simulate {profile.name}&apos;s Yes (It&apos;s a Match!
+                        💘)
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        triggerLike();
+                      }}
+                      className="text-[11px] text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors cursor-pointer block mx-auto pt-0.5"
+                    >
+                      Withdraw Connection Request
+                    </button>
+                  </>
+                )}
+              </div>
             </motion.div>
           </div>
         )}
 
-        {/* Unlocked status pill in top left */}
+        {/* Top Left: Mutual Match Celebratory Pill */}
         {isPhotoRevealed && (
           <motion.div
             initial={{ opacity: 0, y: -6, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/90 text-white text-[11px] font-semibold backdrop-blur-md shadow-md shadow-emerald-500/20 pointer-events-none"
+            transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+            className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white text-[11px] font-bold shadow-lg shadow-emerald-500/25 pointer-events-none"
           >
-            <Sparkles className="size-3 fill-white" />
-            <span>Dhukuti Unlocked 🔓</span>
+            <Sparkles className="size-3.5 fill-white" />
+            <span>Mutual Match! 💘 Unlocked via Dhukuti 🔓</span>
           </motion.div>
         )}
 
-        {/* Dhukuti Photo Indicator Pill (Top Right) */}
+        {/* Top Right: Status & Photo Counter Indicator */}
         <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-medium border border-white/10 shadow-sm pointer-events-none tabular-nums">
           {isPhotoRevealed ? (
             <>
               <Sparkles className="size-3 text-emerald-400" />
-              <span className="text-emerald-300">Unlocked</span>
+              <span className="text-emerald-300 font-semibold">
+                It&apos;s a Match 🔓
+              </span>
+            </>
+          ) : userHasSaidYes ? (
+            <>
+              <span className="text-amber-400">⏳</span>
+              <span className="text-amber-300">Pending Match</span>
             </>
           ) : (
             <>
@@ -442,23 +582,20 @@ export function HallwayPostCard({
           {/* Dhukuti Seal / Unblur Toggle Button */}
           <button
             type="button"
-            onClick={() => {
-              setIsManuallyUnblurred((prev) => !prev);
-              toast.info(
-                !isPhotoRevealed
-                  ? `Dhukuti unsealed for ${profile.name} 🔓`
-                  : `Photo re-sealed in Dhukuti 🔒`,
-              );
-            }}
+            onClick={toggleDhukutiSeal}
             className={`flex items-center justify-center size-9 rounded-full transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.97] touch-manipulation select-none ${
               isPhotoRevealed
                 ? "text-emerald-500 hover:bg-emerald-500/10"
-                : "text-rose-500 hover:bg-rose-500/10"
+                : userHasSaidYes
+                  ? "text-amber-500 hover:bg-amber-500/10"
+                  : "text-rose-500 hover:bg-rose-500/10"
             }`}
             title={
               isPhotoRevealed
                 ? "Re-seal in Dhukuti (Blur)"
-                : "Unblur Dhukuti Photo"
+                : userHasSaidYes
+                  ? "Waiting for mutual match to unblur"
+                  : "The Mutual Unblur Protocol • Both must say yes"
             }
           >
             {isPhotoRevealed ? (
@@ -495,6 +632,32 @@ export function HallwayPostCard({
           </button>
         </div>
       </div>
+
+      {/* Mutual Match Banner with Direct Kura-Kani Chat CTA */}
+      {isMutualMatch && (
+        <div className="mx-3.5 sm:mx-4 mt-2.5 p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-rose-500/10 border border-emerald-500/25 flex items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-8 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <Sparkles className="size-4" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-bold text-foreground truncate">
+                It&apos;s a Match! 💘 Both of you said yes
+              </span>
+              <span className="text-[10px] text-muted-foreground truncate">
+                Dhukuti photos unblurred exclusively for the two of you.
+              </span>
+            </div>
+          </div>
+          <Link
+            href={`/account/messages?to=${profile.id}`}
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-semibold text-xs shrink-0 active:scale-95 transition-transform shadow-xs flex items-center gap-1.5"
+          >
+            <MessageCircle className="size-3.5" />
+            <span>Chat 💌</span>
+          </Link>
+        </div>
+      )}
 
       {/* 4. POST CONTENT & STORYTELLING (Twitter / Instagram style) */}
       <div className="p-4 sm:p-5 flex flex-col gap-3 text-sm">

@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import {
   AnimatePresence,
   motion,
@@ -52,6 +53,8 @@ export interface Profile {
   dietary?: string;
   promptQuestion?: string;
   promptAnswer?: string;
+  isMutualMatch?: boolean;
+  hasCandidateLikedYou?: boolean;
 }
 
 interface TinderSwipeDeckProps {
@@ -136,10 +139,44 @@ export function TinderSwipeDeck({
       setTimeout(() => {
         if (direction === "right") {
           onSwipeRight?.(currentProfile);
+          if (
+            currentProfile.isMutualMatch ||
+            currentProfile.hasCandidateLikedYou
+          ) {
+            toast.success(`It's a Match with ${currentProfile.name}! 💘`, {
+              description:
+                "Both of you said yes — Dhukuti unblurred exclusively for the two of you! 🔓",
+            });
+          } else {
+            toast.info(`You said yes to ${currentProfile.name}! 💘`, {
+              description:
+                "Portrait sealed in Dhukuti until both connect yes (Mutual Match Required).",
+            });
+          }
         } else if (direction === "left") {
           onSwipeLeft?.(currentProfile);
         } else if (direction === "up") {
           onSuperLike?.(currentProfile);
+          if (
+            currentProfile.isMutualMatch ||
+            currentProfile.hasCandidateLikedYou
+          ) {
+            toast.success(
+              `It's a Match! 💫 Kura-Kani Sparked with ${currentProfile.name}!`,
+              {
+                description:
+                  "Both of you said yes — Dhukuti unlocked exclusively for the two of you! 🔓",
+              },
+            );
+          } else {
+            toast.info(
+              `High Priority Spark sent to ${currentProfile.name}! 💫`,
+              {
+                description:
+                  "Portrait remains softly frosted in Dhukuti until both say yes.",
+              },
+            );
+          }
         }
         setCurrentIndex((prev) => prev + 1);
       }, 200);
@@ -280,7 +317,12 @@ export function TinderSwipeDeck({
                     src={nextProfile.images[0] || "/placeholder.svg"}
                     alt={nextProfile.name}
                     fill
-                    className="object-cover bg-muted/50 filter brightness-[0.92]"
+                    className={cn(
+                      "object-cover bg-muted/50 filter brightness-[0.92] transition-all duration-500",
+                      nextProfile.isMutualMatch
+                        ? "blur-none"
+                        : "blur-xl scale-105 filter saturate-150",
+                    )}
                     sizes="(max-width: 640px) 100vw, 420px"
                     unoptimized
                   />
@@ -345,11 +387,32 @@ export function TinderSwipeDeck({
                     }
                     alt={`${currentProfile.name} photo ${currentImageIndex + 1}`}
                     fill
-                    className="object-cover bg-muted/40 transition-all duration-300 ease-out"
+                    className={cn(
+                      "object-cover bg-muted/40 transition-all duration-700 ease-out",
+                      currentProfile.isMutualMatch
+                        ? "blur-none scale-100 filter-none"
+                        : "blur-2xl scale-110 filter saturate-150 contrast-125",
+                    )}
                     sizes="(max-width: 640px) 100vw, 420px"
                     priority
                     unoptimized
                   />
+
+                  {/* The Mutual Unblur Protocol Dhukuti Badge */}
+                  {!currentProfile.isMutualMatch && (
+                    <div className="absolute bottom-28 inset-x-4 z-10 flex flex-col items-center pointer-events-none select-none">
+                      <div className="px-3 py-1.5 rounded-2xl bg-black/75 backdrop-blur-xl border border-white/15 text-white shadow-xl flex items-center gap-1.5">
+                        <Lock className="size-3.5 text-rose-400" />
+                        <span className="text-[11px] font-bold">
+                          The Mutual Unblur Protocol • ढुकुटी 🔒
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-white/85 mt-1 drop-shadow-md text-center max-w-[280px]">
+                        Nobody sees your face until you both say yes. Swipe
+                        right 💘 to connect!
+                      </p>
+                    </div>
+                  )}
 
                   {/* TOP GRADIENT OVERLAY FOR STORY BARS & BADGES */}
                   <div className="absolute top-0 inset-x-0 h-28 bg-gradient-to-b from-black/70 via-black/30 to-transparent p-3.5 z-10 flex flex-col gap-2.5">
@@ -370,18 +433,32 @@ export function TinderSwipeDeck({
                       ))}
                     </div>
 
-                    {/* Top Row: Mode & Verification Badges */}
+                    {/* Top Row: Mode, Verification & Dhukuti Mutual Badges */}
                     <div className="flex items-center justify-between">
-                      {isMatrimonialMode ? (
-                        <Badge className="bg-amber-500/90 text-white border-0 text-[10px] px-2 py-0.5 font-semibold backdrop-blur-md shadow-xs flex items-center gap-1">
-                          <span>💍 Matrimonial Chino</span>
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-rose-500/90 text-white border-0 text-[10px] px-2 py-0.5 font-semibold backdrop-blur-md shadow-xs flex items-center gap-1">
-                          <Flame className="size-3 fill-white" />
-                          <span>Dating Mode</span>
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        {isMatrimonialMode ? (
+                          <Badge className="bg-amber-500/90 text-white border-0 text-[10px] px-2 py-0.5 font-semibold backdrop-blur-md shadow-xs flex items-center gap-1">
+                            <span>💍 Matrimonial Chino</span>
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-rose-500/90 text-white border-0 text-[10px] px-2 py-0.5 font-semibold backdrop-blur-md shadow-xs flex items-center gap-1">
+                            <Flame className="size-3 fill-white" />
+                            <span>Dating Mode</span>
+                          </Badge>
+                        )}
+
+                        {currentProfile.isMutualMatch ? (
+                          <Badge className="bg-emerald-500/90 text-white border-0 text-[10px] px-2 py-0.5 font-semibold backdrop-blur-md shadow-xs flex items-center gap-1">
+                            <Sparkles className="size-3 fill-white" />
+                            <span>Mutual Match 🔓</span>
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-rose-500/90 text-white border-0 text-[10px] px-2 py-0.5 font-semibold backdrop-blur-md shadow-xs flex items-center gap-1">
+                            <Lock className="size-3" />
+                            <span>Dhukuti Sealed 🔒</span>
+                          </Badge>
+                        )}
+                      </div>
 
                       {currentProfile.verified ? (
                         <Badge className="bg-emerald-500/90 text-white border-0 text-[10px] px-2 py-0.5 font-semibold backdrop-blur-md shadow-xs flex items-center gap-1">

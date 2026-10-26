@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bookmark,
@@ -10,10 +11,12 @@ import {
   GraduationCap,
   Heart,
   Lock,
+  LockOpen,
   MapPin,
   MessageCircle,
   Share2,
   ShieldCheck,
+  Sparkles,
   Star,
 } from "lucide-react";
 import Image from "next/image";
@@ -47,13 +50,26 @@ export function HallwayPostCard({
   const [isSuperLiked, setIsSuperLiked] = React.useState(false);
   const [isSaved, setIsSaved] = React.useState(false);
   const [showHeartPop, setShowHeartPop] = React.useState(false);
+  const [isManuallyUnblurred, setIsManuallyUnblurred] = React.useState(false);
+
+  // Photos are protected and frosted in Dhukuti until connected (Like / Super Like) or manually unblurred
+  const isPhotoRevealed = isLiked || isSuperLiked || isManuallyUnblurred;
+
+  // Dedicated public DiceBear avatar URL
+  const candidateAvatar =
+    typeof profile.avatarUrl === "string" &&
+    (profile.avatarUrl.includes("dicebear.com") ||
+      profile.avatarUrl.startsWith("data:image/svg"))
+      ? profile.avatarUrl
+      : `https://api.dicebear.com/10.x/lorelei/svg?seed=${encodeURIComponent(
+          profile.name || "Mayalu",
+        )}`;
 
   const images =
     profile.images && profile.images.length > 0
       ? profile.images
       : ["/placeholder.svg"];
   const totalPhotos = images.length;
-  const isDhukutiPhoto = photoIndex > 0; // 0 is main photo, 1+ are Dhukuti showcase photos
 
   const nextPhoto = (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -81,16 +97,19 @@ export function HallwayPostCard({
   const triggerLike = () => {
     if (!isLiked) {
       setIsLiked(true);
+      setIsManuallyUnblurred(true);
       onLike?.(profile);
       recordGraphInteractionAction(currentUserId, profile.id, "like").catch(
         () => {},
       );
       toast.success(`Connected with ${profile.name}! 💘`, {
-        description: "Shared affinity recorded in Neo4j knowledge graph.",
+        description:
+          "Shared affinity recorded in Neo4j • Dhukuti unblurred! 🔓",
       });
     } else {
       setIsLiked(false);
-      toast.info(`Unliked ${profile.name}`);
+      setIsManuallyUnblurred(false);
+      toast.info(`Unliked ${profile.name} • Re-sealed in Dhukuti 🔒`);
     }
   };
 
@@ -98,6 +117,7 @@ export function HallwayPostCard({
     if (!isSuperLiked) {
       setIsSuperLiked(true);
       setIsLiked(true);
+      setIsManuallyUnblurred(true);
       onSuperLike?.(profile);
       recordGraphInteractionAction(
         currentUserId,
@@ -105,7 +125,8 @@ export function HallwayPostCard({
         "superlike",
       ).catch(() => {});
       toast.success(`Kura-Kani Sparked with ${profile.name}! 💫`, {
-        description: "High topological priority assigned in Neo4j.",
+        description:
+          "High topological priority assigned in Neo4j • Dhukuti unlocked! 🔓",
       });
     }
   };
@@ -139,7 +160,7 @@ export function HallwayPostCard({
         <div className="flex items-center gap-3 min-w-0">
           <Avatar className="size-11 ring-2 ring-rose-500/30 ring-offset-2 ring-offset-background">
             <AvatarImage
-              src={images[0]}
+              src={candidateAvatar}
               alt={profile.name}
               className="object-cover"
             />
@@ -218,7 +239,12 @@ export function HallwayPostCard({
           alt={`${profile.name} showcase`}
           fill
           sizes="(max-width: 640px) 100vw, 540px"
-          className="object-cover transition-opacity duration-200"
+          className={cn(
+            "object-cover transition-all duration-700 ease-out",
+            isPhotoRevealed
+              ? "blur-none scale-100 filter-none"
+              : "blur-2xl scale-110 filter saturate-150 contrast-125",
+          )}
           priority={photoIndex === 0}
           unoptimized
         />
@@ -238,15 +264,85 @@ export function HallwayPostCard({
           )}
         </AnimatePresence>
 
-        {/* Dhukuti Photo Indicator Pill */}
+        {/* Dhukuti Frosted Glass Privacy Overlay (Sealed by Default) */}
+        {!isPhotoRevealed && (
+          <div className="absolute inset-0 bg-background/25 dark:bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center z-15 select-none pointer-events-auto">
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+              className="flex flex-col items-center max-w-[280px] p-5 rounded-3xl bg-card/90 dark:bg-card/95 backdrop-blur-2xl border border-black/[0.08] dark:border-white/[0.12] shadow-2xl space-y-3"
+            >
+              <div className="relative">
+                <div className="size-13 rounded-2xl bg-gradient-to-br from-rose-500/20 via-pink-500/15 to-violet-500/20 border border-rose-500/30 flex items-center justify-center shadow-inner">
+                  <Lock className="size-6 text-rose-500" />
+                </div>
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500" />
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-center gap-1.5">
+                  <span className="text-sm font-bold text-foreground tracking-tight apple-headline">
+                    Photo Sealed in Dhukuti
+                  </span>
+                  <Badge
+                    variant="secondary"
+                    className="text-[9px] px-1.5 py-0 font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border-0 normal-case tracking-normal"
+                  >
+                    ढुकुटी 🔒
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Dhukuti Privacy Vault guards authentic member photos. Tap 💘
+                  to connect and unblur {profile.name}&apos;s photos.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerLike();
+                  setShowHeartPop(true);
+                  setTimeout(() => setShowHeartPop(false), 900);
+                }}
+                className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-rose-500 via-pink-600 to-rose-600 text-white font-semibold text-xs shadow-md shadow-rose-500/25 hover:shadow-rose-500/40 active:scale-[0.97] transition-transform duration-100 ease-out flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation"
+              >
+                <Heart className="size-3.5 fill-white text-white" />
+                <span>Connect 💘 to Reveal</span>
+              </button>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Unlocked status pill in top left */}
+        {isPhotoRevealed && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/90 text-white text-[11px] font-semibold backdrop-blur-md shadow-md shadow-emerald-500/20 pointer-events-none"
+          >
+            <Sparkles className="size-3 fill-white" />
+            <span>Dhukuti Unlocked 🔓</span>
+          </motion.div>
+        )}
+
+        {/* Dhukuti Photo Indicator Pill (Top Right) */}
         <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-medium border border-white/10 shadow-sm pointer-events-none tabular-nums">
-          {isDhukutiPhoto ? (
+          {isPhotoRevealed ? (
+            <>
+              <Sparkles className="size-3 text-emerald-400" />
+              <span className="text-emerald-300">Unlocked</span>
+            </>
+          ) : (
             <>
               <Lock className="size-3 text-rose-400" />
               <span>Dhukuti 🔒</span>
             </>
-          ) : (
-            <span>Avatar</span>
           )}
           <span className="text-white/60">•</span>
           <span>
@@ -343,6 +439,35 @@ export function HallwayPostCard({
         </div>
 
         <div className="flex items-center gap-1.5">
+          {/* Dhukuti Seal / Unblur Toggle Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsManuallyUnblurred((prev) => !prev);
+              toast.info(
+                !isPhotoRevealed
+                  ? `Dhukuti unsealed for ${profile.name} 🔓`
+                  : `Photo re-sealed in Dhukuti 🔒`,
+              );
+            }}
+            className={`flex items-center justify-center size-9 rounded-full transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.97] touch-manipulation select-none ${
+              isPhotoRevealed
+                ? "text-emerald-500 hover:bg-emerald-500/10"
+                : "text-rose-500 hover:bg-rose-500/10"
+            }`}
+            title={
+              isPhotoRevealed
+                ? "Re-seal in Dhukuti (Blur)"
+                : "Unblur Dhukuti Photo"
+            }
+          >
+            {isPhotoRevealed ? (
+              <LockOpen className="size-4.5" />
+            ) : (
+              <Lock className="size-4.5" />
+            )}
+          </button>
+
           {/* Share */}
           <button
             type="button"

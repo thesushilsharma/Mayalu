@@ -63,7 +63,9 @@ export type NeonAuthSessionInsert = z.infer<typeof insertNeonAuthSessionSchema>;
 export type MessageSelect = z.infer<typeof selectMessageSchema>;
 export type MessageInsert = z.infer<typeof insertMessageSchema>;
 
-export type SaveOnboardingProfileInput = z.infer<typeof saveOnboardingProfileInputSchema>;
+export type SaveOnboardingProfileInput = z.infer<
+  typeof saveOnboardingProfileInputSchema
+>;
 
 /* ==========================================================================
  * 3. COMPOSITE & QUERY PROJECTION TYPES
@@ -85,7 +87,9 @@ export interface UserProfileWithAuth extends UserProfile {
  * Profile and Auth user fallback structure
  */
 export interface UserProfileOrAuthFallback {
-  profile: (UserProfile & { auth_name?: string | null; auth_image?: string | null }) | null;
+  profile:
+    | (UserProfile & { auth_name?: string | null; auth_image?: string | null })
+    | null;
   authUser: NeonAuthUser | null;
 }
 
@@ -101,7 +105,12 @@ export interface VerificationCandidate {
   gender: string | null;
   profile_photo: string | null;
   verification_selfie: string | null;
-  verification_status: "pending_review" | "verified" | "rejected" | "unsubmitted" | string;
+  verification_status:
+    | "pending_review"
+    | "verified"
+    | "rejected"
+    | "unsubmitted"
+    | string;
   additional_photos_count: number;
   bio: string | null;
   updated_at: string | Date | null;
@@ -138,6 +147,7 @@ export interface CandidateProfile {
   gender?: string;
   location: string;
   bio: string;
+  avatarUrl?: string;
   images: string[];
   interests: string[];
   occupation?: string;
@@ -173,4 +183,6 @@ export interface QueryTransactionsOptions {
   values?: any[][];
 }
 
-export type ConnQueryFunction = <R = any>(options: QueryOptions) => Promise<R[]>;
+export type ConnQueryFunction = <R = any>(
+  options: QueryOptions,
+) => Promise<R[]>;

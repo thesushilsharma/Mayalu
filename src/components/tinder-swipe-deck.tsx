@@ -1,35 +1,35 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
 import {
+  AnimatePresence,
   motion,
+  type PanInfo,
   useMotionValue,
   useTransform,
-  AnimatePresence,
-  type PanInfo,
 } from "framer-motion";
 import {
-  Heart,
-  X,
-  Star,
-  RotateCcw,
-  Info,
-  MapPin,
   Briefcase,
-  GraduationCap,
-  ShieldCheck,
-  Ghost,
-  Sparkles,
-  Lock,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   Flame,
+  Ghost,
+  GraduationCap,
+  Heart,
+  Info,
+  Lock,
+  MapPin,
+  RotateCcw,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  X,
 } from "lucide-react";
+import Image from "next/image";
+import * as React from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 export interface Profile {
   id: string;
@@ -37,6 +37,7 @@ export interface Profile {
   age: number;
   location: string;
   bio: string;
+  avatarUrl?: string;
   images: string[];
   interests: string[];
   occupation?: string;
@@ -114,6 +115,7 @@ export function TinderSwipeDeck({
   const hasMore = currentIndex < profiles.length;
 
   // Reset photo index when card changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: currentIndex trigger resets motion values per candidate card
   React.useEffect(() => {
     setCurrentImageIndex(0);
     x.set(0);
@@ -175,7 +177,7 @@ export function TinderSwipeDeck({
   };
 
   // Rewind / Undo
-  const handleRewind = () => {
+  const handleRewind = React.useCallback(() => {
     if (history.length === 0) {
       toast.info("No previous profile to rewind to");
       return;
@@ -184,7 +186,7 @@ export function TinderSwipeDeck({
     setHistory((prev) => prev.slice(0, -1));
     setCurrentIndex(prevIndex);
     toast.success("Rewound back to previous Chino ↺");
-  };
+  }, [history]);
 
   // Tap to cycle photo
   const handlePhotoTap = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -224,7 +226,7 @@ export function TinderSwipeDeck({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedProfileForDetails, currentProfile, executeSwipe]);
+  }, [selectedProfileForDetails, currentProfile, executeSwipe, handleRewind]);
 
   return (
     <div
@@ -327,6 +329,8 @@ export function TinderSwipeDeck({
                 transition={{ duration: 0.22, ease: "easeOut" }}
               >
                 {/* PHOTO CONTAINER & STORY TAP HANDLER */}
+                {/* biome-ignore lint/a11y/useKeyWithClickEvents: photo tap navigation */}
+                {/* biome-ignore lint/a11y/useSemanticElements: photo tap container */}
                 <div
                   className="relative w-full h-full cursor-pointer"
                   onClick={handlePhotoTap}
@@ -353,6 +357,7 @@ export function TinderSwipeDeck({
                     <div className="flex gap-1.5 w-full">
                       {currentProfile.images.map((_, idx) => (
                         <div
+                          // biome-ignore lint/suspicious/noArrayIndexKey: story indicators map 1:1 with photo array indexes
                           key={`story-bar-${idx}`}
                           className={`h-1 flex-1 rounded-full transition-all duration-200 ${
                             idx === currentImageIndex
@@ -655,8 +660,17 @@ export function TinderSwipeDeck({
                   <div className="relative size-16 rounded-2xl overflow-hidden border border-border/60 bg-muted shrink-0">
                     <Image
                       src={
-                        selectedProfileForDetails.images[0] ||
-                        "/placeholder.svg"
+                        selectedProfileForDetails.avatarUrl &&
+                        (selectedProfileForDetails.avatarUrl.includes(
+                          "dicebear.com",
+                        ) ||
+                          selectedProfileForDetails.avatarUrl.startsWith(
+                            "data:image/svg",
+                          ))
+                          ? selectedProfileForDetails.avatarUrl
+                          : `https://api.dicebear.com/10.x/lorelei/svg?seed=${encodeURIComponent(
+                              selectedProfileForDetails.name || "Mayalu",
+                            )}`
                       }
                       alt={selectedProfileForDetails.name}
                       fill

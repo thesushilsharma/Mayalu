@@ -145,22 +145,22 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
 
                 {/* Verification status badge */}
                 {verificationStatus === "verified" ? (
-                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption">
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption normal-case tracking-normal">
                     <ShieldCheck className="size-3.5" />
                     <span>Maya Verified 🛡️</span>
                   </Badge>
                 ) : verificationStatus === "pending_review" ? (
-                  <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption">
+                  <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption normal-case tracking-normal">
                     <Camera className="size-3.5 animate-pulse text-amber-500" />
                     <span>Under Maya Review ⏳</span>
                   </Badge>
                 ) : verificationStatus === "rejected" ? (
-                  <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption">
+                  <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption normal-case tracking-normal">
                     <ShieldAlert className="size-3.5" />
                     <span>Selfie Retake Required ⚠️</span>
                   </Badge>
                 ) : (
-                  <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption">
+                  <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption normal-case tracking-normal">
                     <Ghost className="size-3.5" />
                     <span>Ghost Spectator 👻</span>
                   </Badge>
@@ -168,7 +168,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
 
                 {/* Intent Badge */}
                 {profile?.relationship_intent && (
-                  <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs py-0.5 px-2.5 font-medium gap-1 apple-caption">
+                  <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs py-0.5 px-2.5 font-medium gap-1 apple-caption normal-case tracking-normal">
                     <Heart className="size-3 fill-rose-500 text-rose-500" />
                     <span>{profile.relationship_intent}</span>
                   </Badge>

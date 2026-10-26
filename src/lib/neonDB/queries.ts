@@ -1,33 +1,33 @@
 import "server-only";
 
 import {
-  query,
-  queryTransactions,
-  withTransaction,
+  db,
   getSql,
   pool,
-  db,
-  schema,
   type QueryOptions,
+  query,
+  queryTransactions,
+  schema,
+  withTransaction,
 } from "./db";
 
 import {
   saveOnboardingProfileInputSchema,
-  selectUserProfileSchema,
-  selectNeonAuthUserSchema,
   selectMessageSchema,
+  selectNeonAuthUserSchema,
+  selectUserProfileSchema,
 } from "./schema";
 
 import type {
-  UserProfile,
-  UserProfileWithAuth,
-  NeonAuthUser,
-  VerificationCandidate,
-  Message,
-  SaveOnboardingProfileInput,
-  MessageAggregates,
-  UserProfileOrAuthFallback,
   CandidateProfile,
+  Message,
+  MessageAggregates,
+  NeonAuthUser,
+  SaveOnboardingProfileInput,
+  UserProfile,
+  UserProfileOrAuthFallback,
+  UserProfileWithAuth,
+  VerificationCandidate,
 } from "./types";
 
 // Re-export pool, drizzle db, schema, and query primitives
@@ -50,7 +50,11 @@ export type UserProfileWithAuthRow = UserProfileWithAuth;
 export type NeonAuthUserRow = NeonAuthUser;
 export type VerificationCandidateRow = VerificationCandidate;
 export type MessageRow = Message;
-export type { SaveOnboardingProfileInput, MessageAggregates, UserProfileOrAuthFallback };
+export type {
+  SaveOnboardingProfileInput,
+  MessageAggregates,
+  UserProfileOrAuthFallback,
+};
 
 /* ==========================================================================
  * 1. USER PROFILES & ONBOARDING QUERIES (public.user_profiles)
@@ -60,7 +64,7 @@ export type { SaveOnboardingProfileInput, MessageAggregates, UserProfileOrAuthFa
  * Fetch raw user profile from public.user_profiles by user_id.
  */
 export async function findUserProfileById(
-  userId: string
+  userId: string,
 ): Promise<UserProfile | null> {
   const rows = await query<UserProfile>({
     query: `
@@ -78,7 +82,7 @@ export async function findUserProfileById(
  * Fetch complete user profile joined with neon_auth."user" by user_id.
  */
 export async function findFullUserProfileWithAuth(
-  userId: string
+  userId: string,
 ): Promise<UserProfileWithAuth | null> {
   const rows = await query<UserProfileWithAuth>({
     query: `
@@ -104,9 +108,11 @@ export async function findFullUserProfileWithAuth(
  * Fetch profile with fallback to auth user if profile doesn't exist yet (used by profile page).
  */
 export async function findUserProfileOrAuthFallback(
-  userId: string
+  userId: string,
 ): Promise<UserProfileOrAuthFallback> {
-  const profileRows = await query<UserProfile & { auth_name: string | null; auth_image: string | null }>({
+  const profileRows = await query<
+    UserProfile & { auth_name: string | null; auth_image: string | null }
+  >({
     query: `
       SELECT 
         p.*,
@@ -142,7 +148,7 @@ export async function findUserProfileOrAuthFallback(
  * Fetch onboarding completion status and profile summary for user.
  */
 export async function findUserOnboardingStatus(
-  userId: string
+  userId: string,
 ): Promise<UserProfile | null> {
   const rows = await query<UserProfile>({
     query: `
@@ -204,14 +210,17 @@ export async function isUserOnboarded(userId: string): Promise<boolean> {
  */
 export async function saveOnboardingProfileTx(
   userId: string,
-  inputData: SaveOnboardingProfileInput
+  inputData: SaveOnboardingProfileInput,
 ): Promise<UserProfile> {
   // Validate input via Zod schema
   const data = saveOnboardingProfileInputSchema.parse(inputData);
 
   return withTransaction(async (connQuery) => {
     // 1. Check existing profile for gender change verification trigger
-    const existing = await connQuery<{ gender: string | null; private_corner: any }>({
+    const existing = await connQuery<{
+      gender: string | null;
+      private_corner: any;
+    }>({
       query: `
         SELECT gender, private_corner
         FROM public.user_profiles
@@ -225,15 +234,15 @@ export async function saveOnboardingProfileTx(
     const newGender = data.gender;
     const isGenderChange = Boolean(
       oldGender &&
-      newGender &&
-      oldGender.trim().toLowerCase() !== newGender.trim().toLowerCase()
+        newGender &&
+        oldGender.trim().toLowerCase() !== newGender.trim().toLowerCase(),
     );
 
     if (isGenderChange) {
       const newSelfie = data.privateCorner?.verificationSelfie?.trim();
       if (!newSelfie) {
         throw new Error(
-          "Gender change detected: You must upload a fresh verification selfie so Maya can verify your identity."
+          "Gender change detected: You must upload a fresh verification selfie so Maya can verify your identity.",
         );
       }
       if (!data.privateCorner) {
@@ -388,7 +397,7 @@ export async function saveOnboardingProfileTx(
  * Fetch candidates for admin selfie verification review.
  */
 export async function findVerificationCandidates(
-  limit = 100
+  limit = 100,
 ): Promise<VerificationCandidate[]> {
   return query<VerificationCandidate>({
     query: `
@@ -423,7 +432,9 @@ export async function findVerificationCandidates(
 /**
  * Admin action: Approve verification selfie.
  */
-export async function approveVerificationSelfieQuery(userId: string): Promise<void> {
+export async function approveVerificationSelfieQuery(
+  userId: string,
+): Promise<void> {
   await query({
     query: `
       UPDATE public.user_profiles
@@ -443,7 +454,9 @@ export async function approveVerificationSelfieQuery(userId: string): Promise<vo
 /**
  * Admin action: Reject verification selfie and clear image.
  */
-export async function rejectVerificationSelfieQuery(userId: string): Promise<void> {
+export async function rejectVerificationSelfieQuery(
+  userId: string,
+): Promise<void> {
   await query({
     query: `
       UPDATE public.user_profiles
@@ -469,7 +482,7 @@ export async function rejectVerificationSelfieQuery(userId: string): Promise<voi
  */
 export async function updateAuthUserRoleQuery(
   userId: string,
-  newRole: string
+  newRole: string,
 ): Promise<void> {
   await query({
     query: `
@@ -488,7 +501,7 @@ export async function updateAuthUserRoleQuery(
 export async function toggleUserBanAndRevokeSessionsTx(
   userId: string,
   banned: boolean,
-  banReason?: string | null
+  banReason?: string | null,
 ): Promise<void> {
   await withTransaction(async (connQuery) => {
     await connQuery({
@@ -523,9 +536,7 @@ export async function toggleUserBanAndRevokeSessionsTx(
 /**
  * Fetch all users from neon_auth."user" table.
  */
-export async function findAllAuthUsers(
-  limit = 1000
-): Promise<NeonAuthUser[]> {
+export async function findAllAuthUsers(limit = 1000): Promise<NeonAuthUser[]> {
   return query<NeonAuthUser>({
     query: `
       SELECT 
@@ -550,7 +561,7 @@ export async function findAllAuthUsers(
  * Fetch a single user by ID from neon_auth."user".
  */
 export async function findAuthUserById(
-  userId: string
+  userId: string,
 ): Promise<NeonAuthUser | null> {
   const rows = await query<NeonAuthUser>({
     query: `
@@ -594,7 +605,7 @@ export async function promoteAuthUserToAdmin(userId: string): Promise<void> {
 export async function syncAuthUserInfo(
   userId: string,
   name?: string | null,
-  image?: string | null
+  image?: string | null,
 ): Promise<void> {
   await query({
     query: `
@@ -681,7 +692,7 @@ export async function insertMessage(
   senderId: string,
   recipientId: string,
   content: string,
-  status: "delivered" | "read" | "pending" = "delivered"
+  status: "delivered" | "read" | "pending" = "delivered",
 ): Promise<void> {
   await query({
     query: `
@@ -702,13 +713,13 @@ export async function seedMessagesTx(
     recipientId: string;
     content: string;
     status?: "delivered" | "read" | "pending";
-  }>
+  }>,
 ): Promise<boolean> {
   const queries = messagesList.map(
     () => `
       INSERT INTO messages (id, sender_id, recipient_id, content, status)
       VALUES ($1, $2, $3, $4, $5)
-    `
+    `,
   );
   const values = messagesList.map((m) => [
     m.id,
@@ -729,7 +740,7 @@ export async function seedMessagesTx(
 export async function findHallwayCandidateProfiles(
   excludeUserId?: string,
   genderFilter?: string | null,
-  limit: number = 50
+  limit: number = 50,
 ): Promise<CandidateProfile[]> {
   const rows = await query<{
     user_id: string;
@@ -802,20 +813,37 @@ export async function findHallwayCandidateProfiles(
         : r.prompt_answers) || {};
     const promptEntries = Object.entries(promptAnswers);
 
-    // Dhukuti showcase photos + main profile photo
+    // Dedicated public DiceBear avatar URL
+    const avatarUrl =
+      typeof r.profile_photo === "string" &&
+      (r.profile_photo.includes("dicebear.com") ||
+        r.profile_photo.startsWith("data:image/svg"))
+        ? r.profile_photo
+        : `https://api.dicebear.com/10.x/lorelei/svg?seed=${encodeURIComponent(
+            r.first_name || r.auth_name || "Mayalu",
+          )}`;
+
+    // Dhukuti showcase photos (real portraits sealed in Dhukuti)
     const additional = Array.isArray(r.additional_photos)
       ? r.additional_photos
       : [];
-    const images: string[] = [r.profile_photo, ...additional].filter(
-      (img): img is string => typeof img === "string" && img.length > 0
+    const isPhotoSvgOrDiceBear =
+      typeof r.profile_photo === "string" &&
+      (r.profile_photo.includes("dicebear.com") ||
+        r.profile_photo.startsWith("data:image/svg"));
+
+    const rawPhotos = isPhotoSvgOrDiceBear
+      ? additional
+      : [r.profile_photo, ...additional];
+
+    const images: string[] = rawPhotos.filter(
+      (img): img is string => typeof img === "string" && img.length > 0,
     );
 
-    // Fallback if no images found
+    // Fallback if no showcase photos found
     if (images.length === 0) {
       images.push(
-        `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(
-          r.first_name || r.auth_name || "Mayalu"
-        )}`
+        "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop&q=80",
       );
     }
 
@@ -826,13 +854,14 @@ export async function findHallwayCandidateProfiles(
       gender: r.gender || undefined,
       location: r.location || "Nepal",
       bio: r.bio || "",
+      avatarUrl,
       images,
       interests: Array.isArray(r.interests) ? r.interests : [],
       occupation: r.occupation || undefined,
       education: r.education || undefined,
       distance: (idx % 12) + 3,
       verified: Boolean(
-        r.emailVerified || privateCorner.verificationStatus === "verified"
+        r.emailVerified || privateCorner.verificationStatus === "verified",
       ),
       dalBhatFrequency: r.dal_bhat_frequency || undefined,
       musicRepeat: r.music_repeat || undefined,
@@ -845,4 +874,3 @@ export async function findHallwayCandidateProfiles(
     };
   });
 }
-

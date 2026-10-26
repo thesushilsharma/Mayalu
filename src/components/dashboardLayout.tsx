@@ -70,9 +70,22 @@ function DashboardUserLayout() {
         .toUpperCase() || "MM"
     : "MM";
 
-  const displayAvatar =
-    (mounted && (userProfile?.profilePhoto || userProfile?.image)) ||
-    `https://api.dicebear.com/10.x/personas/svg?seed=Mayalu`;
+  const displayAvatar = useMemo(() => {
+    if (!mounted) {
+      return "https://api.dicebear.com/10.x/personas/svg?seed=Mayalu";
+    }
+    const candidate = userProfile?.profilePhoto || userProfile?.image;
+    if (
+      typeof candidate === "string" &&
+      (candidate.includes("dicebear.com") ||
+        candidate.startsWith("data:image/svg"))
+    ) {
+      return candidate;
+    }
+    return `https://api.dicebear.com/10.x/personas/svg?seed=${encodeURIComponent(
+      displayName || "Sushil",
+    )}`;
+  }, [mounted, userProfile?.profilePhoto, userProfile?.image, displayName]);
 
   const isVerified = mounted && userProfile?.verificationStatus === "verified";
   const isReview =
@@ -278,27 +291,32 @@ function DashboardUserLayout() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2 border-t border-border/40">
-              <Badge
-                suppressHydrationWarning
-                variant="secondary"
-                className="bg-background/80 dark:bg-card/80 text-rose-600 dark:text-rose-400 border-border/60 font-semibold text-xs py-0.5 px-2 tabular-nums apple-caption"
-                title={`Level ${displayLevel} (${userLevel.xp}/${userLevel.requiredXp} XP)`}
-              >
-                <Zap className="h-3 w-3 mr-1 fill-rose-500 text-rose-500" />
-                Level {displayLevel}
-              </Badge>
-              <Badge
-                suppressHydrationWarning
-                variant="secondary"
-                className="bg-background/80 dark:bg-card/80 text-blue-600 dark:text-blue-400 border-border/60 font-semibold text-xs py-0.5 px-2 tabular-nums apple-caption"
-                title={`${displaySuperLikes} Super Likes`}
-              >
-                <Zap className="h-3 w-3 mr-1 text-blue-500 fill-blue-500" />
-                {displaySuperLikes} Super
-              </Badge>
-              <span className="ml-auto text-[10px] text-muted-foreground group-hover:text-rose-500 transition-colors font-medium apple-caption">
-                Chino →
+            <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-border/40">
+              <div className="flex items-center gap-1.5 min-w-0 shrink-0">
+                <Badge
+                  suppressHydrationWarning
+                  variant="secondary"
+                  className="bg-background/80 dark:bg-card/80 text-rose-600 dark:text-rose-400 border-border/60 font-semibold text-[11px] py-0.5 px-2 rounded-lg tabular-nums apple-caption normal-case tracking-normal shrink-0"
+                  title={`Level ${displayLevel} (${userLevel.xp}/${userLevel.requiredXp} XP)`}
+                >
+                  <Zap className="h-3 w-3 mr-1 fill-rose-500 text-rose-500 shrink-0" />
+                  Lv.{displayLevel}
+                </Badge>
+                <Badge
+                  suppressHydrationWarning
+                  variant="secondary"
+                  className="bg-background/80 dark:bg-card/80 text-blue-600 dark:text-blue-400 border-border/60 font-semibold text-[11px] py-0.5 px-2 rounded-lg tabular-nums apple-caption normal-case tracking-normal shrink-0"
+                  title={`${displaySuperLikes} Super Likes`}
+                >
+                  <Zap className="h-3 w-3 mr-1 text-blue-500 fill-blue-500 shrink-0" />
+                  {displaySuperLikes} Super
+                </Badge>
+              </div>
+              <span className="text-xs text-muted-foreground group-hover:text-rose-500 transition-colors font-medium apple-caption whitespace-nowrap shrink-0 flex items-center gap-0.5">
+                <span>Chino</span>
+                <span className="inline-block transition-transform duration-150 ease-out group-hover:translate-x-0.5">
+                  →
+                </span>
               </span>
             </div>
           </Link>
@@ -342,7 +360,7 @@ function DashboardUserLayout() {
               <Badge
                 suppressHydrationWarning
                 variant="secondary"
-                className="text-xs font-semibold bg-white/80 dark:bg-gray-800/80 border-0 tabular-nums apple-caption"
+                className="text-xs font-semibold bg-white/80 dark:bg-gray-800/80 border-0 tabular-nums apple-caption normal-case tracking-normal"
               >
                 Lv.{displayLevel}
               </Badge>

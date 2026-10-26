@@ -1,48 +1,45 @@
 "use client";
 
-import * as React from "react";
+import {
+  Baby,
+  Briefcase,
+  Camera,
+  CheckCircle2,
+  Cigarette,
+  Coffee,
+  Compass,
+  Edit3,
+  Flame,
+  Ghost,
+  Heart,
+  Lock,
+  MapPin,
+  Music,
+  Quote,
+  ShieldAlert,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  UserCheck,
+  Utensils,
+  Wine,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import {
-  Sparkles,
-  ShieldCheck,
-  ShieldAlert,
-  Ghost,
-  Camera,
-  Heart,
-  MapPin,
-  Briefcase,
-  Flame,
-  Edit3,
-  CheckCircle2,
-  Lock,
-  Coffee,
-  Utensils,
-  Music,
-  Compass,
-  UserCheck,
-  SlidersHorizontal,
-  ExternalLink,
-  Wine,
-  Cigarette,
-  Baby,
-  Quote,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { type UserRole } from "@/lib/auth/dal";
 import { useUser } from "@/contexts/userContext";
+import type { UserRole } from "@/lib/auth/dal";
 
 export interface ProfileChinoViewProps {
+  // biome-ignore lint/suspicious/noExplicitAny: polymorphic chino profile database entity
   profile: any;
   user: {
     id: string;
@@ -54,7 +51,6 @@ export interface ProfileChinoViewProps {
 }
 
 export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
-  const router = useRouter();
   const { userProfile } = useUser();
 
   const privateCorner = profile?.private_corner || {};
@@ -90,7 +86,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
       {/* =========================================================================
           1. HERO IDENTITY BANNER (No duplicate avatar cards below)
           ========================================================================= */}
-      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-rose-500/10 via-pink-500/5 to-purple-500/10 border border-rose-500/20 backdrop-blur-xl shadow-lg shadow-rose-500/5">
+      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-rose-500/10 via-pink-500/5 to-purple-500/10 border border-black/[0.06] dark:border-white/[0.08] backdrop-blur-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03),0_8px_32px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
         {/* Ambient atmospheric glows */}
         <div className="absolute -top-24 -left-24 size-64 bg-rose-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 size-64 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -120,7 +116,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
               {/* Always visible quick camera badge for touch mobile */}
               <Link
                 href="/account/onboarding?step=15&tab=avatar"
-                className="sm:hidden absolute -bottom-1 -right-1 size-6 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-md border-2 border-background active:scale-90 transition-transform"
+                className="sm:hidden absolute -bottom-1 -right-1 size-6 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-md border-2 border-background active:scale-[0.97] transition-transform duration-100 ease-out"
                 title="Change Avatar"
               >
                 <Camera className="size-3" />
@@ -130,7 +126,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
             {/* Name, Status & Core Attributes */}
             <div className="space-y-2 min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground break-words [overflow-wrap:anywhere]">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground break-words [overflow-wrap:anywhere] apple-display">
                   {displayName}
                   {displayAge && (
                     <span className="text-rose-500 font-semibold text-xl sm:text-2xl ml-2 tabular-nums">
@@ -142,29 +138,29 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
                 {/* Role badge */}
                 <Badge
                   variant="outline"
-                  className="text-[10px] font-semibold uppercase tracking-wider py-0.5 px-2 bg-muted/60"
+                  className="text-[10px] font-semibold uppercase tracking-wider py-0.5 px-2 bg-muted/60 apple-caption"
                 >
                   {user.role}
                 </Badge>
 
                 {/* Verification status badge */}
                 {verificationStatus === "verified" ? (
-                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold">
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption">
                     <ShieldCheck className="size-3.5" />
                     <span>Maya Verified 🛡️</span>
                   </Badge>
                 ) : verificationStatus === "pending_review" ? (
-                  <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold">
+                  <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption">
                     <Camera className="size-3.5 animate-pulse text-amber-500" />
                     <span>Under Maya Review ⏳</span>
                   </Badge>
                 ) : verificationStatus === "rejected" ? (
-                  <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold">
+                  <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption">
                     <ShieldAlert className="size-3.5" />
                     <span>Selfie Retake Required ⚠️</span>
                   </Badge>
                 ) : (
-                  <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold">
+                  <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-xs py-0.5 px-2.5 gap-1 font-semibold apple-caption">
                     <Ghost className="size-3.5" />
                     <span>Ghost Spectator 👻</span>
                   </Badge>
@@ -172,7 +168,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
 
                 {/* Intent Badge */}
                 {profile?.relationship_intent && (
-                  <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs py-0.5 px-2.5 font-medium gap-1">
+                  <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs py-0.5 px-2.5 font-medium gap-1 apple-caption">
                     <Heart className="size-3 fill-rose-500 text-rose-500" />
                     <span>{profile.relationship_intent}</span>
                   </Badge>
@@ -180,7 +176,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
               </div>
 
               {/* Location, Career, Gender */}
-              <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-3 flex-wrap">
+              <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-3 flex-wrap apple-caption">
                 {profile?.location && (
                   <span className="flex items-center gap-1 font-medium text-foreground/80">
                     <MapPin className="size-3.5 text-rose-500" />
@@ -219,7 +215,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           {/* Action CTAs */}
           <div className="flex items-center gap-3 self-start lg:self-center shrink-0 pt-2 lg:pt-0">
             <Link href="/account/onboarding">
-              <Button className="rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold shadow-lg shadow-rose-500/25 [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-rose-500/40 [@media(hover:hover)_and_(pointer:fine)]:hover:scale-[1.02] active:scale-[0.98] transition-[transform,background-color,box-shadow] duration-150 ease-out gap-2 text-xs sm:text-sm h-10 px-5 touch-manipulation">
+              <Button className="rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold shadow-lg shadow-rose-500/25 [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-rose-500/40 active:scale-[0.97] transition-[transform,background-color,box-shadow] duration-100 ease-out gap-2 text-xs sm:text-sm h-10 px-5 touch-manipulation select-none">
                 <Sparkles className="size-4" />
                 <span>Redo Onboarding</span>
               </Button>
@@ -228,7 +224,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
             <Link href="/account/hallway">
               <Button
                 variant="outline"
-                className="rounded-full border-rose-500/30 hover:bg-rose-500/10 active:scale-[0.98] text-rose-600 dark:text-rose-400 font-semibold gap-2 text-xs sm:text-sm h-10 px-4 transition-[background-color,border-color,transform] duration-150 ease-out touch-manipulation"
+                className="rounded-full border-rose-500/30 hover:bg-rose-500/10 active:scale-[0.97] text-rose-600 dark:text-rose-400 font-semibold gap-2 text-xs sm:text-sm h-10 px-4 transition-[background-color,border-color,transform] duration-100 ease-out touch-manipulation select-none"
               >
                 <Flame className="size-4 text-rose-500" />
                 <span>The Hallway</span>
@@ -250,7 +246,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1"
+            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1 active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
           >
             <span>✍️ Basics</span>
           </Button>
@@ -259,7 +255,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs rounded-full border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 shrink-0 gap-1"
+            className="h-7 text-xs rounded-full border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 shrink-0 gap-1 active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
           >
             <span>⚧️ Seeking</span>
           </Button>
@@ -268,7 +264,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1"
+            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1 active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
           >
             <span>📍 Location</span>
           </Button>
@@ -277,7 +273,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs rounded-full border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 shrink-0 gap-1"
+            className="h-7 text-xs rounded-full border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 shrink-0 gap-1 active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
           >
             <span>🍛 Dal Bhat &amp; Chiya</span>
           </Button>
@@ -286,7 +282,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1"
+            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1 active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
           >
             <span>🌟 Passions</span>
           </Button>
@@ -295,7 +291,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs rounded-full border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shrink-0 gap-1"
+            className="h-7 text-xs rounded-full border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shrink-0 gap-1 active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
           >
             <span>🌿 Culture &amp; Roots</span>
           </Button>
@@ -304,7 +300,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1"
+            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1 active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
           >
             <span>🎯 Match Criteria</span>
           </Button>
@@ -313,7 +309,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1"
+            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1 active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
           >
             <span>💌 Story Prompt</span>
           </Button>
@@ -322,7 +318,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1"
+            className="h-7 text-xs rounded-full border-border/70 hover:bg-muted shrink-0 gap-1 active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
           >
             <span>⚡ Habits</span>
           </Button>
@@ -331,7 +327,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs rounded-full border-violet-500/40 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 shrink-0 gap-1"
+            className="h-7 text-xs rounded-full border-violet-500/40 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 shrink-0 gap-1 active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
           >
             <span>📸 Photos &amp; Selfie</span>
           </Button>
@@ -345,15 +341,15 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
         {/* ================= LEFT COLUMN (6 cols): Personality & Cultural Roots ================= */}
         <div className="lg:col-span-6 space-y-6">
           {/* Card 1: Chino Personality & Daily Nepali Rituals */}
-          <Card className="rounded-3xl border-border/70 shadow-xs hover:shadow-md transition-shadow">
+          <Card className="rounded-3xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2)] hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2 apple-headline">
                     <Sparkles className="size-4 text-rose-500" />
                     <span>Personality &amp; Daily Vibe</span>
                   </CardTitle>
-                  <CardDescription className="text-xs">
+                  <CardDescription className="text-xs apple-caption">
                     Authentic rituals and quirks that make up your Nepali Chino.
                   </CardDescription>
                 </div>
@@ -361,7 +357,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 h-7 px-2.5 gap-1 rounded-full"
+                    className="text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 h-7 px-2.5 gap-1 rounded-full active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
                   >
                     <Edit3 className="size-3" />
                     <span>Edit</span>
@@ -461,23 +457,24 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           </Card>
 
           {/* Card 2: Cultural Roots & Background (Private Corner) */}
-          <Card className="rounded-3xl border-border/70 shadow-xs hover:shadow-md transition-shadow">
+          <Card className="rounded-3xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2)] hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2 apple-headline">
                     <Compass className="size-4 text-emerald-500" />
                     <span>Cultural Roots &amp; Background</span>
                   </CardTitle>
-                  <CardDescription className="text-xs">
-                    Traditional heritage and astrological preferences for family compatibility.
+                  <CardDescription className="text-xs apple-caption">
+                    Traditional heritage and astrological preferences for family
+                    compatibility.
                   </CardDescription>
                 </div>
                 <Link href="/account/onboarding?step=11">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 h-7 px-2.5 gap-1 rounded-full"
+                    className="text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 h-7 px-2.5 gap-1 rounded-full active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
                   >
                     <Edit3 className="size-3" />
                     <span>Edit</span>
@@ -545,7 +542,8 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
               <p className="text-[11px] text-muted-foreground/80 mt-3 flex items-center gap-1.5">
                 <Lock className="size-3 text-muted-foreground" />
                 <span>
-                  Private corner details are respectfully displayed to mutual suitors.
+                  Private corner details are respectfully displayed to mutual
+                  suitors.
                 </span>
               </p>
             </CardContent>
@@ -555,21 +553,22 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
         {/* ================= RIGHT COLUMN (6 cols): Visuals, Verification & Preferences ================= */}
         <div className="lg:col-span-6 space-y-6">
           {/* Card 3: Dhukuti Photo Vault (ढुकुटी) */}
-          <Card className="rounded-3xl border-border/70 shadow-xs hover:shadow-md transition-shadow">
+          <Card className="rounded-3xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2)] hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2 apple-headline">
                     <Lock className="size-4 text-amber-500" />
                     <span>Dhukuti Photo Vault (ढुकुटी)</span>
                   </CardTitle>
-                  <CardDescription className="text-xs">
-                    Showcase photos unlocked mutually when both parties say 'Mayalu'.
+                  <CardDescription className="text-xs apple-caption">
+                    Showcase photos unlocked mutually when both parties say
+                    'Mayalu'.
                   </CardDescription>
                 </div>
                 <Badge
                   variant="outline"
-                  className="text-[11px] font-semibold border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10"
+                  className="text-[11px] font-semibold border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10 apple-caption"
                 >
                   {showcasePhotos.length}/3 Photos
                 </Badge>
@@ -594,7 +593,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
                             unoptimized
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                            <span className="text-[10px] text-white font-medium">
+                            <span className="text-[10px] text-white font-medium apple-caption">
                               Photo {idx + 1}
                             </span>
                           </div>
@@ -602,10 +601,10 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
                       ) : (
                         <Link
                           href="/account/onboarding?step=15&tab=vault"
-                          className="flex flex-col items-center justify-center p-2 text-center text-muted-foreground space-y-1.5 hover:text-amber-500 transition-colors"
+                          className="flex flex-col items-center justify-center p-2 text-center text-muted-foreground space-y-1.5 hover:text-amber-500 transition-colors active:scale-[0.97] duration-100 ease-out select-none touch-manipulation"
                         >
                           <Camera className="size-5 opacity-50 group-hover:scale-110 transition-transform" />
-                          <span className="text-[10px] font-medium">
+                          <span className="text-[10px] font-medium apple-caption">
                             + Add Photo {idx + 1}
                           </span>
                         </Link>
@@ -616,14 +615,18 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground apple-caption">
                   {showcasePhotos.length >= 3 ? (
                     <span className="text-emerald-500 font-medium flex items-center gap-1">
-                      <CheckCircle2 className="size-3.5" /> Ready for matching in The Hallway
+                      <CheckCircle2 className="size-3.5" /> Ready for matching
+                      in The Hallway
                     </span>
                   ) : (
                     <span className="text-amber-500 font-medium flex items-center gap-1">
-                      <ShieldAlert className="size-3.5" /> Upload {3 - showcasePhotos.length} more photo{3 - showcasePhotos.length === 1 ? "" : "s"} to qualify for matching
+                      <ShieldAlert className="size-3.5" /> Upload{" "}
+                      {3 - showcasePhotos.length} more photo
+                      {3 - showcasePhotos.length === 1 ? "" : "s"} to qualify
+                      for matching
                     </span>
                   )}
                 </p>
@@ -631,7 +634,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-full text-xs h-8 px-3.5 gap-1.5 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 font-medium"
+                    className="rounded-full text-xs h-8 px-3.5 gap-1.5 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 font-medium active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
                   >
                     <span>Manage Vault</span>
                   </Button>
@@ -641,16 +644,17 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           </Card>
 
           {/* Card 4: Maya 1-on-1 Human Selfie Verification */}
-          <Card className="rounded-3xl border-border/70 shadow-xs hover:shadow-md transition-shadow">
+          <Card className="rounded-3xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2)] hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2 apple-headline">
                     <UserCheck className="size-4 text-violet-500" />
                     <span>Maya 1-on-1 Selfie Verification</span>
                   </CardTitle>
-                  <CardDescription className="text-xs">
-                    Private verification selfie checked by Maya to eliminate fake profiles.
+                  <CardDescription className="text-xs apple-caption">
+                    Private verification selfie checked by Maya to eliminate
+                    fake profiles.
                   </CardDescription>
                 </div>
               </div>
@@ -659,31 +663,34 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
               <div className="p-4 rounded-2xl bg-muted/40 border border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-foreground">Current Status:</span>
+                    <span className="text-xs font-semibold text-foreground apple-headline">
+                      Current Status:
+                    </span>
                     {verificationStatus === "verified" ? (
-                      <span className="text-xs font-bold text-emerald-500 flex items-center gap-1">
+                      <span className="text-xs font-bold text-emerald-500 flex items-center gap-1 apple-caption">
                         <ShieldCheck className="size-3.5" /> Verified Chino
                       </span>
                     ) : verificationStatus === "pending_review" ? (
-                      <span className="text-xs font-bold text-amber-500 flex items-center gap-1">
-                        <Camera className="size-3.5 animate-pulse" /> Under Maya Review ⏳
+                      <span className="text-xs font-bold text-amber-500 flex items-center gap-1 apple-caption">
+                        <Camera className="size-3.5 animate-pulse" /> Under Maya
+                        Review ⏳
                       </span>
                     ) : verificationStatus === "rejected" ? (
-                      <span className="text-xs font-bold text-rose-500 flex items-center gap-1">
+                      <span className="text-xs font-bold text-rose-500 flex items-center gap-1 apple-caption">
                         <ShieldAlert className="size-3.5" /> Retake Needed ⚠️
                       </span>
                     ) : (
-                      <span className="text-xs font-bold text-purple-500 flex items-center gap-1">
+                      <span className="text-xs font-bold text-purple-500 flex items-center gap-1 apple-caption">
                         <Ghost className="size-3.5" /> Unsubmitted (Ghost Mode)
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-md apple-caption">
                     {verificationStatus === "verified"
                       ? "Your identity has been confirmed by Maya. Your profile displays the verified badge and has full matching clearance in The Hallway."
                       : verificationStatus === "pending_review"
-                      ? "Maya has your selfie in the review queue. We verify every profile 1-on-1 to eliminate bots and fake profiles."
-                      : "Without verification, profiles stay in Ghost Spectator mode with limited interactions. Snap a quick selfie to unlock."}
+                        ? "Maya has your selfie in the review queue. We verify every profile 1-on-1 to eliminate bots and fake profiles."
+                        : "Without verification, profiles stay in Ghost Spectator mode with limited interactions. Snap a quick selfie to unlock."}
                   </p>
                 </div>
 
@@ -691,11 +698,13 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-full text-xs h-8 px-3.5 shrink-0 gap-1.5 border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 font-medium"
+                    className="rounded-full text-xs h-8 px-3.5 shrink-0 gap-1.5 border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 font-medium active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
                   >
                     <Camera className="size-3.5" />
                     <span>
-                      {privateCorner.verificationSelfie ? "Update Selfie" : "Verify Selfie Now"}
+                      {privateCorner.verificationSelfie
+                        ? "Update Selfie"
+                        : "Verify Selfie Now"}
                     </span>
                   </Button>
                 </Link>
@@ -706,10 +715,10 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           {/* Card 5: Match Preferences & Lifestyle Habits */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Sub-Card A: Match Criteria */}
-            <Card className="rounded-3xl border-border/70 shadow-xs hover:shadow-md transition-shadow">
+            <Card className="rounded-3xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2)] hover:shadow-md transition-shadow">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-1.5 apple-headline">
                     <SlidersHorizontal className="size-3.5 text-rose-500" />
                     <span>Match Criteria</span>
                   </CardTitle>
@@ -717,7 +726,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs text-rose-500 h-6 px-2 rounded-full"
+                      className="text-xs text-rose-500 h-6 px-2 rounded-full active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
                     >
                       Edit
                     </Button>
@@ -726,14 +735,19 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
               </CardHeader>
               <CardContent className="space-y-2.5 text-xs">
                 <div className="flex justify-between items-center py-1 border-b border-border/30">
-                  <span className="text-muted-foreground">Partner Age:</span>
-                  <span className="font-semibold text-foreground">
-                    {dealbreakers.ageRangeMin || 22} - {dealbreakers.ageRangeMax || 28} yrs
+                  <span className="text-muted-foreground apple-caption">
+                    Partner Age:
+                  </span>
+                  <span className="font-semibold text-foreground tabular-nums apple-caption">
+                    {dealbreakers.ageRangeMin || 22} -{" "}
+                    {dealbreakers.ageRangeMax || 28} yrs
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-muted-foreground">Scope:</span>
-                  <span className="font-semibold text-foreground truncate max-w-[130px]">
+                  <span className="text-muted-foreground apple-caption">
+                    Scope:
+                  </span>
+                  <span className="font-semibold text-foreground truncate max-w-[130px] apple-caption">
                     {dealbreakers.distance || "Nepal & Diaspora 🌍"}
                   </span>
                 </div>
@@ -741,10 +755,10 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
             </Card>
 
             {/* Sub-Card B: Lifestyle & Speed Round */}
-            <Card className="rounded-3xl border-border/70 shadow-xs hover:shadow-md transition-shadow">
+            <Card className="rounded-3xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2)] hover:shadow-md transition-shadow">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-1.5 apple-headline">
                     <Wine className="size-3.5 text-amber-500" />
                     <span>Lifestyle Habits</span>
                   </CardTitle>
@@ -752,7 +766,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs text-rose-500 h-6 px-2 rounded-full"
+                      className="text-xs text-rose-500 h-6 px-2 rounded-full active:scale-[0.97] transition-all duration-100 ease-out select-none touch-manipulation"
                     >
                       Edit
                     </Button>

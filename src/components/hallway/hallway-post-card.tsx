@@ -1,31 +1,29 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Heart,
-  Star,
-  MessageCircle,
   Bookmark,
-  MapPin,
-  ShieldCheck,
-  Lock,
-  GitFork,
+  Briefcase,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
-  Share2,
-  Briefcase,
+  GitFork,
   GraduationCap,
+  Heart,
+  Lock,
+  MapPin,
+  MessageCircle,
+  Share2,
+  ShieldCheck,
+  Star,
 } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Link from "next/link";
+import * as React from "react";
 import { toast } from "sonner";
-import type { CandidateProfile } from "@/lib/neonDB/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { recordGraphInteractionAction } from "@/lib/neo4j/neo4j.action";
+import type { CandidateProfile } from "@/lib/neonDB/types";
 
 interface HallwayPostCardProps {
   profile: CandidateProfile;
@@ -50,7 +48,10 @@ export function HallwayPostCard({
   const [isSaved, setIsSaved] = React.useState(false);
   const [showHeartPop, setShowHeartPop] = React.useState(false);
 
-  const images = profile.images && profile.images.length > 0 ? profile.images : ["/placeholder.svg"];
+  const images =
+    profile.images && profile.images.length > 0
+      ? profile.images
+      : ["/placeholder.svg"];
   const totalPhotos = images.length;
   const isDhukutiPhoto = photoIndex > 0; // 0 is main photo, 1+ are Dhukuti showcase photos
 
@@ -81,7 +82,9 @@ export function HallwayPostCard({
     if (!isLiked) {
       setIsLiked(true);
       onLike?.(profile);
-      recordGraphInteractionAction(currentUserId, profile.id, "like").catch(() => {});
+      recordGraphInteractionAction(currentUserId, profile.id, "like").catch(
+        () => {},
+      );
       toast.success(`Connected with ${profile.name}! 💘`, {
         description: "Shared affinity recorded in Neo4j knowledge graph.",
       });
@@ -96,7 +99,11 @@ export function HallwayPostCard({
       setIsSuperLiked(true);
       setIsLiked(true);
       onSuperLike?.(profile);
-      recordGraphInteractionAction(currentUserId, profile.id, "superlike").catch(() => {});
+      recordGraphInteractionAction(
+        currentUserId,
+        profile.id,
+        "superlike",
+      ).catch(() => {});
       toast.success(`Kura-Kani Sparked with ${profile.name}! 💫`, {
         description: "High topological priority assigned in Neo4j.",
       });
@@ -105,7 +112,11 @@ export function HallwayPostCard({
 
   const toggleSave = () => {
     setIsSaved(!isSaved);
-    toast.info(!isSaved ? `Chino saved for ${profile.name} 🔖` : "Chino removed from saved");
+    toast.info(
+      !isSaved
+        ? `Chino saved for ${profile.name} 🔖`
+        : "Chino removed from saved",
+    );
   };
 
   const handleShare = () => {
@@ -116,48 +127,58 @@ export function HallwayPostCard({
   };
 
   const harmonyScore = profile.neo4jHarmonyScore || 96.4;
-  const sharedClusters = profile.sharedClusters && profile.sharedClusters.length > 0
-    ? profile.sharedClusters
-    : (profile.interests || []).slice(0, 3);
+  const sharedClusters =
+    profile.sharedClusters && profile.sharedClusters.length > 0
+      ? profile.sharedClusters
+      : (profile.interests || []).slice(0, 3);
 
   return (
-    <article className="w-full max-w-[540px] mx-auto bg-card border border-border/70 rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-200">
+    <article className="w-full max-w-[540px] mx-auto bg-card/95 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] rounded-3xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03),0_8px_32px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] transition-shadow duration-200">
       {/* 1. POST HEADER (Instagram / Twitter style) */}
       <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-border/40">
         <div className="flex items-center gap-3 min-w-0">
           <Avatar className="size-11 ring-2 ring-rose-500/30 ring-offset-2 ring-offset-background">
-            <AvatarImage src={images[0]} alt={profile.name} className="object-cover" />
+            <AvatarImage
+              src={images[0]}
+              alt={profile.name}
+              className="object-cover"
+            />
             <AvatarFallback className="bg-rose-500/10 text-rose-500 font-bold text-sm">
               {profile.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-bold text-base text-foreground tracking-tight truncate">
+              <span className="font-bold text-base text-foreground tracking-tight truncate apple-headline">
                 {profile.name}
               </span>
-              <span className="text-muted-foreground font-semibold text-sm tabular-nums">
+              <span className="text-muted-foreground font-semibold text-sm tabular-nums apple-caption">
                 {profile.age}
               </span>
               {profile.verified && (
-                <span title="Mayalu Verified Chino" className="inline-flex items-center">
+                <span
+                  title="Mayalu Verified Chino"
+                  className="inline-flex items-center"
+                >
                   <ShieldCheck className="size-4 text-emerald-500 shrink-0 fill-emerald-500/20" />
                 </span>
               )}
               {profile.gender && (
                 <Badge
                   variant="outline"
-                  className="text-[10px] py-0 px-1.5 font-medium border-border/60 text-muted-foreground"
+                  className="text-[10px] py-0 px-1.5 font-medium border-border/60 text-muted-foreground apple-caption"
                 >
                   {profile.gender}
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+            <p className="text-xs text-muted-foreground flex items-center gap-1 truncate apple-caption">
               <MapPin className="size-3 text-rose-400 shrink-0" />
               <span className="truncate">{profile.location}</span>
               <span>•</span>
-              <span className="shrink-0 tabular-nums">{profile.distance} km</span>
+              <span className="shrink-0 tabular-nums">
+                {profile.distance} km
+              </span>
             </p>
           </div>
         </div>
@@ -166,16 +187,19 @@ export function HallwayPostCard({
         <button
           type="button"
           onClick={() => onOpenGraphModal(profile)}
-          className="group flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-rose-500/10 hover:from-violet-500/20 hover:to-rose-500/20 border border-violet-500/25 text-violet-600 dark:text-violet-400 font-semibold text-xs transition-all active:scale-95 cursor-pointer shadow-2xs shrink-0 touch-manipulation"
+          className="group flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-rose-500/10 hover:from-violet-500/20 hover:to-rose-500/20 border border-violet-500/25 text-violet-600 dark:text-violet-400 font-semibold text-xs transition-[transform,background-color] duration-100 ease-out active:scale-[0.97] cursor-pointer shadow-2xs shrink-0 touch-manipulation select-none"
           title="Inspect Neo4j compatibility topology"
         >
           <GitFork className="size-3.5 text-violet-500 group-hover:rotate-12 transition-transform" />
           <span className="tabular-nums">{harmonyScore}%</span>
-          <span className="hidden xs:inline text-[10px] text-muted-foreground font-normal">Graph</span>
+          <span className="hidden xs:inline text-[10px] text-muted-foreground font-normal">
+            Graph
+          </span>
         </button>
       </div>
 
       {/* 2. DHUKUTI MEDIA CAROUSEL (Instagram Post Canvas) */}
+      {/* biome-ignore lint/a11y/useSemanticElements: interactive media container with nested action buttons requires div */}
       <div
         role="button"
         tabIndex={0}
@@ -203,10 +227,10 @@ export function HallwayPostCard({
         <AnimatePresence>
           {showHeartPop && (
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.7, opacity: 0 }}
               animate={{ scale: 1.25, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
+              transition={{ type: "spring", damping: 14, stiffness: 260 }}
               className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
             >
               <Heart className="size-24 fill-rose-500 text-white drop-shadow-2xl" />
@@ -225,7 +249,9 @@ export function HallwayPostCard({
             <span>Avatar</span>
           )}
           <span className="text-white/60">•</span>
-          <span>{photoIndex + 1}/{totalPhotos}</span>
+          <span>
+            {photoIndex + 1}/{totalPhotos}
+          </span>
         </div>
 
         {/* Carousel Navigation Arrows: visible on mobile, hover-revealed on desktop */}
@@ -234,7 +260,7 @@ export function HallwayPostCard({
             <button
               type="button"
               onClick={prevPhoto}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur-md text-white flex items-center justify-center transition-[opacity,transform,background-color] duration-150 ease-out opacity-80 sm:opacity-0 sm:group-hover:opacity-100 active:scale-95 z-10 touch-manipulation cursor-pointer"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur-md text-white flex items-center justify-center transition-[opacity,transform,background-color] duration-100 ease-out opacity-80 sm:opacity-0 sm:group-hover:opacity-100 active:scale-[0.97] z-10 touch-manipulation cursor-pointer select-none"
               title="Previous photo"
             >
               <ChevronLeft className="size-4" />
@@ -242,7 +268,7 @@ export function HallwayPostCard({
             <button
               type="button"
               onClick={nextPhoto}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur-md text-white flex items-center justify-center transition-[opacity,transform,background-color] duration-150 ease-out opacity-80 sm:opacity-0 sm:group-hover:opacity-100 active:scale-95 z-10 touch-manipulation cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur-md text-white flex items-center justify-center transition-[opacity,transform,background-color] duration-100 ease-out opacity-80 sm:opacity-0 sm:group-hover:opacity-100 active:scale-[0.97] z-10 touch-manipulation cursor-pointer select-none"
               title="Next photo"
             >
               <ChevronRight className="size-4" />
@@ -270,7 +296,7 @@ export function HallwayPostCard({
           <button
             type="button"
             onClick={triggerLike}
-            className={`flex items-center justify-center size-9 rounded-full transition-transform active:scale-90 ${
+            className={`flex items-center justify-center size-9 rounded-full transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.97] touch-manipulation select-none ${
               isLiked
                 ? "text-rose-500 fill-rose-500 bg-rose-500/10"
                 : "text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
@@ -284,20 +310,22 @@ export function HallwayPostCard({
           <button
             type="button"
             onClick={triggerSuperLike}
-            className={`flex items-center justify-center size-9 rounded-full transition-transform active:scale-90 ${
+            className={`flex items-center justify-center size-9 rounded-full transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.97] touch-manipulation select-none ${
               isSuperLiked
                 ? "text-violet-500 fill-violet-500 bg-violet-500/10"
                 : "text-muted-foreground hover:text-violet-500 hover:bg-violet-500/10"
             }`}
             title="Super Like / Kura-Kani Spark"
           >
-            <Star className={`size-5 ${isSuperLiked ? "fill-violet-500" : ""}`} />
+            <Star
+              className={`size-5 ${isSuperLiked ? "fill-violet-500" : ""}`}
+            />
           </button>
 
           {/* Chat / Message Button */}
           <Link
             href={`/account/messages?to=${profile.id}`}
-            className="flex items-center justify-center size-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-transform active:scale-90"
+            className="flex items-center justify-center size-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.97] touch-manipulation select-none"
             title="Open Kura-Kani Chat"
           >
             <MessageCircle className="size-5" />
@@ -307,7 +335,7 @@ export function HallwayPostCard({
           <button
             type="button"
             onClick={() => onOpenGraphModal(profile)}
-            className="flex items-center justify-center size-9 rounded-full text-muted-foreground hover:text-violet-500 hover:bg-violet-500/10 transition-transform active:scale-90"
+            className="flex items-center justify-center size-9 rounded-full text-muted-foreground hover:text-violet-500 hover:bg-violet-500/10 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.97] touch-manipulation select-none"
             title="Inspect Neo4j compatibility graph"
           >
             <GitFork className="size-5" />
@@ -319,7 +347,7 @@ export function HallwayPostCard({
           <button
             type="button"
             onClick={handleShare}
-            className="flex items-center justify-center size-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-transform active:scale-90"
+            className="flex items-center justify-center size-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.97] touch-manipulation select-none"
             title="Share Profile"
           >
             <Share2 className="size-4" />
@@ -329,14 +357,16 @@ export function HallwayPostCard({
           <button
             type="button"
             onClick={toggleSave}
-            className={`flex items-center justify-center size-9 rounded-full transition-transform active:scale-90 ${
+            className={`flex items-center justify-center size-9 rounded-full transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.97] touch-manipulation select-none ${
               isSaved
                 ? "text-amber-500 fill-amber-500 bg-amber-500/10"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
             }`}
             title="Save Chino"
           >
-            <Bookmark className={`size-4.5 ${isSaved ? "fill-amber-500" : ""}`} />
+            <Bookmark
+              className={`size-4.5 ${isSaved ? "fill-amber-500" : ""}`}
+            />
           </button>
         </div>
       </div>
@@ -371,27 +401,42 @@ export function HallwayPostCard({
         {/* Mayalu Cultural & Chino Identity Badges */}
         <div className="flex flex-wrap gap-1.5 pt-0.5">
           {profile.dalBhatFrequency && (
-            <Badge variant="outline" className="text-[11px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-medium">
+            <Badge
+              variant="outline"
+              className="text-[11px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-medium"
+            >
               🍚 {profile.dalBhatFrequency}
             </Badge>
           )}
           {isMatrimonialMode && profile.gotra && (
-            <Badge variant="outline" className="text-[11px] bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/30 font-medium">
+            <Badge
+              variant="outline"
+              className="text-[11px] bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/30 font-medium"
+            >
               🕉️ Gotra: {profile.gotra}
             </Badge>
           )}
           {isMatrimonialMode && profile.caste && (
-            <Badge variant="outline" className="text-[11px] bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30 font-medium">
+            <Badge
+              variant="outline"
+              className="text-[11px] bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30 font-medium"
+            >
               🏛️ {profile.caste}
             </Badge>
           )}
           {profile.musicRepeat && (
-            <Badge variant="outline" className="text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 font-medium">
+            <Badge
+              variant="outline"
+              className="text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 font-medium"
+            >
               🎵 {profile.musicRepeat}
             </Badge>
           )}
           {profile.relationshipIntent && (
-            <Badge variant="outline" className="text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-medium">
+            <Badge
+              variant="outline"
+              className="text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-medium"
+            >
               💍 {profile.relationshipIntent}
             </Badge>
           )}
@@ -419,7 +464,7 @@ export function HallwayPostCard({
             <button
               type="button"
               onClick={() => onOpenGraphModal(profile)}
-              className="text-[10px] text-violet-500 hover:underline font-medium cursor-pointer"
+              className="text-[10px] text-violet-500 hover:underline font-medium cursor-pointer active:scale-[0.97] transition-transform duration-100 ease-out touch-manipulation select-none"
             >
               View 3D Topology →
             </button>

@@ -72,12 +72,12 @@ export default function Header() {
     session?.user?.name || session?.user?.email?.split("@")[0] || "Member";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-rose-500/10 dark:border-rose-500/10 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-2xs pt-[env(safe-area-inset-top,0px)] transition-[background-color,border-color,box-shadow] duration-200 ease-out">
+    <header className="sticky top-0 z-50 w-full border-b border-black/[0.06] dark:border-white/[0.08] bg-background/75 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/60 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_6px_16px_rgba(0,0,0,0.02)] dark:shadow-[0_1px_0_rgba(255,255,255,0.06)] pt-[env(safe-area-inset-top,0px)] transition-[background-color,border-color,box-shadow] duration-200 ease-out">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand identity */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 sm:gap-3 group transition-transform active:scale-95 shrink-0"
+          className="flex items-center gap-2.5 sm:gap-3 group transition-transform duration-100 ease-out active:scale-[0.97] shrink-0 touch-manipulation"
         >
           <div className="relative">
             <BrandLogo className="w-9 h-9 transition-transform group-hover:scale-105 duration-300" />
@@ -85,15 +85,15 @@ export default function Header() {
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-rose-500 via-pink-500 to-violet-500 bg-clip-text text-transparent">
+              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-rose-500 via-pink-500 to-violet-500 bg-clip-text text-transparent apple-headline">
                 Mayalu
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-500 border border-rose-500/20 shadow-xs">
+              <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-500 border border-rose-500/20 shadow-xs apple-caption">
                 <ButterflyIcon className="w-3 h-3 text-rose-500 animate-pulse" />
                 मयालु
               </span>
             </div>
-            <span className="hidden md:block text-[10px] text-muted-foreground font-medium -mt-1 tracking-wider uppercase">
+            <span className="hidden md:block text-[10px] text-muted-foreground font-medium -mt-1 tracking-wider uppercase apple-caption">
               Romantic Graph Dating & Matrimony
             </span>
           </div>
@@ -103,42 +103,42 @@ export default function Header() {
         <nav className="hidden lg:flex items-center gap-1 text-xs xl:text-sm font-medium text-muted-foreground">
           <a
             href="#spotlight"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-rose-500/5 dark:hover:bg-rose-500/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-rose-500/10 dark:hover:bg-rose-500/15 transition-[color,background-color,transform] duration-100 active:scale-[0.97]"
           >
             <Compass className="w-4 h-4 text-rose-500" />
             Discover
           </a>
           <a
             href="#dual-modes"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-amber-500/5 dark:hover:bg-amber-500/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-amber-500/10 dark:hover:bg-amber-500/15 transition-[color,background-color,transform] duration-100 active:scale-[0.97]"
           >
             <HeartHandshake className="w-4 h-4 text-amber-500" />
             Dual Modes
           </a>
           <a
             href="#graph-match"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-violet-500/5 dark:hover:bg-violet-500/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-violet-500/10 dark:hover:bg-violet-500/15 transition-[color,background-color,transform] duration-100 active:scale-[0.97]"
           >
             <Sparkles className="w-4 h-4 text-violet-500" />
             Graph Tech
           </a>
           <a
             href="#xp-gamify"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-blue-500/5 dark:hover:bg-blue-500/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-blue-500/10 dark:hover:bg-blue-500/15 transition-[color,background-color,transform] duration-100 active:scale-[0.97]"
           >
             <Trophy className="w-4 h-4 text-blue-500" />
             XP & Rewards
           </a>
           <a
             href="#privacy"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-pink-500/5 dark:hover:bg-pink-500/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-pink-500/10 dark:hover:bg-pink-500/15 transition-[color,background-color,transform] duration-100 active:scale-[0.97]"
           >
             <Mail className="w-4 h-4 text-pink-500" />
             Privacy
           </a>
           <a
             href="#roadmap"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-emerald-500/5 dark:hover:bg-emerald-500/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:text-foreground hover:bg-emerald-500/10 dark:hover:bg-emerald-500/15 transition-[color,background-color,transform] duration-100 active:scale-[0.97]"
           >
             <Milestone className="w-4 h-4 text-emerald-500" />
             Roadmap
@@ -157,7 +157,7 @@ export default function Header() {
               <Link href="/account/dashboard" className="hidden sm:inline-flex">
                 <Button
                   size="sm"
-                  className="relative group overflow-hidden rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md shadow-rose-500/20 hover:shadow-lg hover:shadow-rose-500/35 hover:scale-105 active:scale-95 transition-all"
+                  className="relative group overflow-hidden rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md shadow-rose-500/20 hover:shadow-lg hover:shadow-rose-500/35 hover:scale-[1.02] active:scale-[0.97] transition-[transform,box-shadow] duration-100 ease-out"
                 >
                   <span className="relative z-10 flex items-center gap-1.5">
                     <LayoutDashboard className="w-3.5 h-3.5" />
@@ -174,7 +174,7 @@ export default function Header() {
               <div className="hidden sm:block">
                 <DropdownMenu>
                   <DropdownMenuTrigger
-                    className="flex items-center gap-1.5 p-1 rounded-full border border-border/70 hover:border-rose-500/30 bg-background/60 hover:bg-muted/50 transition-all cursor-pointer focus:outline-none"
+                    className="flex items-center gap-1.5 p-1 rounded-full border border-border/70 hover:border-rose-500/30 bg-background/60 hover:bg-muted/50 transition-all duration-100 active:scale-[0.97] cursor-pointer focus:outline-none"
                     aria-label="User account options"
                   >
                     <Avatar className="w-7 h-7 border border-rose-500/30">
@@ -192,14 +192,14 @@ export default function Header() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-56 rounded-2xl border border-rose-500/20 bg-background/95 backdrop-blur-xl p-2 shadow-2xl"
+                    className="w-56 rounded-2xl border border-black/[0.06] dark:border-white/[0.1] bg-popover/90 backdrop-blur-2xl p-2 shadow-2xl"
                   >
                     <DropdownMenuLabel className="px-2 py-1.5 font-normal">
                       <div className="flex flex-col space-y-0.5">
-                        <p className="text-xs font-semibold text-foreground truncate">
+                        <p className="text-xs font-semibold text-foreground truncate apple-headline">
                           {session.user.name || "Mayalu Member"}
                         </p>
-                        <p className="text-[11px] text-muted-foreground truncate">
+                        <p className="text-[11px] text-muted-foreground truncate apple-caption">
                           {session.user.email}
                         </p>
                       </div>
@@ -254,7 +254,7 @@ export default function Header() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="rounded-full text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                  className="rounded-full text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 active:scale-[0.97] transition-all duration-100"
                 >
                   Sign In
                 </Button>
@@ -263,7 +263,7 @@ export default function Header() {
               <Link href="/auth/sign-up">
                 <Button
                   size="sm"
-                  className="relative group overflow-hidden rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-rose-500/25 transition-all duration-300 hover:shadow-rose-500/40 hover:scale-105 active:scale-95"
+                  className="relative group overflow-hidden rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-rose-500/25 transition-[transform,box-shadow] duration-100 hover:shadow-rose-500/40 hover:scale-[1.02] active:scale-[0.97]"
                 >
                   <span className="relative z-10 flex items-center gap-1.5">
                     Get Started
@@ -282,7 +282,7 @@ export default function Header() {
             variant="ghost"
             size="icon"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60"
+            className="lg:hidden rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 active:scale-[0.97] transition-all duration-100"
             aria-label="Toggle navigation menu"
           >
             {isMobileMenuOpen ? (
@@ -296,12 +296,12 @@ export default function Header() {
 
       {/* Mobile Menu Panel */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-b border-border/40 bg-background/95 backdrop-blur-2xl px-4 py-4 shadow-2xl animate-in slide-in-from-top-2 duration-200">
+        <div className="lg:hidden border-b border-black/[0.06] dark:border-white/[0.08] bg-background/85 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/75 px-4 py-4 shadow-2xl animate-in slide-in-from-top-2 duration-200">
           <div className="flex flex-col space-y-2">
             <button
               type="button"
               onClick={() => scrollToSection("#spotlight")}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-rose-500/10 hover:text-rose-500 transition-colors cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-rose-500/10 hover:text-rose-500 active:scale-[0.97] transition-all duration-100 cursor-pointer touch-manipulation"
             >
               <Compass className="w-4 h-4 text-rose-500" />
               Discover
@@ -309,7 +309,7 @@ export default function Header() {
             <button
               type="button"
               onClick={() => scrollToSection("#dual-modes")}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-amber-500/10 hover:text-amber-500 transition-colors cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-amber-500/10 hover:text-amber-500 active:scale-[0.97] transition-all duration-100 cursor-pointer touch-manipulation"
             >
               <HeartHandshake className="w-4 h-4 text-amber-500" />
               Dual Modes
@@ -317,7 +317,7 @@ export default function Header() {
             <button
               type="button"
               onClick={() => scrollToSection("#graph-match")}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-violet-500/10 hover:text-violet-500 transition-colors cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-violet-500/10 hover:text-violet-500 active:scale-[0.97] transition-all duration-100 cursor-pointer touch-manipulation"
             >
               <Sparkles className="w-4 h-4 text-violet-500" />
               Graph Tech
@@ -325,7 +325,7 @@ export default function Header() {
             <button
               type="button"
               onClick={() => scrollToSection("#xp-gamify")}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-blue-500/10 hover:text-blue-500 transition-colors cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-blue-500/10 hover:text-blue-500 active:scale-[0.97] transition-all duration-100 cursor-pointer touch-manipulation"
             >
               <Trophy className="w-4 h-4 text-blue-500" />
               XP & Rewards
@@ -333,7 +333,7 @@ export default function Header() {
             <button
               type="button"
               onClick={() => scrollToSection("#privacy")}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-pink-500/10 hover:text-pink-500 transition-colors cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-pink-500/10 hover:text-pink-500 active:scale-[0.97] transition-all duration-100 cursor-pointer touch-manipulation"
             >
               <Mail className="w-4 h-4 text-pink-500" />
               Privacy & Trust
@@ -341,7 +341,7 @@ export default function Header() {
             <button
               type="button"
               onClick={() => scrollToSection("#roadmap")}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-emerald-500/10 hover:text-emerald-500 transition-colors cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left hover:bg-emerald-500/10 hover:text-emerald-500 active:scale-[0.97] transition-all duration-100 cursor-pointer touch-manipulation"
             >
               <Milestone className="w-4 h-4 text-emerald-500" />
               Roadmap
@@ -376,7 +376,7 @@ export default function Header() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="w-full"
                   >
-                    <Button className="w-full rounded-xl bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 font-semibold text-white shadow-md shadow-rose-500/20">
+                    <Button className="w-full rounded-xl bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 font-semibold text-white shadow-md shadow-rose-500/20 active:scale-[0.97] transition-all duration-100 touch-manipulation">
                       <LayoutDashboard className="w-4 h-4 mr-2" />
                       Go to Dashboard
                     </Button>
@@ -389,7 +389,7 @@ export default function Header() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full rounded-xl gap-1.5 text-xs"
+                        className="w-full rounded-xl gap-1.5 text-xs active:scale-[0.97] transition-all duration-100 touch-manipulation"
                       >
                         <User className="w-3.5 h-3.5 text-violet-500" />
                         Profile
@@ -400,7 +400,7 @@ export default function Header() {
                       size="sm"
                       onClick={handleSignOut}
                       disabled={isSigningOut}
-                      className="w-full rounded-xl gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      className="w-full rounded-xl gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive active:scale-[0.97] transition-all duration-100 touch-manipulation"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       Sign Out
@@ -416,7 +416,7 @@ export default function Header() {
                   >
                     <Button
                       variant="outline"
-                      className="w-full rounded-xl text-xs font-medium"
+                      className="w-full rounded-xl text-xs font-medium active:scale-[0.97] transition-all duration-100 touch-manipulation"
                     >
                       Sign In
                     </Button>
@@ -426,7 +426,7 @@ export default function Header() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex-1"
                   >
-                    <Button className="w-full rounded-xl bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 text-xs font-semibold text-white shadow-md shadow-rose-500/25">
+                    <Button className="w-full rounded-xl bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 text-xs font-semibold text-white shadow-md shadow-rose-500/25 active:scale-[0.97] transition-all duration-100 touch-manipulation">
                       Get Started →
                     </Button>
                   </Link>

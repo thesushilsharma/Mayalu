@@ -12,12 +12,11 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
-  Users,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { memo, useMemo, useState, useEffect } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -76,7 +75,8 @@ function DashboardUserLayout() {
     `https://api.dicebear.com/10.x/personas/svg?seed=Mayalu`;
 
   const isVerified = mounted && userProfile?.verificationStatus === "verified";
-  const isReview = mounted && userProfile?.verificationStatus === "pending_review";
+  const isReview =
+    mounted && userProfile?.verificationStatus === "pending_review";
   const isOnboarded = mounted && Boolean(userProfile?.onboardingCompleted);
   const isAdmin = mounted && userProfile?.role === "admin";
   const displayLevel = mounted ? userLevel.level : 1;
@@ -97,21 +97,26 @@ function DashboardUserLayout() {
           key={item.href}
           href={item.href}
           className={cn(
-            "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs transition-[color,background-color,transform] duration-150 ease-out rounded-xl min-w-0 flex-1 touch-manipulation select-none active:scale-95",
+            "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs transition-[color,background-color,transform] duration-100 ease-out rounded-xl min-w-0 flex-1 touch-manipulation select-none active:scale-[0.97]",
             isActive
-              ? "text-pink-600 dark:text-pink-400 bg-pink-500/10 font-bold shadow-2xs"
+              ? "text-rose-600 dark:text-rose-400 bg-rose-500/10 font-bold shadow-2xs"
               : "text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:text-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:bg-accent/60",
           )}
           aria-current={isActive ? "page" : undefined}
         >
           <item.icon
-            className={cn("h-5 w-5 shrink-0 transition-transform duration-150", isActive && "text-pink-500 scale-110")}
+            className={cn(
+              "h-5 w-5 shrink-0 transition-transform duration-100",
+              isActive && "text-rose-500 scale-105",
+            )}
           />
-          <span className="truncate tracking-tight">{item.name}</span>
+          <span className="truncate tracking-tight apple-caption">
+            {item.name}
+          </span>
         </Link>
       );
     });
-  }, [activeNavItems, pathname]);
+  }, [pathname]);
 
   // Remaining nav items for dropdown
   const dropdownNavItems = useMemo(() => {
@@ -133,7 +138,7 @@ function DashboardUserLayout() {
         </DropdownMenuItem>
       );
     });
-  }, [activeNavItems, pathname]);
+  }, [pathname]);
 
   // Desktop sidebar nav items
   const sidebarNavItems = useMemo(() => {
@@ -145,30 +150,31 @@ function DashboardUserLayout() {
           key={item.href}
           href={item.href}
           className={cn(
-            "flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 rounded-xl group relative overflow-hidden",
+            "flex items-center gap-3 px-4 py-2.5 text-sm transition-[color,background-color,transform,box-shadow] duration-100 ease-out rounded-xl group relative overflow-hidden active:scale-[0.98] select-none",
             isActive
-              ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold shadow-md shadow-pink-500/20"
-              : "text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm font-medium",
+              ? "bg-gradient-to-r from-rose-500 via-pink-600 to-rose-600 text-white font-semibold shadow-md shadow-rose-500/20 border border-white/20"
+              : "text-foreground/80 hover:text-foreground hover:bg-muted/70 hover:shadow-xs font-medium",
           )}
           aria-current={isActive ? "page" : undefined}
         >
           {isActive && (
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 opacity-0 group-hover:opacity-20 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-r from-rose-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity" />
           )}
           <item.icon
             className={cn(
-              "h-5 w-5 shrink-0 transition-all duration-200 relative z-10",
+              "h-5 w-5 shrink-0 transition-transform duration-150 relative z-10",
               isActive
                 ? "text-white"
-                : "text-gray-500 dark:text-gray-400 group-hover:text-pink-500 group-hover:scale-110",
+                : "text-muted-foreground group-hover:text-rose-500 group-hover:scale-105",
             )}
           />
-          <span className="relative z-10">{item.name}</span>
+          <span className="relative z-10 apple-headline tracking-tight">
+            {item.name}
+          </span>
         </Link>
       );
     });
-  }, [activeNavItems, pathname]);
-
+  }, [pathname]);
 
   // Hide all dashboard chrome during onboarding or admin moderation console
   if (isStandaloneRoute) {
@@ -178,9 +184,9 @@ function DashboardUserLayout() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:z-50 lg:bg-gradient-to-b lg:from-white lg:to-gray-50/50 lg:dark:from-gray-900 lg:dark:to-gray-900/95 lg:backdrop-blur-sm lg:border-r lg:border-gray-200/80 lg:dark:border-gray-800/80 lg:shadow-sm">
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:z-50 lg:bg-card/75 lg:dark:bg-card/75 lg:backdrop-blur-2xl lg:supports-[backdrop-filter]:bg-card/60 lg:border-r lg:border-black/[0.06] lg:dark:border-white/[0.08] lg:shadow-[1px_0_0_0_rgba(255,255,255,0.04)]">
         {/* Desktop Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200/80 dark:border-gray-800/80">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-black/[0.06] dark:border-white/[0.08]">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="bg-gradient-to-br from-pink-500 via-rose-500 to-pink-600 p-2.5 rounded-xl shadow-lg shadow-pink-500/20 group-hover:shadow-pink-500/40 transition-all duration-300 group-hover:scale-105">
               <HeartIcon className="h-5 w-5 text-white" />
@@ -199,9 +205,9 @@ function DashboardUserLayout() {
               "group block p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden",
               "bg-gradient-to-br from-pink-50/90 via-rose-50/70 to-purple-50/40 dark:from-pink-950/30 dark:via-rose-950/20 dark:to-purple-950/20",
               "border border-pink-200/70 dark:border-pink-900/40 shadow-xs",
-              "hover:border-rose-400/60 dark:hover:border-rose-500/50 hover:shadow-md hover:shadow-pink-500/10 hover:scale-[1.01] active:scale-[0.99]",
+              "hover:border-rose-400/60 dark:hover:border-rose-500/50 hover:shadow-md hover:shadow-rose-500/10 active:scale-[0.97] transition-all duration-100 ease-out",
               isProfileActive &&
-                "ring-2 ring-rose-500/50 border-rose-400 bg-pink-100/40 dark:bg-pink-950/40"
+                "ring-2 ring-rose-500/50 border-rose-400 bg-pink-100/40 dark:bg-pink-950/40",
             )}
             title="View & manage your authentic Chino profile"
           >
@@ -213,7 +219,10 @@ function DashboardUserLayout() {
                     alt={displayName}
                     className="object-cover"
                   />
-                  <AvatarFallback suppressHydrationWarning className="bg-gradient-to-br from-pink-500 to-rose-500 text-white font-bold text-sm">
+                  <AvatarFallback
+                    suppressHydrationWarning
+                    className="bg-gradient-to-br from-pink-500 to-rose-500 text-white font-bold text-sm"
+                  >
                     {displayInitials}
                   </AvatarFallback>
                 </Avatar>
@@ -228,10 +237,13 @@ function DashboardUserLayout() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1">
-                  <p suppressHydrationWarning className="text-sm font-bold truncate text-gray-900 dark:text-gray-100 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                  <p
+                    suppressHydrationWarning
+                    className="text-sm font-bold truncate text-foreground apple-headline group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors"
+                  >
                     {displayName}
                   </p>
-                  <ChevronRight className="h-3.5 w-3.5 text-gray-400 group-hover:text-rose-500 group-hover:translate-x-0.5 transition-all shrink-0" />
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-rose-500 group-hover:translate-x-0.5 transition-all shrink-0" />
                 </div>
                 <div className="text-xs font-medium truncate flex items-center gap-1 mt-0.5">
                   {isVerified ? (
@@ -266,26 +278,26 @@ function DashboardUserLayout() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2 border-t border-pink-200/50 dark:border-pink-900/30">
+            <div className="flex items-center gap-2 pt-2 border-t border-border/40">
               <Badge
                 suppressHydrationWarning
                 variant="secondary"
-                className="bg-white/80 dark:bg-gray-800/80 text-pink-600 dark:text-pink-400 border-pink-200/80 dark:border-pink-800/80 font-semibold text-xs py-0.5 px-2 tabular-nums"
+                className="bg-background/80 dark:bg-card/80 text-rose-600 dark:text-rose-400 border-border/60 font-semibold text-xs py-0.5 px-2 tabular-nums apple-caption"
                 title={`Level ${displayLevel} (${userLevel.xp}/${userLevel.requiredXp} XP)`}
               >
-                <Zap className="h-3 w-3 mr-1 fill-pink-500 text-pink-500" />
+                <Zap className="h-3 w-3 mr-1 fill-rose-500 text-rose-500" />
                 Level {displayLevel}
               </Badge>
               <Badge
                 suppressHydrationWarning
                 variant="secondary"
-                className="bg-white/80 dark:bg-gray-800/80 text-blue-600 dark:text-blue-400 border-blue-200/80 dark:border-blue-800/80 font-semibold text-xs py-0.5 px-2 tabular-nums"
+                className="bg-background/80 dark:bg-card/80 text-blue-600 dark:text-blue-400 border-border/60 font-semibold text-xs py-0.5 px-2 tabular-nums apple-caption"
                 title={`${displaySuperLikes} Super Likes`}
               >
                 <Zap className="h-3 w-3 mr-1 text-blue-500 fill-blue-500" />
                 {displaySuperLikes} Super
               </Badge>
-              <span className="ml-auto text-[10px] text-muted-foreground group-hover:text-rose-500 transition-colors font-medium">
+              <span className="ml-auto text-[10px] text-muted-foreground group-hover:text-rose-500 transition-colors font-medium apple-caption">
                 Chino →
               </span>
             </div>
@@ -293,14 +305,14 @@ function DashboardUserLayout() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700">
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted">
           {sidebarNavItems}
         </nav>
 
         {/* Desktop Footer Actions */}
-        <div className="p-4 border-t border-gray-200/80 dark:border-gray-800/80 bg-gray-50/50 dark:bg-gray-900/50 space-y-2">
-          <div className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="p-4 border-t border-black/[0.06] dark:border-white/[0.08] bg-muted/20 space-y-2">
+          <div className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-accent/50 transition-colors">
+            <span className="text-sm font-medium text-foreground/80">
               Theme
             </span>
             <ModeToggle />
@@ -310,13 +322,13 @@ function DashboardUserLayout() {
       </aside>
 
       {/* Mobile/Tablet Top Header */}
-      <header className="lg:hidden sticky top-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm">
+      <header className="lg:hidden sticky top-0 z-40 bg-background/80 dark:bg-background/80 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/65 border-b border-black/[0.06] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(0,0,0,0.02)] pt-[env(safe-area-inset-top,0px)]">
         <div className="flex items-center justify-between px-4 py-3">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="bg-gradient-to-br from-pink-500 via-rose-500 to-pink-600 p-2 rounded-xl shadow-md shadow-pink-500/20 group-hover:shadow-pink-500/40 transition-all duration-300 group-hover:scale-105">
               <HeartIcon className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-pink-600 via-rose-600 to-pink-700 bg-clip-text text-transparent">
+            <span className="text-lg font-bold bg-gradient-to-r from-pink-600 via-rose-600 to-pink-700 bg-clip-text text-transparent apple-headline">
               Mayalu
             </span>
           </Link>
@@ -324,19 +336,22 @@ function DashboardUserLayout() {
           <div className="flex items-center gap-2">
             <Link
               href="/account/profile"
-              className="flex items-center gap-1.5 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 px-2.5 py-1.5 rounded-lg border border-pink-200 dark:border-pink-900/30 hover:border-pink-400 transition-colors"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 px-2.5 py-1.5 rounded-lg border border-pink-200 dark:border-pink-900/30 hover:border-pink-400 transition-colors active:scale-[0.97] duration-100 ease-out"
               title="View your Level & Chino"
             >
               <Badge
                 suppressHydrationWarning
                 variant="secondary"
-                className="text-xs font-semibold bg-white/80 dark:bg-gray-800/80 border-0"
+                className="text-xs font-semibold bg-white/80 dark:bg-gray-800/80 border-0 tabular-nums apple-caption"
               >
                 Lv.{displayLevel}
               </Badge>
               <div className="flex items-center gap-1 px-1.5">
                 <Zap className="h-3.5 w-3.5 text-blue-500 fill-blue-500" />
-                <span suppressHydrationWarning className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                <span
+                  suppressHydrationWarning
+                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 tabular-nums apple-caption"
+                >
                   {displaySuperLikes}
                 </span>
               </div>
@@ -345,7 +360,7 @@ function DashboardUserLayout() {
             <Link
               href="/account/profile"
               title="View Chino Profile"
-              className="transition-transform active:scale-95"
+              className="transition-transform duration-100 ease-out active:scale-[0.97] touch-manipulation"
             >
               <Avatar className="h-9 w-9 ring-2 ring-pink-300 dark:ring-pink-700 hover:ring-rose-500 transition-all shadow-xs">
                 <AvatarImage
@@ -353,7 +368,10 @@ function DashboardUserLayout() {
                   alt={displayName}
                   className="object-cover"
                 />
-                <AvatarFallback suppressHydrationWarning className="bg-gradient-to-br from-pink-500 to-rose-500 text-white text-xs font-semibold">
+                <AvatarFallback
+                  suppressHydrationWarning
+                  className="bg-gradient-to-br from-pink-500 to-rose-500 text-white text-xs font-semibold"
+                >
                   {displayInitials}
                 </AvatarFallback>
               </Avatar>
@@ -365,7 +383,7 @@ function DashboardUserLayout() {
       </header>
 
       {/* Bottom Navigation for Mobile/Tablet with Safe Area Inset Protection */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/98 dark:bg-gray-900/98 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shadow-lg pb-[max(0.625rem,env(safe-area-inset-bottom,0px))]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/85 dark:bg-background/85 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/70 border-t border-black/[0.06] dark:border-white/[0.08] shadow-[0_-4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)] pb-[max(0.625rem,env(safe-area-inset-bottom,0px))]">
         <div className="flex items-center justify-around px-2 pt-2">
           {/* Main nav items */}
           {bottomNavItems}
@@ -377,13 +395,16 @@ function DashboardUserLayout() {
                 variant: "ghost",
                 size: "sm",
                 className:
-                  "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs h-auto min-w-0 flex-1 transition-[color,background-color,transform] duration-150 ease-out rounded-xl text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:bg-accent/60 active:scale-95 touch-manipulation select-none",
+                  "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs h-auto min-w-0 flex-1 transition-[color,background-color,transform] duration-100 ease-out rounded-xl text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:bg-accent/60 active:scale-[0.97] touch-manipulation select-none",
               })}
             >
               <Menu className="h-5 w-5" />
-              <span className="truncate">More</span>
+              <span className="truncate apple-caption">More</span>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 mb-2 shadow-xl">
+            <DropdownMenuContent
+              align="end"
+              className="w-56 mb-2 rounded-2xl border border-black/[0.06] dark:border-white/[0.1] bg-popover/90 backdrop-blur-2xl shadow-xl"
+            >
               {dropdownNavItems}
               <DropdownMenuItem>
                 <div className="flex items-center gap-2 w-full cursor-pointer">

@@ -151,7 +151,7 @@ export function RoadmapSection() {
                 type="button"
                 key={tab.id}
                 onClick={() => setFilter(tab.id)}
-                className={`relative px-4 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+                className={`relative px-4 py-1.5 rounded-full text-xs font-bold transition-[color,transform] duration-150 ease-out active:scale-[0.97] touch-manipulation cursor-pointer ${
                   filter === tab.id
                     ? "text-white"
                     : "text-muted-foreground hover:text-foreground"
@@ -190,7 +190,7 @@ export function RoadmapSection() {
                     delay: idx * 0.06,
                     ease: "easeOut",
                   }}
-                  className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm hover:shadow-md hover:border-rose-500/30 transition-all flex flex-col justify-between space-y-4"
+                  className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-md [@media(hover:hover)_and_(pointer:fine)]:hover:border-rose-500/30 transition-[box-shadow,border-color,transform] duration-200 ease-out flex flex-col justify-between space-y-4"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">

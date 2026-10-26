@@ -221,7 +221,10 @@ export function XpShowcase() {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      <span ref={xpCounterRef}>
+                      <span
+                        ref={xpCounterRef}
+                        className="tabular-nums font-semibold text-foreground"
+                      >
                         {currentXp.toLocaleString()}
                       </span>{" "}
                       / 5,000 XP to Level 9
@@ -279,10 +282,10 @@ export function XpShowcase() {
                     type="button"
                     key={mission.id}
                     onClick={() => toggleMission(mission.id)}
-                    className={`w-full text-left flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+                    className={`w-full text-left flex items-center justify-between p-3.5 rounded-2xl border transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.98] touch-manipulation cursor-pointer ${
                       mission.completed
                         ? "bg-emerald-500/10 border-emerald-500/30"
-                        : "bg-muted/40 border-border/60 hover:border-amber-500/40 hover:bg-muted/60"
+                        : "bg-muted/40 border-border/60 [@media(hover:hover)_and_(pointer:fine)]:hover:border-amber-500/40 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-muted/60"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -360,11 +363,11 @@ export function XpShowcase() {
                     key={theme.id}
                     onClick={() => theme.unlocked && setSelectedTheme(theme)}
                     disabled={!theme.unlocked}
-                    className={`p-3.5 rounded-2xl border text-left transition-all duration-300 relative flex items-center justify-between cursor-pointer ${
+                    className={`p-3.5 rounded-2xl border text-left transition-[background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] touch-manipulation relative flex items-center justify-between cursor-pointer ${
                       selectedTheme.id === theme.id
                         ? "border-rose-500 bg-rose-500/10 shadow-sm"
                         : theme.unlocked
-                          ? "border-border/70 bg-background/60 hover:bg-muted/50"
+                          ? "border-border/70 bg-background/60 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-muted/50"
                           : "border-border/30 bg-muted/20 opacity-50 cursor-not-allowed"
                     }`}
                   >

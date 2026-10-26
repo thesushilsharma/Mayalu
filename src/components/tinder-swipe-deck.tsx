@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { motion, useMotionValue, useTransform, AnimatePresence, type PanInfo } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  AnimatePresence,
+  type PanInfo,
+} from "framer-motion";
 import {
   Heart,
   X,
@@ -68,7 +74,8 @@ export function TinderSwipeDeck({
 }: TinderSwipeDeckProps) {
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [history, setHistory] = React.useState<number[]>([]);
-  const [selectedProfileForDetails, setSelectedProfileForDetails] = React.useState<Profile | null>(null);
+  const [selectedProfileForDetails, setSelectedProfileForDetails] =
+    React.useState<Profile | null>(null);
 
   // Active Card Image Index
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
@@ -79,19 +86,28 @@ export function TinderSwipeDeck({
 
   // Card physics transforms
   const rotate = useTransform(x, [-260, 0, 260], [-18, 0, 18]);
-  const cardOpacity = useTransform(x, [-300, -220, 0, 220, 300], [0.6, 1, 1, 1, 0.6]);
+  const cardOpacity = useTransform(
+    x,
+    [-300, -220, 0, 220, 300],
+    [0.6, 1, 1, 1, 0.6],
+  );
 
-  // Rubber-stamp overlays opacity
+  // Rubber-stamp overlays opacity and physical stamp scaling
   const likeStampOpacity = useTransform(x, [25, 110], [0, 1]);
+  const likeStampScale = useTransform(x, [25, 110], [0.85, 1.05]);
   const nopeStampOpacity = useTransform(x, [-110, -25], [1, 0]);
+  const nopeStampScale = useTransform(x, [-110, -25], [1.05, 0.85]);
   const superLikeStampOpacity = useTransform(y, [-110, -30], [1, 0]);
+  const superLikeStampScale = useTransform(y, [-110, -30], [1.08, 0.85]);
 
   // Background card (#2) smooth parallax & scaling
   const nextCardScale = useTransform(x, [-200, 0, 200], [1, 0.94, 1]);
   const nextCardY = useTransform(x, [-200, 0, 200], [0, 14, 0]);
   const nextCardOpacity = useTransform(x, [-200, 0, 200], [1, 0.82, 1]);
 
-  const [exitDirection, setExitDirection] = React.useState<"left" | "right" | "up" | null>(null);
+  const [exitDirection, setExitDirection] = React.useState<
+    "left" | "right" | "up" | null
+  >(null);
 
   const currentProfile = profiles[currentIndex];
   const nextProfile = profiles[currentIndex + 1];
@@ -106,28 +122,34 @@ export function TinderSwipeDeck({
   }, [currentIndex, x, y]);
 
   // Swipe execution helper
-  const executeSwipe = React.useCallback((direction: "left" | "right" | "up") => {
-    if (!currentProfile) return;
+  const executeSwipe = React.useCallback(
+    (direction: "left" | "right" | "up") => {
+      if (!currentProfile) return;
 
-    setExitDirection(direction);
+      setExitDirection(direction);
 
-    // Save to history for rewind
-    setHistory((prev) => [...prev, currentIndex]);
+      // Save to history for rewind
+      setHistory((prev) => [...prev, currentIndex]);
 
-    setTimeout(() => {
-      if (direction === "right") {
-        onSwipeRight?.(currentProfile);
-      } else if (direction === "left") {
-        onSwipeLeft?.(currentProfile);
-      } else if (direction === "up") {
-        onSuperLike?.(currentProfile);
-      }
-      setCurrentIndex((prev) => prev + 1);
-    }, 200);
-  }, [currentProfile, currentIndex, onSwipeRight, onSwipeLeft, onSuperLike]);
+      setTimeout(() => {
+        if (direction === "right") {
+          onSwipeRight?.(currentProfile);
+        } else if (direction === "left") {
+          onSwipeLeft?.(currentProfile);
+        } else if (direction === "up") {
+          onSuperLike?.(currentProfile);
+        }
+        setCurrentIndex((prev) => prev + 1);
+      }, 200);
+    },
+    [currentProfile, currentIndex, onSwipeRight, onSwipeLeft, onSuperLike],
+  );
 
   // Pan / Drag End handler with velocity flick detection
-  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (
+    _event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo,
+  ) => {
     const threshold = 100;
     const velocityThreshold = 450;
     const projectedX = info.offset.x + info.velocity.x * 0.18;
@@ -194,7 +216,9 @@ export function TinderSwipeDeck({
         handleRewind();
       } else if (e.key === " " && currentProfile) {
         e.preventDefault();
-        setCurrentImageIndex((prev) => (prev + 1) % currentProfile.images.length);
+        setCurrentImageIndex(
+          (prev) => (prev + 1) % currentProfile.images.length,
+        );
       }
     };
 
@@ -203,7 +227,9 @@ export function TinderSwipeDeck({
   }, [selectedProfileForDetails, currentProfile, executeSwipe]);
 
   return (
-    <div className={`flex flex-col items-center w-full max-w-[420px] mx-auto select-none ${className}`}>
+    <div
+      className={`flex flex-col items-center w-full max-w-[420px] mx-auto select-none ${className}`}
+    >
       {/* CARD STACK CONTAINER */}
       <div className="relative w-full h-[540px] sm:h-[580px]">
         {!hasMore ? (
@@ -213,9 +239,12 @@ export function TinderSwipeDeck({
               <Sparkles className="size-8 animate-pulse" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-xl font-bold tracking-tight">You&apos;re All Caught Up!</h3>
+              <h3 className="text-xl font-bold tracking-tight">
+                You&apos;re All Caught Up!
+              </h3>
               <p className="text-xs text-muted-foreground leading-relaxed max-w-[260px] mx-auto">
-                Maya has delivered all currently active Chinos matching your criteria. Check back soon for fresh recommendations!
+                Maya has delivered all currently active Chinos matching your
+                criteria. Check back soon for fresh recommendations!
               </p>
             </div>
             <Button
@@ -256,7 +285,9 @@ export function TinderSwipeDeck({
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-5 text-white">
                     <div className="flex items-center gap-2 text-xl font-bold">
                       <span>{nextProfile.name}</span>
-                      <span className="text-rose-300 font-semibold">{nextProfile.age}</span>
+                      <span className="text-rose-300 font-semibold">
+                        {nextProfile.age}
+                      </span>
                     </div>
                     <p className="text-xs text-white/80 flex items-center gap-1 mt-0.5">
                       <MapPin className="size-3 text-rose-400" />
@@ -282,15 +313,16 @@ export function TinderSwipeDeck({
                 drag
                 dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
                 dragElastic={0.92}
+                dragTransition={{ bounceStiffness: 400, bounceDamping: 28 }}
                 onDragEnd={handleDragEnd}
                 animate={
                   exitDirection === "right"
                     ? { x: 800, rotate: 25, opacity: 0 }
                     : exitDirection === "left"
-                    ? { x: -800, rotate: -25, opacity: 0 }
-                    : exitDirection === "up"
-                    ? { y: -800, opacity: 0 }
-                    : { x: 0, y: 0, rotate: 0 }
+                      ? { x: -800, rotate: -25, opacity: 0 }
+                      : exitDirection === "up"
+                        ? { y: -800, opacity: 0 }
+                        : { x: 0, y: 0, rotate: 0 }
                 }
                 transition={{ duration: 0.22, ease: "easeOut" }}
               >
@@ -303,7 +335,10 @@ export function TinderSwipeDeck({
                   aria-label="Tap left for previous image, tap right for next image"
                 >
                   <Image
-                    src={currentProfile.images[currentImageIndex] || "/placeholder.svg"}
+                    src={
+                      currentProfile.images[currentImageIndex] ||
+                      "/placeholder.svg"
+                    }
                     alt={`${currentProfile.name} photo ${currentImageIndex + 1}`}
                     fill
                     className="object-cover bg-muted/40 transition-all duration-300 ease-out"
@@ -323,8 +358,8 @@ export function TinderSwipeDeck({
                             idx === currentImageIndex
                               ? "bg-white shadow-xs"
                               : idx < currentImageIndex
-                              ? "bg-white/70"
-                              : "bg-white/30"
+                                ? "bg-white/70"
+                                : "bg-white/30"
                           }`}
                         />
                       ))}
@@ -359,8 +394,8 @@ export function TinderSwipeDeck({
 
                   {/* STAMP OVERLAYS: LIKE (Right Drag) */}
                   <motion.div
-                    className="absolute top-16 left-6 z-20 pointer-events-none"
-                    style={{ opacity: likeStampOpacity }}
+                    className="absolute top-16 left-6 z-20 pointer-events-none origin-bottom-left"
+                    style={{ opacity: likeStampOpacity, scale: likeStampScale }}
                   >
                     <div className="border-3.5 border-emerald-400 bg-emerald-500/20 backdrop-blur-md text-emerald-400 font-black text-2xl tracking-wider px-3.5 py-1 rounded-2xl rotate-[-15deg] shadow-lg shadow-emerald-500/30 uppercase">
                       LIKE 💘
@@ -369,8 +404,8 @@ export function TinderSwipeDeck({
 
                   {/* STAMP OVERLAYS: NOPE (Left Drag) */}
                   <motion.div
-                    className="absolute top-16 right-6 z-20 pointer-events-none"
-                    style={{ opacity: nopeStampOpacity }}
+                    className="absolute top-16 right-6 z-20 pointer-events-none origin-bottom-right"
+                    style={{ opacity: nopeStampOpacity, scale: nopeStampScale }}
                   >
                     <div className="border-3.5 border-rose-500 bg-rose-500/20 backdrop-blur-md text-rose-400 font-black text-2xl tracking-wider px-3.5 py-1 rounded-2xl rotate-[15deg] shadow-lg shadow-rose-500/30 uppercase">
                       NOPE ✕
@@ -379,8 +414,11 @@ export function TinderSwipeDeck({
 
                   {/* STAMP OVERLAYS: SUPER LIKE / KURA-KANI (Up Drag) */}
                   <motion.div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
-                    style={{ opacity: superLikeStampOpacity }}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none origin-center"
+                    style={{
+                      opacity: superLikeStampOpacity,
+                      scale: superLikeStampScale,
+                    }}
                   >
                     <div className="border-3.5 border-violet-400 bg-violet-600/30 backdrop-blur-md text-violet-300 font-black text-2xl tracking-wider px-4 py-1.5 rounded-2xl shadow-xl shadow-violet-500/40 uppercase flex items-center gap-2">
                       <Sparkles className="size-6 fill-violet-300" />
@@ -395,7 +433,9 @@ export function TinderSwipeDeck({
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-2xl font-bold tracking-tight drop-shadow-md">
                           <span>{currentProfile.name}</span>
-                          <span className="text-rose-400 font-semibold">{currentProfile.age}</span>
+                          <span className="text-rose-400 font-semibold">
+                            {currentProfile.age}
+                          </span>
                         </div>
                         <p className="text-xs text-white/80 flex items-center gap-1.5 mt-0.5">
                           <MapPin className="size-3 text-rose-400 shrink-0" />
@@ -420,7 +460,8 @@ export function TinderSwipeDeck({
                     </div>
 
                     {/* Career & Education */}
-                    {(currentProfile.occupation || currentProfile.education) && (
+                    {(currentProfile.occupation ||
+                      currentProfile.education) && (
                       <div className="flex flex-wrap items-center gap-2 text-xs text-white/90">
                         {currentProfile.occupation && (
                           <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/10">
@@ -481,7 +522,7 @@ export function TinderSwipeDeck({
           type="button"
           onClick={handleRewind}
           disabled={history.length === 0}
-          className="size-11 sm:size-12 rounded-full border border-amber-500/30 bg-background/90 text-amber-500 hover:bg-amber-500/10 shadow-md flex items-center justify-center transition-all duration-150 active:scale-[0.88] hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="size-11 sm:size-12 rounded-full border border-amber-500/30 bg-background/90 text-amber-500 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-amber-500/10 shadow-md flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out active:scale-[0.96] [@media(hover:hover)_and_(pointer:fine)]:hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 touch-manipulation select-none cursor-pointer"
           title="Rewind last swipe (Backspace)"
         >
           <RotateCcw className="size-4 sm:size-5" />
@@ -492,7 +533,7 @@ export function TinderSwipeDeck({
           type="button"
           onClick={() => executeSwipe("left")}
           disabled={!hasMore}
-          className="size-14 sm:size-15 rounded-full border border-rose-500/40 bg-background/95 text-rose-500 hover:bg-rose-500/10 shadow-lg shadow-rose-500/15 flex items-center justify-center transition-all duration-150 active:scale-[0.88] hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="size-14 sm:size-15 rounded-full border border-rose-500/40 bg-background/95 text-rose-500 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-rose-500/10 shadow-lg shadow-rose-500/15 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out active:scale-[0.96] [@media(hover:hover)_and_(pointer:fine)]:hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 touch-manipulation select-none cursor-pointer"
           title="Pass / Nope (Left Arrow)"
         >
           <X className="size-7 sm:size-8 stroke-[2.5]" />
@@ -503,7 +544,7 @@ export function TinderSwipeDeck({
           type="button"
           onClick={() => executeSwipe("up")}
           disabled={!hasMore}
-          className="size-12 sm:size-13 rounded-full border border-violet-500/40 bg-gradient-to-tr from-violet-500/15 to-purple-500/15 text-violet-500 dark:text-violet-400 hover:bg-violet-500/20 shadow-md shadow-violet-500/20 flex items-center justify-center transition-all duration-150 active:scale-[0.88] hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="size-12 sm:size-13 rounded-full border border-violet-500/40 bg-gradient-to-tr from-violet-500/15 to-purple-500/15 text-violet-500 dark:text-violet-400 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-violet-500/20 shadow-md shadow-violet-500/20 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out active:scale-[0.96] [@media(hover:hover)_and_(pointer:fine)]:hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 touch-manipulation select-none cursor-pointer"
           title="Super Like / Kura-Kani (Up Arrow)"
         >
           <Star className="size-5 sm:size-6 fill-violet-500 text-violet-500" />
@@ -514,7 +555,7 @@ export function TinderSwipeDeck({
           type="button"
           onClick={() => executeSwipe("right")}
           disabled={!hasMore}
-          className="size-14 sm:size-15 rounded-full border border-emerald-500/40 bg-background/95 text-emerald-500 hover:bg-emerald-500/10 shadow-lg shadow-emerald-500/15 flex items-center justify-center transition-all duration-150 active:scale-[0.88] hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="size-14 sm:size-15 rounded-full border border-emerald-500/40 bg-background/95 text-emerald-500 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-emerald-500/10 shadow-lg shadow-emerald-500/15 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out active:scale-[0.96] [@media(hover:hover)_and_(pointer:fine)]:hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 touch-manipulation select-none cursor-pointer"
           title="Like / Match (Right Arrow)"
         >
           <Heart className="size-7 sm:size-8 fill-emerald-500 text-emerald-500" />
@@ -523,53 +564,100 @@ export function TinderSwipeDeck({
         {/* FULL CHINO DETAILS */}
         <button
           type="button"
-          onClick={() => currentProfile && setSelectedProfileForDetails(currentProfile)}
+          onClick={() =>
+            currentProfile && setSelectedProfileForDetails(currentProfile)
+          }
           disabled={!hasMore}
-          className="size-11 sm:size-12 rounded-full border border-border/80 bg-background/90 text-muted-foreground hover:text-foreground hover:bg-muted shadow-md flex items-center justify-center transition-all duration-150 active:scale-[0.88] hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="size-11 sm:size-12 rounded-full border border-border/80 bg-background/90 text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:text-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:bg-muted shadow-md flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out active:scale-[0.96] [@media(hover:hover)_and_(pointer:fine)]:hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 touch-manipulation select-none cursor-pointer"
           title="View Full Profile Details"
         >
           <Info className="size-4 sm:size-5" />
         </button>
       </div>
 
+      {/* DESKTOP KEYBOARD SHORTCUT HINTS */}
+      <div className="hidden sm:flex items-center justify-center gap-2.5 mt-1 text-[11px] text-muted-foreground/60 select-none">
+        <span className="flex items-center gap-1">
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/60 text-[10px] font-mono">
+            ←
+          </kbd>{" "}
+          Pass
+        </span>
+        <span>•</span>
+        <span className="flex items-center gap-1">
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/60 text-[10px] font-mono">
+            →
+          </kbd>{" "}
+          Like
+        </span>
+        <span>•</span>
+        <span className="flex items-center gap-1">
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/60 text-[10px] font-mono">
+            ↑
+          </kbd>{" "}
+          Super Like
+        </span>
+        <span>•</span>
+        <span className="flex items-center gap-1">
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/60 text-[10px] font-mono">
+            ⌫
+          </kbd>{" "}
+          Rewind
+        </span>
+        <span>•</span>
+        <span className="flex items-center gap-1">
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/60 text-[10px] font-mono">
+            Space
+          </kbd>{" "}
+          Photo
+        </span>
+      </div>
+
       {/* FULL CHINO PROFILE MODAL / SHEET OVERLAY */}
       <AnimatePresence>
         {selectedProfileForDetails && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overscroll-none">
             <motion.div
               initial={{ y: "100%", opacity: 0.5 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", stiffness: 350, damping: 30 }}
-              className="w-full max-w-lg max-h-[90vh] bg-background border border-border/80 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+              className="w-full max-w-lg max-h-[90dvh] bg-background border border-border/80 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
             >
               {/* Modal Top Bar */}
               <div className="flex items-center justify-between p-4 border-b border-border/50 shrink-0">
                 <div className="flex items-center gap-2">
-                  <div className="size-7 rounded-full bg-gradient-to-tr from-rose-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
+                  <div className="size-7 rounded-full bg-gradient-to-tr from-rose-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
                     M
                   </div>
-                  <div>
-                    <h4 className="font-bold text-sm">Chino Identity Card</h4>
-                    <span className="text-[10px] text-muted-foreground">Mayalu Matchmaker Verified</span>
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-sm truncate">
+                      Chino Identity Card
+                    </h4>
+                    <span className="text-[10px] text-muted-foreground truncate block">
+                      Mayalu Matchmaker Verified
+                    </span>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedProfileForDetails(null)}
-                  className="size-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-transform"
+                  className="size-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-transform shrink-0"
                 >
                   <ChevronDown className="size-4" />
                 </button>
               </div>
 
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-5 text-sm">
+              {/* Scrollable Content with Safe Area Padding */}
+              <div className="flex-1 overflow-y-auto overscroll-contain p-5 space-y-5 text-sm pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
                 {/* Profile Hero Header */}
                 <div className="flex items-center gap-3">
                   <div className="relative size-16 rounded-2xl overflow-hidden border border-border/60 bg-muted shrink-0">
                     <Image
-                      src={selectedProfileForDetails.images[0] || "/placeholder.svg"}
+                      src={
+                        selectedProfileForDetails.images[0] ||
+                        "/placeholder.svg"
+                      }
                       alt={selectedProfileForDetails.name}
                       fill
                       className="object-cover"
@@ -579,7 +667,9 @@ export function TinderSwipeDeck({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 font-bold text-lg">
                       <span>{selectedProfileForDetails.name}</span>
-                      <span className="text-rose-500">{selectedProfileForDetails.age}</span>
+                      <span className="text-rose-500">
+                        {selectedProfileForDetails.age}
+                      </span>
                       {selectedProfileForDetails.verified && (
                         <ShieldCheck className="size-4 text-emerald-500" />
                       )}
@@ -611,33 +701,49 @@ export function TinderSwipeDeck({
                     <span className="text-[10px] font-bold uppercase tracking-wider text-rose-500">
                       मयालु प्रसङ्ग
                     </span>
-                    <span className="text-[10px] text-muted-foreground">Icebreaker</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      Icebreaker
+                    </span>
                   </div>
                   <p className="text-xs font-semibold text-foreground">
-                    &quot;{selectedProfileForDetails.promptQuestion || "My ideal Sunday in Kathmandu or diaspora..."}&quot;
+                    &quot;
+                    {selectedProfileForDetails.promptQuestion ||
+                      "My ideal Sunday in Kathmandu or diaspora..."}
+                    &quot;
                   </p>
                   <p className="text-xs text-muted-foreground leading-relaxed pt-0.5">
-                    {selectedProfileForDetails.promptAnswer || "Sipping hot chiya, listening to 90s Nepali acoustic classics, and discussing favorite trekking trails."}
+                    {selectedProfileForDetails.promptAnswer ||
+                      "Sipping hot chiya, listening to 90s Nepali acoustic classics, and discussing favorite trekking trails."}
                   </p>
                 </div>
 
                 {/* Lifestyle & Cultural Grid */}
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="bg-muted/40 p-2.5 rounded-xl border border-border/30">
-                    <span className="text-[10px] text-muted-foreground block">Dal Bhat Routine</span>
+                    <span className="text-[10px] text-muted-foreground block">
+                      Dal Bhat Routine
+                    </span>
                     <span className="text-xs font-semibold text-amber-500">
-                      🍚 {selectedProfileForDetails.dalBhatFrequency || "Twice a day (Hardcore)"}
+                      🍚{" "}
+                      {selectedProfileForDetails.dalBhatFrequency ||
+                        "Twice a day (Hardcore)"}
                     </span>
                   </div>
                   <div className="bg-muted/40 p-2.5 rounded-xl border border-border/30">
-                    <span className="text-[10px] text-muted-foreground block">On Repeat</span>
+                    <span className="text-[10px] text-muted-foreground block">
+                      On Repeat
+                    </span>
                     <span className="text-xs font-semibold text-violet-500 truncate block">
-                      🎵 {selectedProfileForDetails.musicRepeat || "Albatross / 1974 AD"}
+                      🎵{" "}
+                      {selectedProfileForDetails.musicRepeat ||
+                        "Albatross / 1974 AD"}
                     </span>
                   </div>
                   {selectedProfileForDetails.gotra && (
                     <div className="bg-muted/40 p-2.5 rounded-xl border border-border/30">
-                      <span className="text-[10px] text-muted-foreground block">Gotra</span>
+                      <span className="text-[10px] text-muted-foreground block">
+                        Gotra
+                      </span>
                       <span className="text-xs font-semibold text-indigo-500">
                         🕉️ {selectedProfileForDetails.gotra}
                       </span>
@@ -645,7 +751,9 @@ export function TinderSwipeDeck({
                   )}
                   {selectedProfileForDetails.caste && (
                     <div className="bg-muted/40 p-2.5 rounded-xl border border-border/30">
-                      <span className="text-[10px] text-muted-foreground block">Caste / Heritage</span>
+                      <span className="text-[10px] text-muted-foreground block">
+                        Caste / Heritage
+                      </span>
                       <span className="text-xs font-semibold text-emerald-500">
                         🌱 {selectedProfileForDetails.caste}
                       </span>
@@ -660,7 +768,11 @@ export function TinderSwipeDeck({
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedProfileForDetails.interests.map((int) => (
-                      <Badge key={int} variant="secondary" className="text-xs px-2.5 py-1">
+                      <Badge
+                        key={int}
+                        variant="secondary"
+                        className="text-xs px-2.5 py-1"
+                      >
                         {int}
                       </Badge>
                     ))}
@@ -671,8 +783,11 @@ export function TinderSwipeDeck({
                 <div className="flex items-start gap-2 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
                   <Lock className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div className="text-[11px] leading-snug text-muted-foreground">
-                    <strong className="text-foreground font-semibold">Dhukuti Privacy Vault: </strong>
-                    Full showcase photos are unlocked only upon mutual match. Your personal data is guarded by Maya.
+                    <strong className="text-foreground font-semibold">
+                      Dhukuti Privacy Vault:{" "}
+                    </strong>
+                    Full showcase photos are unlocked only upon mutual match.
+                    Your personal data is guarded by Maya.
                   </div>
                 </div>
               </div>

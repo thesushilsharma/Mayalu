@@ -72,7 +72,7 @@ export default function Header() {
     session?.user?.name || session?.user?.email?.split("@")[0] || "Member";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-rose-500/10 dark:border-rose-500/10 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-xs transition-all">
+    <header className="sticky top-0 z-50 w-full border-b border-rose-500/10 dark:border-rose-500/10 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-2xs pt-[env(safe-area-inset-top,0px)] transition-[background-color,border-color,box-shadow] duration-200 ease-out">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand identity */}
         <Link

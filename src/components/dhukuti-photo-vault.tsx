@@ -189,7 +189,7 @@ export function DhukutiPhotoVault({
                   key={`empty-slot-${index}`}
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="relative aspect-square rounded-2xl border-2 border-dashed border-border/70 hover:border-rose-500/60 transition-all flex flex-col items-center justify-center gap-1 p-2 text-center bg-muted/20 hover:bg-rose-500/5 group active:scale-[0.98]"
+                  className="relative aspect-square rounded-2xl border-2 border-dashed border-border/70 hover:border-rose-500/60 transition-[background-color,border-color,transform] duration-150 ease-out flex flex-col items-center justify-center gap-1 p-2 text-center bg-muted/20 hover:bg-rose-500/5 group active:scale-[0.98] touch-manipulation select-none cursor-pointer"
                 >
                   <div className="size-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground group-hover:text-rose-500 group-hover:bg-rose-500/10 transition-colors">
                     <Plus className="size-4" />

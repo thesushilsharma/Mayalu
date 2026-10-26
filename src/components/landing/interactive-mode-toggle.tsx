@@ -88,7 +88,7 @@ export function InteractiveModeToggle() {
             <button
               type="button"
               onClick={() => setActiveMode("dating")}
-              className={`relative z-10 flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-colors duration-200 ${
+              className={`relative z-10 flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-[color,transform] duration-150 ease-out active:scale-[0.97] touch-manipulation select-none cursor-pointer ${
                 activeMode === "dating"
                   ? "text-white"
                   : "text-muted-foreground hover:text-foreground"
@@ -112,7 +112,7 @@ export function InteractiveModeToggle() {
             <button
               type="button"
               onClick={() => setActiveMode("matrimonial")}
-              className={`relative z-10 flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-colors duration-200 ${
+              className={`relative z-10 flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-[color,transform] duration-150 ease-out active:scale-[0.97] touch-manipulation select-none cursor-pointer ${
                 activeMode === "matrimonial"
                   ? "text-white"
                   : "text-muted-foreground hover:text-foreground"
@@ -381,7 +381,7 @@ export function InteractiveModeToggle() {
                   <button
                     type="button"
                     onClick={() => setAudioPlaying(!audioPlaying)}
-                    className="w-full text-left p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/25 transition-all hover:bg-rose-500/15 group cursor-pointer"
+                    className="w-full text-left p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/25 transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.98] touch-manipulation hover:bg-rose-500/15 group cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <p className="text-rose-500 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
@@ -398,20 +398,39 @@ export function InteractiveModeToggle() {
                       street food?"
                     </p>
 
-                    {/* Animated Audio Waveform Mockup */}
-                    <div className="flex items-center gap-1 h-4">
+                    {/* Animated Audio Waveform Equalizer (Hardware-accelerated scaleY) */}
+                    <div className="flex items-end gap-1 h-5 overflow-hidden">
                       {WAVEFORM_BARS.map((bar) => (
-                        <div
+                        <motion.div
                           key={bar.id}
-                          className={`flex-1 rounded-full transition-all duration-300 ${
-                            audioPlaying
-                              ? "bg-rose-500 animate-pulse"
-                              : "bg-rose-500/40"
+                          className={`flex-1 rounded-full origin-bottom ${
+                            audioPlaying ? "bg-rose-500" : "bg-rose-500/40"
                           }`}
-                          style={{
-                            height: audioPlaying ? `${bar.height}%` : "30%",
-                            animationDelay: `${bar.delay}s`,
-                          }}
+                          style={{ height: "100%" }}
+                          animate={
+                            audioPlaying
+                              ? {
+                                  scaleY: [
+                                    0.25,
+                                    bar.height / 100,
+                                    0.35,
+                                    (bar.height * 0.85) / 100,
+                                    0.25,
+                                  ],
+                                }
+                              : { scaleY: 0.3 }
+                          }
+                          transition={
+                            audioPlaying
+                              ? {
+                                  duration: 1.1,
+                                  repeat: Infinity,
+                                  repeatType: "reverse",
+                                  ease: "easeInOut",
+                                  delay: bar.delay * 0.35,
+                                }
+                              : { duration: 0.2, ease: "easeOut" }
+                          }
                         />
                       ))}
                     </div>

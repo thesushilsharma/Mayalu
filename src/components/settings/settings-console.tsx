@@ -323,7 +323,7 @@ export function SettingsConsole({ initialRole, adminEmail }: SettingsConsoleProp
                 <button
                   type="button"
                   onClick={() => handleIntentChange("dating")}
-                  className={`p-4 rounded-2xl border text-left transition-all duration-200 relative ${
+                  className={`p-4 rounded-2xl border text-left transition-[background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] touch-manipulation select-none cursor-pointer relative ${
                     intent === "dating"
                       ? "border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 shadow-xs ring-2 ring-rose-500/20"
                       : "border-border/70 hover:border-border hover:bg-accent/40"
@@ -346,7 +346,7 @@ export function SettingsConsole({ initialRole, adminEmail }: SettingsConsoleProp
                 <button
                   type="button"
                   onClick={() => handleIntentChange("matrimonial")}
-                  className={`p-4 rounded-2xl border text-left transition-all duration-200 relative ${
+                  className={`p-4 rounded-2xl border text-left transition-[background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] touch-manipulation select-none cursor-pointer relative ${
                     intent === "matrimonial"
                       ? "border-purple-500 bg-purple-50/50 dark:bg-purple-950/20 shadow-xs ring-2 ring-purple-500/20"
                       : "border-border/70 hover:border-border hover:bg-accent/40"

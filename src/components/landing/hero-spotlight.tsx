@@ -582,7 +582,7 @@ export function HeroSpotlight() {
                       setDirection(idx > currentIndex ? 1 : -1);
                       setCurrentIndex(idx);
                     }}
-                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    className={`h-1.5 rounded-full transition-[width,background-color,box-shadow] duration-200 ease-out cursor-pointer ${
                       idx === currentIndex
                         ? "w-10 bg-gradient-to-r from-rose-500 to-violet-500 shadow-sm shadow-rose-500/50"
                         : "w-6 bg-muted-foreground/25 hover:bg-muted-foreground/50"
@@ -598,7 +598,7 @@ export function HeroSpotlight() {
                   type="button"
                   onClick={() => paginate(-1)}
                   aria-label="Previous Profile"
-                  className="w-9 h-9 rounded-full border border-border/80 bg-card hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
+                  className="w-9 h-9 rounded-full border border-border/80 bg-card [@media(hover:hover)_and_(pointer:fine)]:hover:bg-muted flex items-center justify-center text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:text-foreground transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out [@media(hover:hover)_and_(pointer:fine)]:hover:scale-105 active:scale-[0.96] touch-manipulation shadow-xs cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -607,7 +607,7 @@ export function HeroSpotlight() {
                   type="button"
                   onClick={() => paginate(1, "Passed ✕")}
                   aria-label="Pass"
-                  className="w-11 h-11 rounded-full border border-border/80 bg-card hover:bg-muted/80 flex items-center justify-center text-rose-500 hover:text-rose-600 transition-all hover:scale-110 active:scale-95 shadow-sm cursor-pointer"
+                  className="w-11 h-11 rounded-full border border-border/80 bg-card [@media(hover:hover)_and_(pointer:fine)]:hover:bg-muted/80 flex items-center justify-center text-rose-500 [@media(hover:hover)_and_(pointer:fine)]:hover:text-rose-600 transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out [@media(hover:hover)_and_(pointer:fine)]:hover:scale-105 active:scale-[0.96] touch-manipulation shadow-sm cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -616,7 +616,7 @@ export function HeroSpotlight() {
                   type="button"
                   onClick={() => paginate(1, "Super Liked! ⭐")}
                   aria-label="Super Like"
-                  className="w-11 h-11 rounded-full border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center text-amber-500 transition-all hover:scale-110 active:scale-95 shadow-md shadow-amber-500/10 cursor-pointer"
+                  className="w-11 h-11 rounded-full border border-amber-500/30 bg-amber-500/10 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-amber-500/20 flex items-center justify-center text-amber-500 transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out [@media(hover:hover)_and_(pointer:fine)]:hover:scale-105 active:scale-[0.96] touch-manipulation shadow-md shadow-amber-500/10 cursor-pointer"
                 >
                   <Star className="w-5 h-5 fill-amber-500" />
                 </button>
@@ -625,7 +625,7 @@ export function HeroSpotlight() {
                   type="button"
                   onClick={() => paginate(1, "Liked! 💖")}
                   aria-label="Like"
-                  className="w-12 h-12 rounded-full bg-gradient-to-r from-rose-500 to-pink-600 flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 shadow-lg shadow-rose-500/35 cursor-pointer"
+                  className="w-12 h-12 rounded-full bg-gradient-to-r from-rose-500 to-pink-600 flex items-center justify-center text-white transition-[transform,box-shadow] duration-150 ease-out [@media(hover:hover)_and_(pointer:fine)]:hover:scale-105 active:scale-[0.96] touch-manipulation shadow-lg shadow-rose-500/35 cursor-pointer"
                 >
                   <Heart className="w-6 h-6 fill-white" />
                 </button>
@@ -634,7 +634,7 @@ export function HeroSpotlight() {
                   type="button"
                   onClick={() => paginate(1)}
                   aria-label="Next Profile"
-                  className="w-9 h-9 rounded-full border border-border/80 bg-card hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
+                  className="w-9 h-9 rounded-full border border-border/80 bg-card [@media(hover:hover)_and_(pointer:fine)]:hover:bg-muted flex items-center justify-center text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:text-foreground transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out [@media(hover:hover)_and_(pointer:fine)]:hover:scale-105 active:scale-[0.96] touch-manipulation shadow-xs cursor-pointer"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

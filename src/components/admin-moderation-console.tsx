@@ -415,15 +415,15 @@ export function AdminModerationConsole({
                     <TableRow key={user.uid} className="text-xs">
                       {/* Name & Avatar */}
                       <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <Avatar className="size-8 rounded-xl border border-border/60">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Avatar className="size-8 rounded-xl border border-border/60 shrink-0">
                             <AvatarImage src={user.photoURL} alt={user.displayName || "User"} />
-                            <AvatarFallback className="text-[10px] bg-rose-500/10 text-rose-500">
+                            <AvatarFallback className="text-[10px] bg-rose-500/10 text-rose-500 font-bold">
                               {(user.displayName || user.email || "U")[0].toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="min-w-0">
-                            <span className="font-semibold block truncate">
+                          <div className="min-w-0 flex-1">
+                            <span className="font-semibold block truncate" title={user.displayName || undefined}>
                               {user.displayName || "Anonymous"}
                             </span>
                             {isCurrentAdmin && (
@@ -433,8 +433,10 @@ export function AdminModerationConsole({
                         </div>
                       </TableCell>
 
-                      {/* Email */}
-                      <TableCell className="text-muted-foreground">{user.email || "—"}</TableCell>
+                      {/* Email with Overflow Defense */}
+                      <TableCell className="text-muted-foreground max-w-[180px] sm:max-w-[240px] truncate" title={user.email || undefined}>
+                        {user.email || "—"}
+                      </TableCell>
 
                       {/* Role Pill with Selector */}
                       <TableCell>

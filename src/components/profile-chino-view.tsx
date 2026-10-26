@@ -98,7 +98,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           {/* Identity Information */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            {/* Expressive Avatar with Quick Edit Overlay */}
+            {/* Expressive Avatar with Mobile-Accessible Edit Button */}
             <div className="relative group shrink-0">
               <div className="relative size-20 sm:size-24 rounded-2xl overflow-hidden ring-4 ring-rose-500/30 group-hover:ring-rose-500/60 transition-all shadow-md bg-background/90">
                 <Image
@@ -111,21 +111,29 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
               </div>
               <Link
                 href="/account/onboarding?step=15&tab=avatar"
-                className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-medium gap-0.5"
+                className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-medium gap-0.5"
                 title="Change Avatar"
               >
                 <Camera className="size-4" />
                 <span>Edit</span>
+              </Link>
+              {/* Always visible quick camera badge for touch mobile */}
+              <Link
+                href="/account/onboarding?step=15&tab=avatar"
+                className="sm:hidden absolute -bottom-1 -right-1 size-6 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-md border-2 border-background active:scale-90 transition-transform"
+                title="Change Avatar"
+              >
+                <Camera className="size-3" />
               </Link>
             </div>
 
             {/* Name, Status & Core Attributes */}
             <div className="space-y-2 min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground break-words [overflow-wrap:anywhere]">
                   {displayName}
                   {displayAge && (
-                    <span className="text-rose-500 font-semibold text-xl sm:text-2xl ml-2">
+                    <span className="text-rose-500 font-semibold text-xl sm:text-2xl ml-2 tabular-nums">
                       {displayAge}
                     </span>
                   )}
@@ -211,7 +219,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
           {/* Action CTAs */}
           <div className="flex items-center gap-3 self-start lg:self-center shrink-0 pt-2 lg:pt-0">
             <Link href="/account/onboarding">
-              <Button className="rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all gap-2 text-xs sm:text-sm h-10 px-5">
+              <Button className="rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold shadow-lg shadow-rose-500/25 [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-rose-500/40 [@media(hover:hover)_and_(pointer:fine)]:hover:scale-[1.02] active:scale-[0.98] transition-[transform,background-color,box-shadow] duration-150 ease-out gap-2 text-xs sm:text-sm h-10 px-5 touch-manipulation">
                 <Sparkles className="size-4" />
                 <span>Redo Onboarding</span>
               </Button>
@@ -220,7 +228,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
             <Link href="/account/hallway">
               <Button
                 variant="outline"
-                className="rounded-full border-rose-500/30 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-semibold gap-2 text-xs sm:text-sm h-10 px-4 transition-all"
+                className="rounded-full border-rose-500/30 hover:bg-rose-500/10 active:scale-[0.98] text-rose-600 dark:text-rose-400 font-semibold gap-2 text-xs sm:text-sm h-10 px-4 transition-[background-color,border-color,transform] duration-150 ease-out touch-manipulation"
               >
                 <Flame className="size-4 text-rose-500" />
                 <span>The Hallway</span>
@@ -233,7 +241,7 @@ export function ProfileChinoView({ profile, user }: ProfileChinoViewProps) {
       {/* =========================================================================
           2. QUICK JUMP / EDIT SPECIFIC SECTION BAR
           ========================================================================= */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-1.5 overflow-x-auto touch-pan-x overscroll-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
           <Edit3 className="size-3" />
           <span>Quick Edit:</span>

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/contexts/providers";
@@ -19,8 +19,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mayalu",
-  description: "Mayalu is a dating app that helps you find your perfect match.",
+  title: "Mayalu — Romantic Graph Dating & Matrimony",
+  description: "Mayalu is a dual-mode dating and matrimonial platform powered by Neo4j graph affinities, verified Chino credentials, and privacy Dhukuti.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Mayalu",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf5f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#171023" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

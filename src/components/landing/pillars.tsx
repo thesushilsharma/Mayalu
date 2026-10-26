@@ -99,7 +99,7 @@ export function Pillars() {
                   delay: idx * 0.12,
                   ease: "easeOut",
                 }}
-                className="group relative rounded-3xl border border-border/70 bg-card/85 backdrop-blur-xl p-8 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between cloud-glass"
+                className="group relative rounded-3xl border border-border/70 bg-card/85 backdrop-blur-xl p-8 shadow-md [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-2xl transition-[box-shadow,transform] duration-250 ease-out [@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-1.5 flex flex-col justify-between cloud-glass"
               >
                 {/* Glow highlight on hover */}
                 <div
@@ -110,7 +110,7 @@ export function Pillars() {
                   {/* Top Bar with Icon & Eyebrow */}
                   <div className="flex items-center justify-between">
                     <div
-                      className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${pillar.iconBg} shadow-sm group-hover:scale-110 transition-transform`}
+                      className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${pillar.iconBg} shadow-sm [@media(hover:hover)_and_(pointer:fine)]:group-hover:scale-105 transition-transform duration-200 ease-out`}
                     >
                       <Icon className="w-6 h-6" />
                     </div>

@@ -34,11 +34,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
+          "--offset": "calc(5.5rem + env(safe-area-inset-bottom, 0px))",
         } as React.CSSProperties
       }
+      mobileOffset={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))", top: "calc(1rem + env(safe-area-inset-top, 0px))" }}
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          toast: "cn-toast touch-manipulation",
         },
       }}
       {...props}

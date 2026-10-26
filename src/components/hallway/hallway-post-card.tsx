@@ -136,7 +136,7 @@ export function HallwayPostCard({
               <span className="font-bold text-base text-foreground tracking-tight truncate">
                 {profile.name}
               </span>
-              <span className="text-muted-foreground font-semibold text-sm">
+              <span className="text-muted-foreground font-semibold text-sm tabular-nums">
                 {profile.age}
               </span>
               {profile.verified && (
@@ -157,7 +157,7 @@ export function HallwayPostCard({
               <MapPin className="size-3 text-rose-400 shrink-0" />
               <span className="truncate">{profile.location}</span>
               <span>•</span>
-              <span className="shrink-0">{profile.distance} km</span>
+              <span className="shrink-0 tabular-nums">{profile.distance} km</span>
             </p>
           </div>
         </div>
@@ -166,19 +166,28 @@ export function HallwayPostCard({
         <button
           type="button"
           onClick={() => onOpenGraphModal(profile)}
-          className="group flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-rose-500/10 hover:from-violet-500/20 hover:to-rose-500/20 border border-violet-500/25 text-violet-600 dark:text-violet-400 font-semibold text-xs transition-all active:scale-95 cursor-pointer shadow-2xs shrink-0"
+          className="group flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-rose-500/10 hover:from-violet-500/20 hover:to-rose-500/20 border border-violet-500/25 text-violet-600 dark:text-violet-400 font-semibold text-xs transition-all active:scale-95 cursor-pointer shadow-2xs shrink-0 touch-manipulation"
           title="Inspect Neo4j compatibility topology"
         >
           <GitFork className="size-3.5 text-violet-500 group-hover:rotate-12 transition-transform" />
-          <span>{harmonyScore}%</span>
+          <span className="tabular-nums">{harmonyScore}%</span>
           <span className="hidden xs:inline text-[10px] text-muted-foreground font-normal">Graph</span>
         </button>
       </div>
 
       {/* 2. DHUKUTI MEDIA CAROUSEL (Instagram Post Canvas) */}
       <div
-        className="relative w-full aspect-[4/5] sm:aspect-[4/5] bg-muted/40 overflow-hidden select-none cursor-pointer group"
+        role="button"
+        tabIndex={0}
+        aria-label={`Double tap to connect with ${profile.name}`}
+        className="relative w-full aspect-[4/5] sm:aspect-[4/5] bg-muted/40 overflow-hidden select-none cursor-pointer group touch-pan-y outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
         onClick={handleImageTap}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleImageTap();
+          }
+        }}
       >
         <Image
           src={images[photoIndex] || "/placeholder.svg"}
@@ -206,7 +215,7 @@ export function HallwayPostCard({
         </AnimatePresence>
 
         {/* Dhukuti Photo Indicator Pill */}
-        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-medium border border-white/10 shadow-sm pointer-events-none">
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-medium border border-white/10 shadow-sm pointer-events-none tabular-nums">
           {isDhukutiPhoto ? (
             <>
               <Lock className="size-3 text-rose-400" />
@@ -219,13 +228,13 @@ export function HallwayPostCard({
           <span>{photoIndex + 1}/{totalPhotos}</span>
         </div>
 
-        {/* Carousel Navigation Arrows */}
+        {/* Carousel Navigation Arrows: visible on mobile, hover-revealed on desktop */}
         {totalPhotos > 1 && (
           <>
             <button
               type="button"
               onClick={prevPhoto}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 active:scale-95 z-10"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur-md text-white flex items-center justify-center transition-[opacity,transform,background-color] duration-150 ease-out opacity-80 sm:opacity-0 sm:group-hover:opacity-100 active:scale-95 z-10 touch-manipulation cursor-pointer"
               title="Previous photo"
             >
               <ChevronLeft className="size-4" />
@@ -233,7 +242,7 @@ export function HallwayPostCard({
             <button
               type="button"
               onClick={nextPhoto}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 active:scale-95 z-10"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur-md text-white flex items-center justify-center transition-[opacity,transform,background-color] duration-150 ease-out opacity-80 sm:opacity-0 sm:group-hover:opacity-100 active:scale-95 z-10 touch-manipulation cursor-pointer"
               title="Next photo"
             >
               <ChevronRight className="size-4" />

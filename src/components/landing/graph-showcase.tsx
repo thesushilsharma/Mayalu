@@ -139,8 +139,13 @@ export function GraphShowcase() {
     }
 
     try {
-      const { recalculateHarmonyScoreAction } = await import("@/lib/neo4j/neo4j.action");
-      const res = await recalculateHarmonyScoreAction("demo_user_you", "demo_user_match");
+      const { recalculateHarmonyScoreAction } = await import(
+        "@/lib/neo4j/neo4j.action"
+      );
+      const res = await recalculateHarmonyScoreAction(
+        "demo_user_you",
+        "demo_user_match",
+      );
       setHarmonyScore(res.harmonyScore);
     } catch {
       const newScore = +(95 + Math.random() * 4).toFixed(1);
@@ -195,7 +200,7 @@ export function GraphShowcase() {
             <button
               type="button"
               onClick={() => setActiveTab("visualizer")}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97] touch-manipulation cursor-pointer ${
                 activeTab === "visualizer"
                   ? "bg-violet-500/15 text-violet-500 border border-violet-500/30"
                   : "text-muted-foreground hover:text-foreground"
@@ -207,7 +212,7 @@ export function GraphShowcase() {
             <button
               type="button"
               onClick={() => setActiveTab("cypher")}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97] touch-manipulation cursor-pointer ${
                 activeTab === "cypher"
                   ? "bg-violet-500/15 text-violet-500 border border-violet-500/30"
                   : "text-muted-foreground hover:text-foreground"
@@ -319,12 +324,14 @@ export function GraphShowcase() {
                       onMouseLeave={() => setHoveredNode(null)}
                       onFocus={() => setHoveredNode(node.id)}
                       onBlur={() => setHoveredNode(null)}
-                      className={`absolute cursor-pointer transition-all duration-300 z-10 flex flex-col items-center select-none bg-transparent border-0 p-0 ${
+                      className={`absolute cursor-pointer transition-[box-shadow,filter] duration-200 ease-out z-10 flex flex-col items-center select-none bg-transparent border-0 p-0 ${
                         !isUser ? "floating-node" : ""
-                      } ${isHovered ? "scale-115 z-20" : ""}`}
+                      } ${isHovered ? "z-20" : ""}`}
                     >
                       <div
-                        className={`rounded-full flex items-center justify-center font-bold shadow-lg transition-transform ${
+                        className={`rounded-full flex items-center justify-center font-bold shadow-lg transition-transform duration-200 ease-out ${
+                          isHovered ? "scale-105" : ""
+                        } ${
                           isUser
                             ? "w-14 h-14 text-white text-xs border-2 border-white/90"
                             : "px-3.5 py-1.5 text-[11px] font-semibold text-foreground border border-border/80 bg-background/90 backdrop-blur-md"
@@ -367,7 +374,9 @@ export function GraphShowcase() {
                   </div>
 
                   <div className="space-y-1 pt-2 leading-relaxed font-mono text-[11px]">
-                    <p className="text-emerald-400 font-bold">// CYPHER 25 — Topologically Weighted Alignment</p>
+                    <p className="text-emerald-400 font-bold">
+                      {"// CYPHER 25 — Topologically Weighted Alignment"}
+                    </p>
                     <p>
                       <span className="text-violet-400 font-bold">MATCH</span>{" "}
                       (u1:
@@ -382,32 +391,52 @@ export function GraphShowcase() {
                       &#125;)
                     </p>
                     <p className="text-muted-foreground text-[10px]">
-                      // Zero Accidental Mismatches: prune if dealbreakers violated
+                      {
+                        "// Zero Accidental Mismatches: prune if dealbreakers violated"
+                      }
                     </p>
                     <p>
-                      <span className="text-violet-400 font-bold">WHERE NOT EXISTS</span>{" "}
-                      &#123; (u1)-[:<span className="text-rose-400">DEALBREAKER_AGAINST</span>]-&gt;(d)&lt;-[:<span className="text-rose-400">EMBODIES|PRACTICES</span>]-(u2) &#125;
+                      <span className="text-violet-400 font-bold">
+                        WHERE NOT EXISTS
+                      </span>{" "}
+                      &#123; (u1)-[:
+                      <span className="text-rose-400">DEALBREAKER_AGAINST</span>
+                      ]-&gt;(d)&lt;-[:
+                      <span className="text-rose-400">EMBODIES|PRACTICES</span>
+                      ]-(u2) &#125;
                     </p>
                     <p>
                       <span className="text-violet-400 font-bold">MATCH</span>{" "}
                       (u1)-[r1:
-                      <span className="text-sky-400">PASSIONATE_ABOUT|EMBODIES</span>
+                      <span className="text-sky-400">
+                        PASSIONATE_ABOUT|EMBODIES
+                      </span>
                       ]-&gt;(bridge)&lt;-[r2:
-                      <span className="text-sky-400">PASSIONATE_ABOUT|EMBODIES</span>]-(u2)
+                      <span className="text-sky-400">
+                        PASSIONATE_ABOUT|EMBODIES
+                      </span>
+                      ]-(u2)
                     </p>
                     <p>
                       <span className="text-violet-400 font-bold">RETURN</span>{" "}
-                      u2.firstName, collect(bridge.name) <span className="text-violet-400 font-bold">AS</span> clusters,
+                      u2.firstName, collect(bridge.name){" "}
+                      <span className="text-violet-400 font-bold">AS</span>{" "}
+                      clusters,
                     </p>
                     <p className="pl-4">
-                      sum(coalesce(r1.weight, 0.9) * coalesce(r2.weight, 0.9)) * 100 / count(bridge) <span className="text-violet-400 font-bold">AS</span> harmonyIndex
+                      sum(coalesce(r1.weight, 0.9) * coalesce(r2.weight, 0.9)) *
+                      100 / count(bridge){" "}
+                      <span className="text-violet-400 font-bold">AS</span>{" "}
+                      harmonyIndex
                     </p>
                     <p>
                       <span className="text-violet-400 font-bold">
                         ORDER BY
                       </span>{" "}
                       harmonyIndex{" "}
-                      <span className="text-violet-400 font-bold">DESC LIMIT</span>{" "}
+                      <span className="text-violet-400 font-bold">
+                        DESC LIMIT
+                      </span>{" "}
                       <span className="text-amber-400">1;</span>
                     </p>
                   </div>
@@ -415,9 +444,10 @@ export function GraphShowcase() {
 
                 <div className="p-3 rounded-xl bg-card border border-border/80 flex items-center justify-between text-[11px]">
                   <span className="text-muted-foreground">
-                    Query Execution: <strong>1.4ms</strong> (Neo4j Aura Protocol 6.1)
+                    Query Execution: <strong>1.4ms</strong> (Neo4j Aura Protocol
+                    6.1)
                   </span>
-                  <span className="text-violet-400 font-bold">
+                  <span className="text-violet-400 font-bold tabular-nums">
                     Result: {harmonyScore}% Harmony Index
                   </span>
                 </div>
@@ -432,7 +462,7 @@ export function GraphShowcase() {
               </span>
 
               <div className="flex items-center gap-2">
-                <span className="font-extrabold bg-rose-500/10 px-2.5 py-0.5 rounded-full text-rose-500">
+                <span className="font-extrabold bg-rose-500/10 px-2.5 py-0.5 rounded-full text-rose-500 tabular-nums">
                   {harmonyScore}% Harmony Index
                 </span>
 
@@ -440,7 +470,7 @@ export function GraphShowcase() {
                   type="button"
                   onClick={runSimulation}
                   disabled={isSimulating}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 text-violet-500 text-[11px] font-bold transition-all cursor-pointer disabled:opacity-50"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-violet-500/10 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-violet-500/20 text-violet-500 text-[11px] font-bold transition-[background-color,transform,opacity] duration-150 ease-out active:scale-[0.96] touch-manipulation cursor-pointer disabled:opacity-50"
                 >
                   <RefreshCw
                     className={`w-3 h-3 ${isSimulating ? "animate-spin" : ""}`}

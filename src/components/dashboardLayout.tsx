@@ -62,11 +62,13 @@ function DashboardUserLayout() {
 
   const displayInitials = mounted
     ? (displayName || "M")
-        .split(" ")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
         .map((part) => part[0])
         .join("")
         .slice(0, 2)
-        .toUpperCase()
+        .toUpperCase() || "MM"
     : "MM";
 
   const displayAvatar =
@@ -95,17 +97,17 @@ function DashboardUserLayout() {
           key={item.href}
           href={item.href}
           className={cn(
-            "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs transition-all duration-200 rounded-xl min-w-0 flex-1",
+            "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs transition-[color,background-color,transform] duration-150 ease-out rounded-xl min-w-0 flex-1 touch-manipulation select-none active:scale-95",
             isActive
-              ? "text-pink-500 bg-pink-50 dark:bg-pink-500/10 font-medium scale-105"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent hover:scale-105",
+              ? "text-pink-600 dark:text-pink-400 bg-pink-500/10 font-bold shadow-2xs"
+              : "text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:text-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:bg-accent/60",
           )}
           aria-current={isActive ? "page" : undefined}
         >
           <item.icon
-            className={cn("h-5 w-5 shrink-0", isActive && "text-pink-500")}
+            className={cn("h-5 w-5 shrink-0 transition-transform duration-150", isActive && "text-pink-500 scale-110")}
           />
-          <span className="truncate">{item.name}</span>
+          <span className="truncate tracking-tight">{item.name}</span>
         </Link>
       );
     });
@@ -268,7 +270,7 @@ function DashboardUserLayout() {
               <Badge
                 suppressHydrationWarning
                 variant="secondary"
-                className="bg-white/80 dark:bg-gray-800/80 text-pink-600 dark:text-pink-400 border-pink-200/80 dark:border-pink-800/80 font-semibold text-xs py-0.5 px-2"
+                className="bg-white/80 dark:bg-gray-800/80 text-pink-600 dark:text-pink-400 border-pink-200/80 dark:border-pink-800/80 font-semibold text-xs py-0.5 px-2 tabular-nums"
                 title={`Level ${displayLevel} (${userLevel.xp}/${userLevel.requiredXp} XP)`}
               >
                 <Zap className="h-3 w-3 mr-1 fill-pink-500 text-pink-500" />
@@ -277,7 +279,7 @@ function DashboardUserLayout() {
               <Badge
                 suppressHydrationWarning
                 variant="secondary"
-                className="bg-white/80 dark:bg-gray-800/80 text-blue-600 dark:text-blue-400 border-blue-200/80 dark:border-blue-800/80 font-semibold text-xs py-0.5 px-2"
+                className="bg-white/80 dark:bg-gray-800/80 text-blue-600 dark:text-blue-400 border-blue-200/80 dark:border-blue-800/80 font-semibold text-xs py-0.5 px-2 tabular-nums"
                 title={`${displaySuperLikes} Super Likes`}
               >
                 <Zap className="h-3 w-3 mr-1 text-blue-500 fill-blue-500" />
@@ -362,9 +364,9 @@ function DashboardUserLayout() {
         </div>
       </header>
 
-      {/* Bottom Navigation for Mobile/Tablet */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/98 dark:bg-gray-900/98 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shadow-lg safe-area-pb">
-        <div className="flex items-center justify-around px-2 py-2.5">
+      {/* Bottom Navigation for Mobile/Tablet with Safe Area Inset Protection */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/98 dark:bg-gray-900/98 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shadow-lg pb-[max(0.625rem,env(safe-area-inset-bottom,0px))]">
+        <div className="flex items-center justify-around px-2 pt-2">
           {/* Main nav items */}
           {bottomNavItems}
 
@@ -375,7 +377,7 @@ function DashboardUserLayout() {
                 variant: "ghost",
                 size: "sm",
                 className:
-                  "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs h-auto min-w-0 flex-1 transition-all duration-200 rounded-xl hover:bg-accent hover:scale-105",
+                  "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs h-auto min-w-0 flex-1 transition-[color,background-color,transform] duration-150 ease-out rounded-xl text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:bg-accent/60 active:scale-95 touch-manipulation select-none",
               })}
             >
               <Menu className="h-5 w-5" />
